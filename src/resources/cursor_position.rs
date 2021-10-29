@@ -1,0 +1,22 @@
+use bevy::prelude::{Vec2, Windows};
+use std::ops::Deref;
+
+#[derive(Debug, Copy, Clone)]
+pub struct WorldCursorPosition(pub Vec2);
+
+impl WorldCursorPosition {
+    pub fn world_cursor_position(windows: &Windows) -> Option<Self> {
+        let window = windows.get_primary()?;
+        let pos = window.cursor_position()?;
+        let mouse_position = Vec2::new(pos.x - window.width() / 2., pos.y - window.height() / 2.);
+        Some(Self(mouse_position))
+    }
+}
+
+impl Deref for WorldCursorPosition {
+    type Target = Vec2;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
