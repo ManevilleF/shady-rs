@@ -1,3 +1,4 @@
+use crate::components::InteractionBox;
 use crate::events::SpawnNode;
 use crate::get_cursor_position;
 use crate::resources::{ShadyAssets, WorldCursorPosition};
@@ -14,6 +15,7 @@ pub fn handle_mouse_input(
     cursor_position: Option<Res<WorldCursorPosition>>,
     mut spawn_node_evw: EventWriter<SpawnNode>,
     mouse_input: Res<Input<MouseButton>>,
+    box_query: Query<(&GlobalTransform, &InteractionBox)>,
 ) {
     if !mouse_input.just_pressed(MouseButton::Left) {
         return;
