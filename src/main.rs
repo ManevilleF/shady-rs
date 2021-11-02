@@ -1,8 +1,10 @@
 mod common;
 mod components;
+mod events;
 mod resources;
 mod systems;
 
+use crate::events::*;
 use crate::resources::SelectedEntities;
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
@@ -19,10 +21,14 @@ fn main() {
         .add_startup_system(systems::ui::setup.system())
         .add_startup_system(systems::setup::setup_camera.system())
         .add_startup_system(systems::setup::setup_assets.system())
-        .add_system(
-            systems::input::handle_mouse_position
-                .system()
-                .label("cursor"),
+        .add_system_set(
+            SystemSet::new()
+                .with_system(
+                    systems::input::handle_mouse_position
+                        .system()
+                        .label("cursor"),
+                )
+                .with_system(systems::input::handle_mouse_input.system().after("cursor")),
         )
         .add_system(systems::nodes::handle_node_spawn.system())
         .add_system_set(
@@ -35,5 +41,6 @@ fn main() {
                 ),
         )
         .add_system(systems::ui::menu.system())
+        .add_event::<SpawnNode>()
         .run()
 }

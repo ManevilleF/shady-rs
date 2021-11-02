@@ -1,17 +1,14 @@
 use crate::components::ShadyNode;
-use crate::get_cursor_position;
-use crate::resources::{ShadyAssets, WorldCursorPosition};
+use crate::events::SpawnNode;
+use crate::resources::ShadyAssets;
 use bevy::prelude::*;
 
 pub fn handle_node_spawn(
     mut commands: Commands,
-    cursor_position: Option<Res<WorldCursorPosition>>,
+    mut spawn_evr: EventReader<SpawnNode>,
     assets: Res<ShadyAssets>,
-    mouse_input: Res<Input<MouseButton>>,
 ) {
-    if !mouse_input.just_pressed(MouseButton::Left) {
-        return;
+    for event in spawn_evr.iter() {
+        ShadyNode::spawn(&mut commands, &assets, event.target_position, "test");
     }
-    let position = get_cursor_position!(cursor_position);
-    ShadyNode::spawn(&mut commands, &assets, position.0, "test");
 }
