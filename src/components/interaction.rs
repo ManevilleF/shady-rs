@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub enum BoxInteraction {
     Drag,
     Connect,
+    Ignore,
 }
 
 #[derive(Debug, Clone)]
