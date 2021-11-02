@@ -1,11 +1,12 @@
-use crate::components::{BoxInteraction, InteractionBox};
+use crate::components::{BoxInteraction, InteractionBox, NodeConnector};
 use crate::events::SpawnNode;
-use crate::resources::{DraggedEntities, ShadyAssets, WorldCursorPosition};
+use crate::resources::{DraggedEntities, NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
 use crate::{get_cursor_position, get_or_continue};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::reflect::List;
+use bevy::ui::node::NODE;
 
 pub fn handle_mouse_position(mut commands: Commands, windows: Res<Windows>) {
     match WorldCursorPosition::world_cursor_position(&windows) {
@@ -14,16 +15,33 @@ pub fn handle_mouse_position(mut commands: Commands, windows: Res<Windows>) {
     }
 }
 
+fn get_interaction(
+    box_query: &Query<(Entity, &GlobalTransform, &InteractionBox)>,
+    position: Vec2,
+) -> Option<(Entity, BoxInteraction)> {
+    for (entity, transform, interaction_box) in box_query.iter() {
+        if let Some(interaction) =
+            interaction_box.get_interaction(transform.translation.xy(), position)
+        {
+            log::info!("Found interaction: {:?}", interaction);
+            return Some((entity, interaction));
+        }
+    }
+    None
+}
+
 pub fn handle_mouse_input(
     mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
+    connector_candidate: Option<Res<NodeConnectorCandidate>>,
+    mut dragged_entities: Option<ResMut<DraggedEntities>>,
     mut spawn_node_evw: EventWriter<SpawnNode>,
     mouse_input: Res<Input<MouseButton>>,
     box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
     mut transform_query: Query<&mut Transform, With<InteractionBox>>,
-    mut dragged_entities: Option<ResMut<DraggedEntities>>,
 ) {
     let position = get_cursor_position!(cursor_position);
+    // Dragging
     if let Some(mut dragged_entities) = dragged_entities {
         if !mouse_input.pressed(MouseButton::Left) {
             commands.remove_resource::<DraggedEntities>();
@@ -38,24 +56,37 @@ pub fn handle_mouse_input(
         return;
     }
     if mouse_input.just_pressed(MouseButton::Left) {
-        for (entity, transform, interaction_box) in box_query.iter() {
-            if let Some(interaction) =
-                interaction_box.get_interaction(transform.translation.xy(), position.0)
-            {
-                log::info!("Found interaction: {:?}", interaction);
-                match interaction {
-                    BoxInteraction::Connect => {}
-                    BoxInteraction::Drag => commands.insert_resource(DraggedEntities {
-                        entities: vec![entity],
-                        previous_cursor_position: position.0,
-                    }),
-                    BoxInteraction::Ignore => (),
-                }
-                return;
+        match get_interaction(&box_query, position.0) {
+            None => {
+                spawn_node_evw.send(SpawnNode {
+                    target_position: position.0,
+                });
+                commands.remove_resource::<NodeConnectorCandidate>();
             }
+            Some((entity, interaction)) => match interaction {
+                BoxInteraction::ConnectionStart => {
+                    let candidate = NodeConnectorCandidate {
+                        output_from: entity,
+                    };
+                    commands.insert_resource(candidate);
+                }
+                BoxInteraction::ConnectionEnd => {
+                    if let Some(candidate) = connector_candidate {
+                        if candidate.output_from != entity {
+                            let connector = candidate.to_connector(entity);
+                            commands.spawn().insert(connector);
+                        }
+                        commands.remove_resource::<NodeConnectorCandidate>();
+                    }
+                }
+                BoxInteraction::Drag => commands.insert_resource(DraggedEntities {
+                    entities: vec![entity],
+                    previous_cursor_position: position.0,
+                }),
+                BoxInteraction::Ignore => {
+                    commands.remove_resource::<NodeConnectorCandidate>();
+                }
+            },
         }
-        spawn_node_evw.send(SpawnNode {
-            target_position: position.0,
-        })
     }
 }

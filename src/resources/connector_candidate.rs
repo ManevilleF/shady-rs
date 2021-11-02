@@ -1,10 +1,9 @@
 use crate::components::NodeConnector;
-use bevy::prelude::Entity;
+use bevy::prelude::{Commands, Entity};
 
 #[derive(Debug)]
 pub struct NodeConnectorCandidate {
     pub output_from: Entity,
-    pub line_entity: Entity,
 }
 
 impl NodeConnectorCandidate {

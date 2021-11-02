@@ -1,5 +1,5 @@
 use crate::common::Bounds;
-use crate::components::{BoxInteraction, InteractionBox};
+use crate::components::{BoxInteraction, InteractionBox, NodeInput, NodeOutput};
 use crate::resources::ShadyAssets;
 use bevy::prelude::*;
 
@@ -37,14 +37,19 @@ impl ShadyNode {
                             transform: Transform::from_xyz(-40., -20. * i as f32, 0.),
                             ..Default::default()
                         })
-                        .insert(InteractionBox::new(box_size, BoxInteraction::Connect));
+                        .insert(InteractionBox::new(box_size, BoxInteraction::ConnectionEnd))
+                        .insert(NodeInput {});
                         bb.spawn_bundle(SpriteBundle {
                             sprite: Sprite::new(box_size),
                             material: assets.output_slot_material.clone(),
                             transform: Transform::from_xyz(40., -20. * i as f32, 0.),
                             ..Default::default()
                         })
-                        .insert(InteractionBox::new(box_size, BoxInteraction::Connect));
+                        .insert(InteractionBox::new(
+                            box_size,
+                            BoxInteraction::ConnectionStart,
+                        ))
+                        .insert(NodeOutput {});
                     }
                 });
             })

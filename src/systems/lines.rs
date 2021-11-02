@@ -1,4 +1,4 @@
-use crate::components::{InteractionBox, NodeConnector, NodeInput};
+use crate::components::{InteractionBox, NodeConnector, NodeInput, NodeOutput};
 use crate::get_cursor_position;
 use crate::resources::{NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
 use bevy::ecs::query::QueryEntityError;
@@ -17,7 +17,7 @@ pub fn handle_candidate_line(
     cursor_position: Option<Res<WorldCursorPosition>>,
     assets: Res<ShadyAssets>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
-    connector_query: Query<&Transform, With<NodeInput>>,
+    connector_query: Query<&GlobalTransform, With<NodeOutput>>,
     mut lines: ResMut<DebugLines>,
 ) {
     let connector_candidate = match connector_candidate {
@@ -57,13 +57,13 @@ macro_rules! get_vec2_transform {
 
 pub fn handle_connector_lines(
     connector_query: Query<&NodeConnector>,
-    connector_box_query: Query<&Transform>,
+    connector_box_query: Query<&GlobalTransform>, // , Or<(NodeInput, NodeOutput)>>,
     mut lines: ResMut<DebugLines>,
     assets: Res<ShadyAssets>,
 ) {
     for node_connector in connector_query.iter() {
         let from = get_vec2_transform!(connector_box_query.get(node_connector.output_from));
-        let to = get_vec2_transform!(connector_box_query.get(node_connector.output_from));
+        let to = get_vec2_transform!(connector_box_query.get(node_connector.input_to));
         draw_bezier_line((from, to), &mut lines, assets.connector_color);
     }
 }

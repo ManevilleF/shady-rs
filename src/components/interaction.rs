@@ -4,7 +4,8 @@ use bevy::prelude::*;
 #[derive(Debug, Copy, Clone)]
 pub enum BoxInteraction {
     Drag,
-    Connect,
+    ConnectionStart,
+    ConnectionEnd,
     Ignore,
 }
 
@@ -29,7 +30,7 @@ impl InteractionBox {
     pub fn new_connect_box(size: Vec2) -> Self {
         Self {
             size,
-            interaction: BoxInteraction::Connect,
+            interaction: BoxInteraction::ConnectionStart,
         }
     }
 
