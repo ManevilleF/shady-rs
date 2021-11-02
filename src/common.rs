@@ -14,6 +14,13 @@ impl Bounds {
         }
     }
 
+    pub fn centered(center: Vec2, extents: Vec2) -> Self {
+        Self {
+            min: center - extents,
+            max: center + extents,
+        }
+    }
+
     pub fn in_bounds(&self, pos: Vec2) -> bool {
         pos.x >= self.min.x && pos.x <= self.max.x && pos.y >= self.min.y && pos.y <= self.max.y
     }

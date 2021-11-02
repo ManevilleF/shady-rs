@@ -24,6 +24,7 @@ fn main() {
                 .system()
                 .label("cursor"),
         )
+        .add_system(systems::nodes::handle_node_spawn.system())
         .add_system_set(
             SystemSet::new()
                 .with_system(systems::lines::handle_connector_lines.system())

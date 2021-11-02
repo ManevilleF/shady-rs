@@ -1,7 +1,9 @@
-use crate::components::{ConnectorBox, NodeConnector, NodeInput};
+use crate::components::{InteractionBox, NodeConnector, NodeInput};
+use crate::get_cursor_position;
 use crate::resources::{NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
 use bevy::ecs::query::QueryEntityError;
 use bevy::log;
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
 
@@ -13,21 +15,18 @@ fn draw_bezier_line((start, end): (Vec2, Vec2), lines: &mut DebugLines, color: C
 
 pub fn handle_candidate_line(
     cursor_position: Option<Res<WorldCursorPosition>>,
-    connector_candidate: Option<Res<NodeConnectorCandidate>>,
-    connector_query: Query<&ConnectorBox, With<NodeInput>>,
     assets: Res<ShadyAssets>,
+    connector_candidate: Option<Res<NodeConnectorCandidate>>,
+    connector_query: Query<&Transform, With<NodeInput>>,
     mut lines: ResMut<DebugLines>,
 ) {
     let connector_candidate = match connector_candidate {
         None => return,
         Some(c) => c,
     };
-    let position = match cursor_position {
-        None => return,
-        Some(p) => p,
-    };
+    let position = get_cursor_position!(cursor_position);
     let start_pos = match connector_query.get(connector_candidate.output_from) {
-        Ok(connector) => connector.center(),
+        Ok(transform) => transform.translation.xy(),
         Err(e) => {
             log::error!(
                 "Failed to retrieve connector candidate entity {:?}: {}",
@@ -44,10 +43,10 @@ pub fn handle_candidate_line(
     );
 }
 
-macro_rules! get_box {
+macro_rules! get_vec2_transform {
     ($res:expr) => {
         match $res {
-            Ok(c) => c.center(),
+            Ok(t) => t.translation.xy(),
             Err(e) => {
                 log::error!("Failed to retrieve node connector entity: {}", e);
                 continue;
@@ -58,13 +57,13 @@ macro_rules! get_box {
 
 pub fn handle_connector_lines(
     connector_query: Query<&NodeConnector>,
-    connector_box_query: Query<&ConnectorBox>,
+    connector_box_query: Query<&Transform>,
     mut lines: ResMut<DebugLines>,
     assets: Res<ShadyAssets>,
 ) {
     for node_connector in connector_query.iter() {
-        let from = get_box!(connector_box_query.get(node_connector.output_from));
-        let to = get_box!(connector_box_query.get(node_connector.output_from));
+        let from = get_vec2_transform!(connector_box_query.get(node_connector.output_from));
+        let to = get_vec2_transform!(connector_box_query.get(node_connector.output_from));
         draw_bezier_line((from, to), &mut lines, assets.connector_color);
     }
 }
