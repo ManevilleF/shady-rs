@@ -1,8 +1,10 @@
 use crate::glsl::GlslType;
 use bevy::math::*;
 use bevy::prelude::Color;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 
-pub trait AsGlslPrimitiveType: Sized {
+pub trait AsGlslPrimitiveType: Serialize + DeserializeOwned + Default {
     fn primitive_glsl_type() -> GlslType;
 
     fn value_to_glsl(&self) -> String;

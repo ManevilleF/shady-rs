@@ -12,7 +12,8 @@ pub struct ConnectionData {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum InputField {
     ExpectedValue(GlslType),
-    Connected(ConnectionData),
+    NodeConnected(ConnectionData),
+    // PropertyConnected
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,7 +33,7 @@ impl InputField {
     pub fn glsl_type(&self) -> GlslType {
         match self {
             InputField::ExpectedValue(t) => *t,
-            InputField::Connected(c) => c.glsl_type,
+            InputField::NodeConnected(c) => c.glsl_type,
         }
     }
 }

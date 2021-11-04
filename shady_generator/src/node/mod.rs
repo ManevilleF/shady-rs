@@ -59,12 +59,12 @@ impl Node {
                 expected_type,
             });
         }
-        let res = if let InputField::Connected(c) = &field {
+        let res = if let InputField::NodeConnected(c) = &field {
             Some(c.clone())
         } else {
             None
         };
-        *field = InputField::Connected(connect_message);
+        *field = InputField::NodeConnected(connect_message);
         Ok(res)
     }
 
@@ -79,7 +79,7 @@ impl Node {
         for (i, (_field, val)) in self.input_param.fields.iter().enumerate() {
             let val = match val {
                 InputField::ExpectedValue(v) => v.default_glsl_value().to_string(),
-                InputField::Connected(c) => c.linked_var_name(),
+                InputField::NodeConnected(c) => c.linked_var_name(),
             };
             buffer = format!("{}{}", buffer, val);
             if i < len - 1 {

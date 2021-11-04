@@ -1,21 +1,23 @@
+use crate::glsl::{AsGlslPrimitiveType, GlslType};
 use bevy::utils::Uuid;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Property<T> {
+pub struct Property {
     pub name: String,
     pub reference: String,
-    pub default_value: T,
+    pub glsl_type: GlslType,
     pub exposed: bool,
 }
 
-// impl<T: ShaderValue> Default for Property<T> {
-//     fn default() -> Self {
-//         Self {
-//             name: T::name().to_string(),
-//             reference: format!("{}_{}", T::name(), Uuid::new_v4()),
-//             default_value: T::default(),
-//             exposed: false,
-//         }
-//     }
-// }
+impl Property {
+    pub fn new(glsl_type: GlslType, exposed: bool) -> Self {
+        let name = glsl_type.get_glsl_type().to_string();
+        Self {
+            reference: format!("{}_{}", name.clone(), Uuid::new_v4()),
+            name,
+            glsl_type,
+            exposed,
+        }
+    }
+}

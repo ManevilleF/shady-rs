@@ -1,4 +1,5 @@
 mod error;
+mod generator;
 mod glsl;
 mod node;
 mod property;
