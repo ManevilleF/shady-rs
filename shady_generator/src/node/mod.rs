@@ -24,6 +24,39 @@ impl Node {
         &self.name
     }
 
+    fn find_input_field_pos(&self, field: &str) -> Result<usize, ShadyError> {
+        let field_pos = self
+            .input_param
+            .fields
+            .iter()
+            .position(|(key, _f)| key == field)
+            .ok_or_else(|| ShadyError::WrongFieldKey(field.to_string()))?;
+        Ok(field_pos)
+    }
+
+    fn find_output_field_pos(&self, field: &str) -> Result<usize, ShadyError> {
+        let field_pos = self
+            .output_param
+            .fields()
+            .iter()
+            .position(|(key, _f)| key == field)
+            .ok_or_else(|| ShadyError::WrongFieldKey(field.to_string()))?;
+        Ok(field_pos)
+    }
+
+    pub fn get_input_field(&self, field: &str) -> Option<GlslType> {
+        let pos = self.find_input_field_pos(field).ok()?;
+        let (_k, f) = self.input_param.fields.get(pos)?;
+        Some(f.glsl_type())
+    }
+
+    pub fn get_output_field(&self, field: &str) -> Option<GlslType> {
+        let pos = self.find_output_field_pos(field).ok()?;
+        let fields = self.output_param.fields();
+        let (_k, f) = fields.get(pos)?;
+        Some(*f)
+    }
+
     pub fn input_fields(&self) -> Vec<(String, InputField)> {
         self.input_param.fields.clone()
     }
@@ -41,12 +74,7 @@ impl Node {
         target_field: &str,
         connect_message: ConnectionData,
     ) -> Result<ConnectResponse, ShadyError> {
-        let field_pos = self
-            .input_param
-            .fields
-            .iter()
-            .position(|(key, _f)| key == target_field)
-            .ok_or_else(|| ShadyError::WrongFieldKey(target_field.to_string()))?;
+        let field_pos = self.find_input_field_pos(target_field)?;
         let (_key, field) = self
             .input_param
             .fields

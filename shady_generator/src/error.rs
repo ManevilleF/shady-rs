@@ -10,4 +10,6 @@ pub enum ShadyError {
     },
     #[error("Could not find a field with key `{0}`")]
     WrongFieldKey(String),
+    #[error("Could not find node with uuid `{0}`")]
+    MissingNode(String),
 }
