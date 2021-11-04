@@ -9,7 +9,8 @@ impl ShadyNode {
     pub fn spawn(commands: &mut Commands, assets: &ShadyAssets, pos: Vec2, name: &str) -> Entity {
         let x_size = 75.;
         let title_size = Vec2::new(x_size, 20.);
-        let box_size = Vec2::splat(5.);
+        let box_size = Vec2::splat(10.);
+        let box_x_pos = x_size / 2. + box_size.x / 2.;
         let body_size = Vec2::new(x_size, 100.);
         commands
             .spawn_bundle(SpriteBundle {
@@ -34,15 +35,15 @@ impl ShadyNode {
                         bb.spawn_bundle(SpriteBundle {
                             sprite: Sprite::new(box_size),
                             material: assets.input_slot_material.clone(),
-                            transform: Transform::from_xyz(-40., -20. * i as f32, 0.),
+                            transform: Transform::from_xyz(-box_x_pos, -20. * i as f32, 0.),
                             ..Default::default()
                         })
                         .insert(InteractionBox::new(box_size, BoxInteraction::ConnectionEnd))
-                        .insert(NodeInput {});
+                        .insert(NodeInput::default());
                         bb.spawn_bundle(SpriteBundle {
                             sprite: Sprite::new(box_size),
                             material: assets.output_slot_material.clone(),
-                            transform: Transform::from_xyz(40., -20. * i as f32, 0.),
+                            transform: Transform::from_xyz(box_x_pos, -20. * i as f32, 0.),
                             ..Default::default()
                         })
                         .insert(InteractionBox::new(

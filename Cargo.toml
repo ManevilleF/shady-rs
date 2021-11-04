@@ -6,9 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
 bevy_prototype_debug_lines = "0.3"
 lyon_geom = "0.17"
+
+[dependencies.shady_generator]
+path = "shady_generator"
 
 [dependencies.bevy_egui]
 version = "0.7"
@@ -23,3 +25,6 @@ opt-level = 3
 # Maybe also enable only a small amount of optimization for our code:
 [profile.dev]
 opt-level = 1
+
+[workspace]
+members = ["shady_generator"]
