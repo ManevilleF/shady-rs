@@ -1,4 +1,4 @@
-pub use {as_primitive_glsl_type::*, primitive_glsl_type::*};
+pub use {as_primitive_glsl_type::*, glsl_type::*};
 
 mod as_primitive_glsl_type;
-mod primitive_glsl_type;
+mod glsl_type;

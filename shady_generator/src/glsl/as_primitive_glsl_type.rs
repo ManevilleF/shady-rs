@@ -3,23 +3,11 @@ use bevy::math::*;
 use bevy::prelude::Color;
 
 pub trait AsGlslPrimitiveType: Sized {
-    fn primitive_glsl_type() -> &'static GlslType
-    where
-        Self: Sized;
-
-    fn get_primitive_glsl_type(&self) -> GlslType
-    where
-        Self: Sized,
-    {
-        *Self::primitive_glsl_type()
-    }
+    fn primitive_glsl_type() -> GlslType;
 
     fn value_to_glsl(&self) -> String;
 
-    fn glsl_instantiate(&self, var_name: &str) -> String
-    where
-        Self: Sized,
-    {
+    fn glsl_instantiate(&self, var_name: &str) -> String {
         format!(
             "{} {} = {};",
             Self::primitive_glsl_type().get_glsl_type(),
@@ -30,8 +18,8 @@ pub trait AsGlslPrimitiveType: Sized {
 }
 
 impl AsGlslPrimitiveType for bool {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Bool
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Bool
     }
 
     fn value_to_glsl(&self) -> String {
@@ -40,8 +28,8 @@ impl AsGlslPrimitiveType for bool {
 }
 
 impl AsGlslPrimitiveType for f32 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Float
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Float
     }
 
     fn value_to_glsl(&self) -> String {
@@ -50,8 +38,8 @@ impl AsGlslPrimitiveType for f32 {
 }
 
 impl AsGlslPrimitiveType for f64 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Double
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Double
     }
 
     fn value_to_glsl(&self) -> String {
@@ -60,8 +48,8 @@ impl AsGlslPrimitiveType for f64 {
 }
 
 impl AsGlslPrimitiveType for i32 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Int
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Int
     }
 
     fn value_to_glsl(&self) -> String {
@@ -70,8 +58,8 @@ impl AsGlslPrimitiveType for i32 {
 }
 
 impl AsGlslPrimitiveType for u32 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::UInt
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::UInt
     }
 
     fn value_to_glsl(&self) -> String {
@@ -80,8 +68,8 @@ impl AsGlslPrimitiveType for u32 {
 }
 
 impl AsGlslPrimitiveType for Vec2 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Vec2
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Vec2
     }
 
     fn value_to_glsl(&self) -> String {
@@ -95,8 +83,8 @@ impl AsGlslPrimitiveType for Vec2 {
 }
 
 impl AsGlslPrimitiveType for IVec2 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::IVec2
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::IVec2
     }
 
     fn value_to_glsl(&self) -> String {
@@ -105,8 +93,8 @@ impl AsGlslPrimitiveType for IVec2 {
 }
 
 impl AsGlslPrimitiveType for Vec3 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Vec3
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Vec3
     }
 
     fn value_to_glsl(&self) -> String {
@@ -121,8 +109,8 @@ impl AsGlslPrimitiveType for Vec3 {
 }
 
 impl AsGlslPrimitiveType for IVec3 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::IVec3
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::IVec3
     }
 
     fn value_to_glsl(&self) -> String {
@@ -137,8 +125,8 @@ impl AsGlslPrimitiveType for IVec3 {
 }
 
 impl AsGlslPrimitiveType for Vec4 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Vec4
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Vec4
     }
 
     fn value_to_glsl(&self) -> String {
@@ -154,8 +142,8 @@ impl AsGlslPrimitiveType for Vec4 {
 }
 
 impl AsGlslPrimitiveType for IVec4 {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::IVec4
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::IVec4
     }
 
     fn value_to_glsl(&self) -> String {
@@ -171,8 +159,8 @@ impl AsGlslPrimitiveType for IVec4 {
 }
 
 impl AsGlslPrimitiveType for Color {
-    fn primitive_glsl_type() -> &'static GlslType {
-        &GlslType::Vec4
+    fn primitive_glsl_type() -> GlslType {
+        GlslType::Vec4
     }
 
     fn value_to_glsl(&self) -> String {
