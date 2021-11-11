@@ -1,6 +1,6 @@
+use crate::generate_uuid;
 use crate::glsl::GlslType;
 use crate::node::*;
-use bevy::utils::Uuid;
 
 #[derive(Debug, Copy, Clone)]
 pub enum NodePresets {
@@ -16,11 +16,11 @@ impl NodePresets {
         match self {
             NodePresets::Vec2 => Node {
                 name: "Vec2".to_string(),
-                uuid: Uuid::new_v4().to_string(),
+                uuid: generate_uuid(),
                 input_param: Input {
                     fields: vec![
-                        ("x".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("y".to_string(), InputField::ExpectedValue(GlslType::Float)),
+                        ("x".to_string(), InputField::new(GlslType::Float)),
+                        ("y".to_string(), InputField::new(GlslType::Float)),
                     ],
                 },
                 output_param: Output::GlslType {
@@ -31,12 +31,12 @@ impl NodePresets {
             },
             NodePresets::Vec3 => Node {
                 name: "Vec3".to_string(),
-                uuid: Uuid::new_v4().to_string(),
+                uuid: generate_uuid(),
                 input_param: Input {
                     fields: vec![
-                        ("x".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("y".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("z".to_string(), InputField::ExpectedValue(GlslType::Float)),
+                        ("x".to_string(), InputField::new(GlslType::Float)),
+                        ("y".to_string(), InputField::new(GlslType::Float)),
+                        ("z".to_string(), InputField::new(GlslType::Float)),
                     ],
                 },
                 output_param: Output::GlslType {
@@ -47,13 +47,13 @@ impl NodePresets {
             },
             NodePresets::Vec4 => Node {
                 name: "Vec4".to_string(),
-                uuid: Uuid::new_v4().to_string(),
+                uuid: generate_uuid(),
                 input_param: Input {
                     fields: vec![
-                        ("x".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("y".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("z".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("w".to_string(), InputField::ExpectedValue(GlslType::Float)),
+                        ("x".to_string(), InputField::new(GlslType::Float)),
+                        ("y".to_string(), InputField::new(GlslType::Float)),
+                        ("z".to_string(), InputField::new(GlslType::Float)),
+                        ("w".to_string(), InputField::new(GlslType::Float)),
                     ],
                 },
                 output_param: Output::GlslType {
@@ -64,11 +64,11 @@ impl NodePresets {
             },
             NodePresets::FloatAdd => Node {
                 name: "Add Float".to_string(),
-                uuid: Uuid::new_v4().to_string(),
+                uuid: generate_uuid(),
                 input_param: Input {
                     fields: vec![
-                        ("a".to_string(), InputField::ExpectedValue(GlslType::Float)),
-                        ("b".to_string(), InputField::ExpectedValue(GlslType::Float)),
+                        ("a".to_string(), InputField::new(GlslType::Float)),
+                        ("b".to_string(), InputField::new(GlslType::Float)),
                     ],
                 },
                 output_param: Output::GlslType {
@@ -84,6 +84,8 @@ impl NodePresets {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::property::InputProperty;
+    use crate::shader::Shader;
 
     #[test]
     fn default_vec2_node() {
@@ -97,11 +99,12 @@ mod tests {
 
     #[test]
     fn custom_vec2_node() {
-        let mut node = NodePresets::Vec2.get_node();
-        node.connect_input("x", ConnectionData::new("some_var", "a", GlslType::Float))
-            .unwrap();
-        node.connect_input("y", ConnectionData::new("other_var", "z", GlslType::Float))
-            .unwrap();
+        let mut shader = Shader::default();
+        let property_a = InputProperty::new(GlslType::Float, false);
+        let property_b = InputProperty::new(GlslType::Float, false);
+        shader.add_input_property(property_a.clone());
+        shader.add_input_property(property_b.clone());
+        shader.create_node_from_preset(NodePresets::Vec2);
         let res = node.to_glsl();
         assert_eq!(
             res,

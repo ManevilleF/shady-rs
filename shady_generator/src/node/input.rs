@@ -3,17 +3,9 @@ use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConnectionData {
-    pub var_name: String,
-    pub field_name: String,
+pub struct InputField {
     pub glsl_type: GlslType,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum InputField {
-    ExpectedValue(GlslType),
-    NodeConnected(ConnectionData),
-    // PropertyConnected
+    pub connector_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,24 +23,14 @@ impl Deref for Input {
 
 impl InputField {
     pub fn glsl_type(&self) -> GlslType {
-        match self {
-            InputField::ExpectedValue(t) => *t,
-            InputField::NodeConnected(c) => c.glsl_type,
-        }
+        self.glsl_type
     }
-}
 
-impl ConnectionData {
-    pub fn new(var_name: &str, field_name: &str, glsl_type: GlslType) -> Self {
+    pub fn new(glsl_type: GlslType) -> Self {
         Self {
-            var_name: var_name.to_string(),
-            field_name: field_name.to_string(),
             glsl_type,
+            connector_id: None,
         }
-    }
-
-    pub fn linked_var_name(&self) -> String {
-        format!("{}.{}", self.var_name, self.field_name)
     }
 }
 

@@ -1,14 +1,14 @@
-pub use {input::*, output::*, presets::*};
+pub use {connector::*, input::*, output::*, presets::*};
 
 use crate::error::ShadyError;
 use crate::glsl::GlslType;
+use crate::shader::Shader;
 use serde::{Deserialize, Serialize};
 
+mod connector;
 mod input;
 mod output;
 mod presets;
-
-pub type ConnectResponse = Option<ConnectionData>;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Node {
@@ -22,6 +22,10 @@ pub struct Node {
 impl Node {
     pub fn name(&self) -> &String {
         &self.name
+    }
+
+    pub fn unique_name(&self) -> String {
+        format!("{}_{}", self.name, self.uuid)
     }
 
     fn find_input_field_pos(&self, field: &str) -> Result<usize, ShadyError> {
@@ -72,8 +76,8 @@ impl Node {
     pub fn connect_input(
         &mut self,
         target_field: &str,
-        connect_message: ConnectionData,
-    ) -> Result<ConnectResponse, ShadyError> {
+        connect_message: ConnectionMessage,
+    ) -> Result<ConnectionResponse, ShadyError> {
         let field_pos = self.find_input_field_pos(target_field)?;
         let (_key, field) = self
             .input_param
@@ -81,22 +85,19 @@ impl Node {
             .get_mut(field_pos)
             .ok_or_else(|| ShadyError::WrongFieldKey(target_field.to_string()))?;
         let expected_type = field.glsl_type();
-        if !matches!(connect_message.glsl_type, expected_type) {
+        if connect_message.glsl_type != expected_type {
             return Err(ShadyError::WrongGlslType {
                 input_type: connect_message.glsl_type,
                 expected_type,
             });
         }
-        let res = if let InputField::NodeConnected(c) = &field {
-            Some(c.clone())
-        } else {
-            None
+        let response = ConnectionResponse {
+            connector_id: field.connector_id.replace(connect_message.connector_id),
         };
-        *field = InputField::NodeConnected(connect_message);
-        Ok(res)
+        Ok(response)
     }
 
-    pub fn to_glsl(&self) -> String {
+    pub fn to_glsl(&self, shader: &Shader) -> Result<String, ShadyError> {
         let mut buffer = format!(
             "{} {} = {}(",
             self.output_param.glsl_type(),
@@ -104,16 +105,62 @@ impl Node {
             self.glsl_function
         );
         let len = self.input_param.len();
-        for (i, (_field, val)) in self.input_param.fields.iter().enumerate() {
-            let val = match val {
-                InputField::ExpectedValue(v) => v.default_glsl_value().to_string(),
-                InputField::NodeConnected(c) => c.linked_var_name(),
+        for (i, (field, val)) in self.input_param.fields.iter().enumerate() {
+            let val = match &val.connector_id {
+                Some(connector_id) => match shader.connectors.get(connector_id) {
+                    None => {
+                        log::error!(
+                            "Connector {} for Node {}::{} not found. Using default value.",
+                            connector_id,
+                            self.unique_name(),
+                            field
+                        );
+                        val.glsl_type.default_glsl_value().to_string()
+                    }
+                    Some(c) => match &c.from {
+                        Connection::PropertyConnection { property_id } => property_id.clone(),
+                        Connection::NodeConnection {
+                            node_id,
+                            field_name,
+                        } => {
+                            let val = match shader.nodes.get(node_id) {
+                                None => {
+                                    log::error!("Node {} not found. Using default value.", node_id);
+                                    val.glsl_type.default_glsl_value().to_string()
+                                }
+                                Some(node) => match node.get_output_field(&field_name) {
+                                    None => {
+                                        log::error!("Output field {} not found on Node {} Using default value.", field_name, node.unique_name());
+                                        val.glsl_type.default_glsl_value().to_string()
+                                    }
+                                    Some(glsl_ype) => {
+                                        if val.glsl_type != glsl_ype {
+                                            log::error!("Node {} field {} type `{}` does not match Node {} field {}. Expected `{}`", node.unique_name(), field_name, glsl_ype, self.unique_name(), field, val.glsl_type);
+                                            val.glsl_type.default_glsl_value().to_string()
+                                        } else {
+                                            format!("{}.{}", node_id, field_name)
+                                        }
+                                    }
+                                },
+                            };
+                            val
+                        }
+                    },
+                },
+                None => {
+                    log::warn!(
+                        "No connector set for Node {}::{}. Using default value",
+                        self.unique_name(),
+                        field
+                    );
+                    val.glsl_type.default_glsl_value().to_string()
+                }
             };
             buffer = format!("{}{}", buffer, val);
             if i < len - 1 {
                 buffer = format!("{}, ", buffer)
             }
         }
-        format!("{});", buffer)
+        Ok(format!("{});", buffer))
     }
 }
