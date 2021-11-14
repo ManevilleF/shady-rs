@@ -1,16 +1,17 @@
-use crate::node::{Connector, Node};
+use crate::node::{Connection, ConnectionAttempt, Node};
 
+#[derive(Debug, Clone)]
 pub enum ShaderOperation {
     CreateNode(Node),
     RemoveNode(String),
-    Connect {},
+    Connect(ConnectionAttempt),
     RemoveConnector(String),
 }
 
 #[derive(Debug, Clone)]
 pub enum ShaderOperationResponse {
     AddedNode(String),
-    AddedConnector(String),
+    AddedConnection(Connection),
     RemovedNode(Node),
-    RemovedConnector(Connector),
+    RemovedConnection(Connection),
 }

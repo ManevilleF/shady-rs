@@ -12,4 +12,8 @@ pub enum ShadyError {
     WrongFieldKey(String),
     #[error("Could not find node with uuid `{0}`")]
     MissingNode(String),
+    #[error("Could not find input property with uuid `{0}`")]
+    MissingInputProperty(String),
+    #[error("Could not find output property with uuid `{0}`")]
+    MissingOutputProperty(String),
 }

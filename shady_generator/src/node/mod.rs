@@ -1,11 +1,11 @@
-pub use {connector::*, input::*, output::*, presets::*};
+pub use {connection::*, input::*, output::*, presets::*};
 
 use crate::error::ShadyError;
 use crate::glsl::GlslType;
 use crate::shader::Shader;
 use serde::{Deserialize, Serialize};
 
-mod connector;
+mod connection;
 mod input;
 mod output;
 mod presets;
@@ -91,10 +91,7 @@ impl Node {
                 expected_type,
             });
         }
-        let response = ConnectionResponse {
-            connector_id: field.connector_id.replace(connect_message.connector_id),
-        };
-        Ok(response)
+        Ok(field.connection.replace(connect_message.connection))
     }
 
     pub fn to_glsl(&self, shader: &Shader) -> Result<String, ShadyError> {
@@ -106,18 +103,9 @@ impl Node {
         );
         let len = self.input_param.len();
         for (i, (field, val)) in self.input_param.fields.iter().enumerate() {
-            let val = match &val.connector_id {
-                Some(connector_id) => match shader.connectors.get(connector_id) {
-                    None => {
-                        log::error!(
-                            "Connector {} for Node {}::{} not found. Using default value.",
-                            connector_id,
-                            self.unique_name(),
-                            field
-                        );
-                        val.glsl_type.default_glsl_value().to_string()
-                    }
-                    Some(c) => match &c.from {
+            let val = match &val.connection {
+                Some(connection) => {
+                    match connection {
                         Connection::PropertyConnection { property_id } => property_id.clone(),
                         Connection::NodeConnection {
                             node_id,
@@ -145,11 +133,11 @@ impl Node {
                             };
                             val
                         }
-                    },
-                },
+                    }
+                }
                 None => {
                     log::warn!(
-                        "No connector set for Node {}::{}. Using default value",
+                        "No connection set for Node {}::{}. Using default value",
                         self.unique_name(),
                         field
                     );

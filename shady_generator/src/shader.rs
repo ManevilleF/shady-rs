@@ -6,7 +6,7 @@ use crate::shader_type::ShaderType;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-// TODO: prottection levels
+// TODO: protection levels
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Shader {
     pub name: String,
@@ -15,7 +15,6 @@ pub struct Shader {
     pub input_properties: HashMap<String, InputProperty>,
     pub output_properties: HashMap<String, OutputProperty>,
     pub nodes: HashMap<String, Node>,
-    pub connectors: HashMap<String, Connector>,
 }
 
 impl Shader {
@@ -56,45 +55,47 @@ impl Shader {
 
     pub fn connect(
         &mut self,
-        (from_node_uuid, output_field): (&str, &str),
-        (to_node_uuid, input_field): (&str, &str),
-    ) -> Result<(), ShadyError> {
-        let from_field = {
-            let from_node = self
-                .nodes
-                .get(from_node_uuid)
-                .ok_or_else(|| ShadyError::MissingNode(from_node_uuid.to_string()))?;
-            let from_field = from_node
-                .get_output_field(output_field)
-                .ok_or_else(|| ShadyError::WrongFieldKey(output_field.to_string()))?;
-            from_field
+        connection_attempt: ConnectionAttempt,
+    ) -> Result<ConnectionResponse, ShadyError> {
+        let glsl_type = match &connection_attempt.connection_from {
+            Connection::PropertyConnection { property_id } => {
+                self.input_properties
+                    .get(property_id)
+                    .ok_or_else(|| ShadyError::MissingInputProperty(property_id.clone()))?
+                    .glsl_type
+            }
+            Connection::NodeConnection {
+                node_id,
+                field_name,
+            } => {
+                let from_node = self
+                    .nodes
+                    .get(node_id)
+                    .ok_or_else(|| ShadyError::MissingNode(node_id.clone()))?;
+                from_node
+                    .get_output_field(&field_name)
+                    .ok_or_else(|| ShadyError::WrongFieldKey(field_name.clone()))?
+            }
         };
-        let mut to_node = self
-            .nodes
-            .get_mut(to_node_uuid)
-            .ok_or_else(|| ShadyError::MissingNode(to_node_uuid.to_string()))?;
-        let connector = Connector::new(
-            Connection::NodeConnection {
-                node_id: from_node_uuid.to_string(),
-                field_name: from_field.to_string(),
-            },
-            Connection::NodeConnection {
-                node_id: to_node_uuid.to_string(),
-                field_name: input_field.to_string(),
-            },
-        );
-        let connection_message = ConnectionMessage::new(&connector.id, from_field);
-        let res = to_node.connect_input(input_field, connection_message)?;
-        self.connectors.insert(connector.id.clone(), connector);
-        if let Some(connector_id) = res.connector_id {
-            self.connectors.remove(&connector_id);
-        }
-        Ok(())
-    }
-
-    pub fn refresh_connections(&mut self) {
-        for (uuid, mut node) in self.nodes.iter_mut() {
-            for (key, input_field) in node.input_fields().iter() {}
+        let connection_message = ConnectionMessage {
+            connection: connection_attempt.connection_from.clone(),
+            glsl_type,
+        };
+        match connection_attempt.connection_to {
+            ConnectionTo::ToNode { id, field } => {
+                let to_node = self
+                    .nodes
+                    .get_mut(&id)
+                    .ok_or_else(|| ShadyError::MissingNode(id))?;
+                to_node.connect_input(&field, connection_message)
+            }
+            ConnectionTo::OutputProperty { id } => {
+                let property = self
+                    .output_properties
+                    .get_mut(&id)
+                    .ok_or_else(|| ShadyError::MissingInputProperty(id))?;
+                property.connect_input(connection_message)
+            }
         }
     }
 }
@@ -108,7 +109,6 @@ impl Default for Shader {
             input_properties: Default::default(),
             output_properties: Default::default(),
             nodes: Default::default(),
-            connectors: Default::default(),
         }
     }
 }

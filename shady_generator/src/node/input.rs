@@ -1,11 +1,12 @@
 use crate::glsl::GlslType;
+use crate::node::Connection;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InputField {
     pub glsl_type: GlslType,
-    pub connector_id: Option<String>,
+    pub connection: Option<Connection>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,7 +30,7 @@ impl InputField {
     pub fn new(glsl_type: GlslType) -> Self {
         Self {
             glsl_type,
-            connector_id: None,
+            connection: None,
         }
     }
 }
