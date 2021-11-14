@@ -25,7 +25,7 @@ impl InputProperty {
     pub fn new(glsl_type: GlslType, uniform: bool) -> Self {
         let name = glsl_type.get_glsl_type().to_string();
         Self {
-            reference: format!("{}_{}", name.clone(), generate_uuid()),
+            reference: format!("{}_{}", name, generate_uuid()),
             name,
             glsl_type,
             uniform,
@@ -49,7 +49,7 @@ impl OutputProperty {
     pub fn new(glsl_type: GlslType) -> Self {
         let name = glsl_type.get_glsl_type().to_string();
         Self {
-            reference: format!("{}_{}", name.clone(), generate_uuid()),
+            reference: format!("{}_{}", name, generate_uuid()),
             name,
             glsl_type,
             connection: None,

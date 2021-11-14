@@ -76,7 +76,7 @@ impl Shader {
                     .get(node_id)
                     .ok_or_else(|| ShadyError::MissingNode(node_id.clone()))?;
                 from_node
-                    .get_output_field(&field_name)
+                    .get_output_field(field_name)
                     .ok_or_else(|| ShadyError::WrongFieldKey(field_name.clone()))?
             }
         };
@@ -86,17 +86,14 @@ impl Shader {
         };
         match connection_attempt.connection_to {
             ConnectionTo::ToNode { id, field } => {
-                let to_node = self
-                    .nodes
-                    .get_mut(&id)
-                    .ok_or_else(|| ShadyError::MissingNode(id))?;
+                let to_node = self.nodes.get_mut(&id).ok_or(ShadyError::MissingNode(id))?;
                 to_node.connect_input(&field, connection_message)
             }
             ConnectionTo::OutputProperty { id } => {
                 let property = self
                     .output_properties
                     .get_mut(&id)
-                    .ok_or_else(|| ShadyError::MissingInputProperty(id))?;
+                    .ok_or(ShadyError::MissingInputProperty(id))?;
                 property.connect_input(connection_message)
             }
         }
@@ -108,17 +105,14 @@ impl Shader {
     ) -> Result<Option<Connection>, ShadyError> {
         match connection_to {
             ConnectionTo::ToNode { id, field } => {
-                let to_node = self
-                    .nodes
-                    .get_mut(&id)
-                    .ok_or_else(|| ShadyError::MissingNode(id))?;
+                let to_node = self.nodes.get_mut(&id).ok_or(ShadyError::MissingNode(id))?;
                 to_node.disconnect_field(&field)
             }
             ConnectionTo::OutputProperty { id } => {
                 let property = self
                     .output_properties
                     .get_mut(&id)
-                    .ok_or_else(|| ShadyError::MissingInputProperty(id))?;
+                    .ok_or(ShadyError::MissingInputProperty(id))?;
                 Ok(property.disconnect())
             }
         }
@@ -167,28 +161,24 @@ impl Shader {
 
     pub fn to_glsl(&self) -> Result<String, ShadyError> {
         let mut property_declarations = String::new();
-        for (_key, property) in &self.input_properties {
+        for property in self.input_properties.values() {
             property_declarations =
                 format!("{}\n{}", property_declarations, property.glsl_declaration());
         }
-        for (_key, property) in &self.output_properties {
+        for property in self.output_properties.values() {
             property_declarations =
                 format!("{}\n{}", property_declarations, property.glsl_declaration());
         }
         let mut struct_declarations = Vec::new();
-        let mut functions = String::new();
+        // TODO: implement the function loading
+        let mut function_declarations = vec![""];
+        let mut main_content = String::new();
         let mut nodes_to_handle = Vec::new();
         let mut handled_nodes = Vec::new();
-        for (_key, property) in &self.output_properties {
-            functions = format!("{}\n{}", functions, property.to_glsl());
-            if let Some(connection) = &property.connection {
-                if let Connection::NodeConnection {
-                    node_id,
-                    field_name,
-                } = connection
-                {
-                    nodes_to_handle.push(node_id.clone());
-                }
+        for property in self.output_properties.values() {
+            main_content = format!("{}\n{}", main_content, property.to_glsl());
+            if let Some(Connection::NodeConnection { node_id, .. }) = &property.connection {
+                nodes_to_handle.push(node_id.clone());
             }
         }
         for depth in 0..=MAX_DEPTH {
@@ -208,7 +198,7 @@ impl Shader {
                     .nodes
                     .get(&node_id)
                     .ok_or_else(|| ShadyError::MissingNode(node_id.clone()))?;
-                functions = format!("{}\n{}", functions, node.to_glsl());
+                main_content = format!("{}\n{}", main_content, node.to_glsl());
                 let mut connections = node.node_connections();
                 tmp_nodes.append(&mut connections);
                 if let Some(declaration) = node.struct_declaration() {
@@ -226,12 +216,16 @@ impl Shader {
         }
 
         struct_declarations.dedup();
+        function_declarations.dedup();
         let struct_declarations = struct_declarations.join("\n\n");
+        let function_declarations = function_declarations.join("\n\n");
 
         Ok(formatdoc! {"
             {properties}
             
             {structs}
+
+            {functions}
 
             void main() {{
                 {main}
@@ -239,7 +233,8 @@ impl Shader {
         ", 
             properties = property_declarations,
             structs = struct_declarations,
-            main = functions
+            functions = function_declarations,
+            main = main_content
         })
     }
 }

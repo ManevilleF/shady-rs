@@ -2,7 +2,6 @@ pub use {connection::*, input::*, output::*, presets::*};
 
 use crate::error::ShadyError;
 use crate::glsl::GlslType;
-use crate::shader::Shader;
 use serde::{Deserialize, Serialize};
 
 mod connection;
@@ -16,6 +15,7 @@ pub struct Node {
     pub uuid: String,
     pub input_param: Input,
     pub output_param: Output,
+    // TODO: Add native operations possibilities (Add/Sub/Div/Etc)
     pub glsl_function: String,
 }
 
@@ -66,7 +66,7 @@ impl Node {
     }
 
     pub fn output_fields(&self) -> Vec<(String, GlslType)> {
-        self.output_param.fields().clone()
+        self.output_param.fields()
     }
 
     pub fn output_var_name(&self) -> String {
@@ -148,5 +148,45 @@ impl Node {
             }
         }
         format!("{});", buffer)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn custom_vec2_node() {
+        let mut node = NodePreset::Vec2.get_node();
+        node.connect_input(
+            "x",
+            ConnectionMessage {
+                connection: Connection::NodeConnection {
+                    node_id: "some_var".to_string(),
+                    field_name: "a".to_string(),
+                },
+                glsl_type: GlslType::Float,
+            },
+        )
+        .unwrap();
+        node.connect_input(
+            "y",
+            ConnectionMessage {
+                connection: Connection::NodeConnection {
+                    node_id: "other_var".to_string(),
+                    field_name: "z".to_string(),
+                },
+                glsl_type: GlslType::Float,
+            },
+        )
+        .unwrap();
+        let res = node.to_glsl();
+        assert_eq!(
+            res,
+            format!(
+                "vec2 {} = vec2(some_var.a, other_var.z);",
+                node.output_var_name()
+            )
+        );
     }
 }
