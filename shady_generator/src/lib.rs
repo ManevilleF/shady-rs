@@ -1,3 +1,8 @@
+// TODO: enable
+// #![deny(warnings)]
+// #![forbid(missing_docs)]
+// #![forbid(unsafe_code)]
+
 mod error;
 mod generator;
 mod glsl;
