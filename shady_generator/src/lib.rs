@@ -3,16 +3,17 @@
 // #![forbid(missing_docs)]
 // #![forbid(unsafe_code)]
 
-mod error;
-mod generator;
-mod glsl;
-mod graphic_library;
-mod node;
-mod property;
-mod shader;
-mod shader_operation;
-mod shader_type;
-mod value;
+// TODO protection levels
+pub mod error;
+pub mod generator;
+pub mod glsl;
+pub mod graphic_library;
+pub mod node;
+pub mod property;
+pub mod shader;
+pub mod shader_operation;
+pub mod shader_type;
+pub mod value;
 
 use uuid::Uuid;
 

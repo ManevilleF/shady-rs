@@ -85,10 +85,7 @@ impl Node {
     }
 
     pub fn struct_declaration(&self) -> Option<String> {
-        match &self.output_param {
-            Output::GlslType { .. } => None,
-            Output::CustomType(c) => Some(c.glsl_struct_declaration()),
-        }
+        self.output_param.custom_declaration()
     }
 
     pub fn connect_input(

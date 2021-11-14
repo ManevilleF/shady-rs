@@ -35,7 +35,7 @@ impl InputProperty {
     pub fn glsl_declaration(&self) -> String {
         format!(
             "{} {} {}; // {}",
-            if self.uniform { "uniform " } else { "in " },
+            if self.uniform { "uniform" } else { "in" },
             self.glsl_type.get_glsl_type(),
             self.reference,
             self.name
@@ -104,5 +104,51 @@ impl OutputProperty {
     // TODO Add default OpenGL/ES properties (must match version)
 }
 
-#[cfg(tests)]
-mod tests {}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod input {
+        use super::*;
+
+        #[test]
+        fn prints_to_glsl() {
+            let property = InputProperty {
+                name: "Property".to_string(),
+                reference: "ref".to_string(),
+                glsl_type: GlslType::Bool,
+                uniform: false,
+            };
+            let res = property.glsl_declaration();
+            assert_eq!(&res, "in bool ref; // Property")
+        }
+
+        #[test]
+        fn prints_uniform_to_glsl() {
+            let property = InputProperty {
+                name: "Property".to_string(),
+                reference: "ref".to_string(),
+                glsl_type: GlslType::Bool,
+                uniform: true,
+            };
+            let res = property.glsl_declaration();
+            assert_eq!(&res, "uniform bool ref; // Property")
+        }
+    }
+
+    mod output {
+        use super::*;
+
+        #[test]
+        fn prints_to_glsl() {
+            let property = OutputProperty {
+                name: "Property".to_string(),
+                reference: "ref".to_string(),
+                glsl_type: GlslType::Bool,
+                connection: None,
+            };
+            let res = property.glsl_declaration();
+            assert_eq!(&res, "out bool ref; // Property")
+        }
+    }
+}
