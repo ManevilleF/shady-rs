@@ -58,5 +58,9 @@ impl OutputProperty {
         Ok(self.connection.replace(connect_message.connection))
     }
 
+    pub fn disconnect(&mut self) -> Option<Connection> {
+        self.connection.take()
+    }
+
     // TODO Add default OpenGL/ES properties (must match version)
 }

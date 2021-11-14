@@ -2,6 +2,7 @@ use crate::error::ShadyError;
 use crate::graphic_library::GraphicLibrary;
 use crate::node::*;
 use crate::property::*;
+use crate::shader_operation::{ShaderOperation, ShaderOperationResponse};
 use crate::shader_type::ShaderType;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -28,7 +29,7 @@ impl Shader {
         }
     }
 
-    pub fn create_node_from_preset(&mut self, node: NodePresets) {
+    pub fn create_node_from_preset(&mut self, node: NodePreset) {
         let node = node.get_node();
         self.create_node(node)
     }
@@ -97,6 +98,69 @@ impl Shader {
                 property.connect_input(connection_message)
             }
         }
+    }
+
+    pub fn disconnect(
+        &mut self,
+        connection_to: ConnectionTo,
+    ) -> Result<Option<Connection>, ShadyError> {
+        match connection_to {
+            ConnectionTo::ToNode { id, field } => {
+                let to_node = self
+                    .nodes
+                    .get_mut(&id)
+                    .ok_or_else(|| ShadyError::MissingNode(id))?;
+                to_node.disconnect_field(&field)
+            }
+            ConnectionTo::OutputProperty { id } => {
+                let property = self
+                    .output_properties
+                    .get_mut(&id)
+                    .ok_or_else(|| ShadyError::MissingInputProperty(id))?;
+                Ok(property.disconnect())
+            }
+        }
+    }
+
+    pub fn execute_operation(
+        &mut self,
+        operation: ShaderOperation,
+    ) -> Result<Vec<ShaderOperationResponse>, ShadyError> {
+        let mut vec = Vec::new();
+        match operation {
+            ShaderOperation::CreateNodeFromPreset(preset) => {
+                let node = preset.get_node();
+                let id = node.uuid.clone();
+                self.create_node(node);
+                vec.push(ShaderOperationResponse::AddedNode(id));
+            }
+            ShaderOperation::CreateNode(node) => {
+                let id = node.uuid.clone();
+                self.create_node(node);
+                vec.push(ShaderOperationResponse::AddedNode(id));
+            }
+            ShaderOperation::RemoveNode(id) => match self.remove_node(&id) {
+                None => {
+                    log::warn!("Tried to removed inexistant node {}", id);
+                }
+                Some(n) => {
+                    vec.push(ShaderOperationResponse::RemovedNode(n));
+                }
+            },
+            ShaderOperation::Connect(attempt) => {
+                let res = self.connect(attempt.clone())?;
+                vec.push(ShaderOperationResponse::AddedConnection(attempt));
+                if let Some(connection) = res {
+                    vec.push(ShaderOperationResponse::RemovedConnection(connection));
+                }
+            }
+            ShaderOperation::RemoveConnection(connection_to) => {
+                if let Some(connection) = self.disconnect(connection_to)? {
+                    vec.push(ShaderOperationResponse::RemovedConnection(connection))
+                }
+            }
+        }
+        Ok(vec)
     }
 }
 

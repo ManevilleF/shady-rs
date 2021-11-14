@@ -94,6 +94,16 @@ impl Node {
         Ok(field.connection.replace(connect_message.connection))
     }
 
+    pub fn disconnect_field(&mut self, field_name: &str) -> Result<Option<Connection>, ShadyError> {
+        let field_pos = self.find_input_field_pos(field_name)?;
+        let (_key, field) = self
+            .input_param
+            .fields
+            .get_mut(field_pos)
+            .ok_or_else(|| ShadyError::WrongFieldKey(field_name.to_string()))?;
+        Ok(field.connection.take())
+    }
+
     pub fn to_glsl(&self, shader: &Shader) -> Result<String, ShadyError> {
         let mut buffer = format!(
             "{} {} = {}(",

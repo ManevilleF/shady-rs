@@ -3,7 +3,7 @@ use crate::glsl::GlslType;
 use crate::node::*;
 
 #[derive(Debug, Copy, Clone)]
-pub enum NodePresets {
+pub enum NodePreset {
     Vec2,
     Vec3,
     Vec4,
@@ -11,10 +11,10 @@ pub enum NodePresets {
     // FloatMultiply,
 }
 
-impl NodePresets {
+impl NodePreset {
     pub fn get_node(&self) -> Node {
         match self {
-            NodePresets::Vec2 => Node {
+            NodePreset::Vec2 => Node {
                 name: "Vec2".to_string(),
                 uuid: generate_uuid(),
                 input_param: Input {
@@ -29,7 +29,7 @@ impl NodePresets {
                 },
                 glsl_function: "vec2".to_string(),
             },
-            NodePresets::Vec3 => Node {
+            NodePreset::Vec3 => Node {
                 name: "Vec3".to_string(),
                 uuid: generate_uuid(),
                 input_param: Input {
@@ -45,7 +45,7 @@ impl NodePresets {
                 },
                 glsl_function: "vec3".to_string(),
             },
-            NodePresets::Vec4 => Node {
+            NodePreset::Vec4 => Node {
                 name: "Vec4".to_string(),
                 uuid: generate_uuid(),
                 input_param: Input {
@@ -62,7 +62,7 @@ impl NodePresets {
                 },
                 glsl_function: "vec4".to_string(),
             },
-            NodePresets::FloatAdd => Node {
+            NodePreset::FloatAdd => Node {
                 name: "Add Float".to_string(),
                 uuid: generate_uuid(),
                 input_param: Input {
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn default_vec2_node() {
-        let node = NodePresets::Vec2.get_node();
+        let node = NodePreset::Vec2.get_node();
         let res = node.to_glsl();
         assert_eq!(
             res,
@@ -104,7 +104,7 @@ mod tests {
         let property_b = InputProperty::new(GlslType::Float, false);
         shader.add_input_property(property_a.clone());
         shader.add_input_property(property_b.clone());
-        shader.create_node_from_preset(NodePresets::Vec2);
+        shader.create_node_from_preset(NodePreset::Vec2);
         let res = node.to_glsl();
         assert_eq!(
             res,
@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn default_vec3_node() {
-        let node = NodePresets::Vec3.get_node();
+        let node = NodePreset::Vec3.get_node();
         let res = node.to_glsl();
         assert_eq!(
             res,
@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn default_vec4_node() {
-        let node = NodePresets::Vec4.get_node();
+        let node = NodePreset::Vec4.get_node();
         let res = node.to_glsl();
         assert_eq!(
             res,
