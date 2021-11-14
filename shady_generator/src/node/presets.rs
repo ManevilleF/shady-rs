@@ -99,12 +99,29 @@ mod tests {
 
     #[test]
     fn custom_vec2_node() {
-        let mut shader = Shader::default();
-        let property_a = InputProperty::new(GlslType::Float, false);
-        let property_b = InputProperty::new(GlslType::Float, false);
-        shader.add_input_property(property_a.clone());
-        shader.add_input_property(property_b.clone());
-        shader.create_node_from_preset(NodePreset::Vec2);
+        let mut node = NodePreset::Vec2.get_node();
+        node.connect_input(
+            "x",
+            ConnectionMessage {
+                connection: Connection::NodeConnection {
+                    node_id: "some_var".to_string(),
+                    field_name: "a".to_string(),
+                },
+                glsl_type: GlslType::Float,
+            },
+        )
+        .unwrap();
+        node.connect_input(
+            "y",
+            ConnectionMessage {
+                connection: Connection::NodeConnection {
+                    node_id: "other_var".to_string(),
+                    field_name: "z".to_string(),
+                },
+                glsl_type: GlslType::Float,
+            },
+        )
+        .unwrap();
         let res = node.to_glsl();
         assert_eq!(
             res,

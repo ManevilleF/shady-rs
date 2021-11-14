@@ -73,6 +73,24 @@ impl Node {
         format!("{}_{}", self.output_param.glsl_type(), self.uuid)
     }
 
+    pub fn node_connections(&self) -> Vec<String> {
+        self.input_param
+            .fields
+            .iter()
+            .filter_map(|(_, f)| match f.connection.as_ref()? {
+                Connection::PropertyConnection { .. } => None,
+                Connection::NodeConnection { node_id, .. } => Some(node_id.clone()),
+            })
+            .collect()
+    }
+
+    pub fn struct_declaration(&self) -> Option<String> {
+        match &self.output_param {
+            Output::GlslType { .. } => None,
+            Output::CustomType(c) => Some(c.glsl_struct_declaration()),
+        }
+    }
+
     pub fn connect_input(
         &mut self,
         target_field: &str,
@@ -104,7 +122,7 @@ impl Node {
         Ok(field.connection.take())
     }
 
-    pub fn to_glsl(&self, shader: &Shader) -> Result<String, ShadyError> {
+    pub fn to_glsl(&self) -> String {
         let mut buffer = format!(
             "{} {} = {}(",
             self.output_param.glsl_type(),
@@ -114,37 +132,7 @@ impl Node {
         let len = self.input_param.len();
         for (i, (field, val)) in self.input_param.fields.iter().enumerate() {
             let val = match &val.connection {
-                Some(connection) => {
-                    match connection {
-                        Connection::PropertyConnection { property_id } => property_id.clone(),
-                        Connection::NodeConnection {
-                            node_id,
-                            field_name,
-                        } => {
-                            let val = match shader.nodes.get(node_id) {
-                                None => {
-                                    log::error!("Node {} not found. Using default value.", node_id);
-                                    val.glsl_type.default_glsl_value().to_string()
-                                }
-                                Some(node) => match node.get_output_field(&field_name) {
-                                    None => {
-                                        log::error!("Output field {} not found on Node {} Using default value.", field_name, node.unique_name());
-                                        val.glsl_type.default_glsl_value().to_string()
-                                    }
-                                    Some(glsl_ype) => {
-                                        if val.glsl_type != glsl_ype {
-                                            log::error!("Node {} field {} type `{}` does not match Node {} field {}. Expected `{}`", node.unique_name(), field_name, glsl_ype, self.unique_name(), field, val.glsl_type);
-                                            val.glsl_type.default_glsl_value().to_string()
-                                        } else {
-                                            format!("{}.{}", node_id, field_name)
-                                        }
-                                    }
-                                },
-                            };
-                            val
-                        }
-                    }
-                }
+                Some(connection) => connection.glsl_call(),
                 None => {
                     log::warn!(
                         "No connection set for Node {}::{}. Using default value",
@@ -159,6 +147,6 @@ impl Node {
                 buffer = format!("{}, ", buffer)
             }
         }
-        Ok(format!("{});", buffer))
+        format!("{});", buffer)
     }
 }

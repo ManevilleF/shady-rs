@@ -7,6 +7,8 @@ use crate::shader_type::ShaderType;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+const MAX_DEPTH: u8 = u8::MAX;
+
 // TODO: protection levels
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Shader {
@@ -122,7 +124,7 @@ impl Shader {
         }
     }
 
-    pub fn execute_operation(
+    pub fn apply_operation(
         &mut self,
         operation: ShaderOperation,
     ) -> Result<Vec<ShaderOperationResponse>, ShadyError> {
@@ -161,6 +163,84 @@ impl Shader {
             }
         }
         Ok(vec)
+    }
+
+    pub fn to_glsl(&self) -> Result<String, ShadyError> {
+        let mut property_declarations = String::new();
+        for (_key, property) in &self.input_properties {
+            property_declarations =
+                format!("{}\n{}", property_declarations, property.glsl_declaration());
+        }
+        for (_key, property) in &self.output_properties {
+            property_declarations =
+                format!("{}\n{}", property_declarations, property.glsl_declaration());
+        }
+        let mut struct_declarations = Vec::new();
+        let mut functions = String::new();
+        let mut nodes_to_handle = Vec::new();
+        let mut handled_nodes = Vec::new();
+        for (_key, property) in &self.output_properties {
+            functions = format!("{}\n{}", functions, property.to_glsl());
+            if let Some(connection) = &property.connection {
+                if let Connection::NodeConnection {
+                    node_id,
+                    field_name,
+                } = connection
+                {
+                    nodes_to_handle.push(node_id.clone());
+                }
+            }
+        }
+        for depth in 0..=MAX_DEPTH {
+            log::debug!(
+                "Depth: {}, {} nodes to declare",
+                depth,
+                nodes_to_handle.len()
+            );
+            nodes_to_handle.dedup();
+            let mut tmp_nodes = Vec::new();
+            for node_id in nodes_to_handle.drain(..) {
+                log::trace!("Processing node {}", node_id);
+                if handled_nodes.contains(&node_id) {
+                    return Err(ShadyError::NodeLoopDetected(node_id));
+                }
+                let node = self
+                    .nodes
+                    .get(&node_id)
+                    .ok_or_else(|| ShadyError::MissingNode(node_id.clone()))?;
+                functions = format!("{}\n{}", functions, node.to_glsl());
+                let mut connections = node.node_connections();
+                tmp_nodes.append(&mut connections);
+                if let Some(declaration) = node.struct_declaration() {
+                    struct_declarations.push(declaration);
+                }
+                handled_nodes.push(node_id);
+            }
+            nodes_to_handle = tmp_nodes;
+            if nodes_to_handle.is_empty() {
+                log::info!("Finished processing nodes at depth {}", depth);
+                break;
+            } else if depth == MAX_DEPTH {
+                return Err(ShadyError::MaxDepthReached(MAX_DEPTH));
+            }
+        }
+
+        struct_declarations.dedup();
+        let struct_declarations = struct_declarations.join("\n\n");
+
+        Ok(formatdoc! {"
+            {properties}
+            
+            {structs}
+
+            void main() {{
+                {main}
+            }}
+        ", 
+            properties = property_declarations,
+            structs = struct_declarations,
+            main = functions
+        })
     }
 }
 

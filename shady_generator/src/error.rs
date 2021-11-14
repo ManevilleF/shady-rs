@@ -16,4 +16,8 @@ pub enum ShadyError {
     MissingInputProperty(String),
     #[error("Could not find output property with uuid `{0}`")]
     MissingOutputProperty(String),
+    #[error("Node processing reached depth {0}, check your nodes for potential loops")]
+    MaxDepthReached(u8),
+    #[error("Detected a loop for node {0}")]
+    NodeLoopDetected(String),
 }

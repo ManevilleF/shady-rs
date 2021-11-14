@@ -35,3 +35,15 @@ impl ConnectionMessage {
         }
     }
 }
+
+impl Connection {
+    pub fn glsl_call(&self) -> String {
+        match self {
+            Connection::PropertyConnection { property_id } => property_id.clone(),
+            Connection::NodeConnection {
+                node_id,
+                field_name,
+            } => format!("{}.{}", node_id, field_name),
+        }
+    }
+}
