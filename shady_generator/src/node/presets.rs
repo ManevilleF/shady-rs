@@ -89,14 +89,20 @@ mod tests {
     fn default_vec2_node() {
         let node = NodePreset::Vec2.get_node();
         let res = node.to_glsl();
-        assert_eq!(res, format!("vec2 {} = vec2(0.0, 0.0);", node.uuid));
+        assert_eq!(
+            res,
+            format!("vec2 {} = vec2(0.0, 0.0); // Vec2 Node", node.uuid)
+        );
     }
 
     #[test]
     fn default_vec3_node() {
         let node = NodePreset::Vec3.get_node();
         let res = node.to_glsl();
-        assert_eq!(res, format!("vec3 {} = vec3(0.0, 0.0, 0.0);", node.uuid));
+        assert_eq!(
+            res,
+            format!("vec3 {} = vec3(0.0, 0.0, 0.0); // Vec3 Node", node.uuid)
+        );
     }
 
     #[test]
@@ -105,7 +111,10 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!("vec4 {} = vec4(0.0, 0.0, 0.0, 0.0);", node.uuid)
+            format!(
+                "vec4 {} = vec4(0.0, 0.0, 0.0, 0.0); // Vec4 Node",
+                node.uuid
+            )
         );
     }
 }

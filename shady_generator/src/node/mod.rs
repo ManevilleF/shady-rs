@@ -146,7 +146,7 @@ impl Node {
                 buffer = format!("{}, ", buffer)
             }
         }
-        format!("{});", buffer)
+        format!("{}); // {} Node", buffer, self.name)
     }
 }
 
@@ -182,7 +182,10 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!("vec2 {} = vec2(some_var.a, other_var.z);", node.uuid)
+            format!(
+                "vec2 {} = vec2(some_var.a, other_var.z); // Vec2 Node",
+                node.uuid
+            )
         );
     }
 }

@@ -69,24 +69,36 @@ impl Shader {
                 }
                 let node = self.get_node(node_id)?;
                 let mut connections = node.node_connections();
-                res.node_data.insert(
-                    node_id.clone(),
-                    NodeData {
-                        glsl_code: node.to_glsl(),
-                        required_nodes: connections.clone(),
-                    },
-                );
+                if !res.node_data.contains_key(node_id) {
+                    res.node_data.insert(
+                        node_id.clone(),
+                        NodeData {
+                            glsl_code: node.to_glsl(),
+                            required_nodes: connections.clone(),
+                        },
+                    );
+                }
                 tmp_nodes.append(&mut connections);
             }
-            res.ordered_nodes.append(&mut nodes_to_handle);
-            nodes_to_handle = tmp_nodes;
-            if nodes_to_handle.is_empty() {
+            for node_id in nodes_to_handle.iter() {
+                if !tmp_nodes.contains(node_id) {
+                    log::trace!("Adding node {} to ordering", node_id);
+                    res.ordered_nodes.push(node_id.clone())
+                }
+            }
+            if tmp_nodes.is_empty() {
+                // TODO: check if necessary
+                // res.ordered_nodes.append(&mut nodes_to_handle);
+                // res.ordered_nodes.dedup();
+                res.ordered_nodes.reverse();
                 log::info!("Finished processing nodes at depth {}", depth);
                 break;
             } else if depth == self.max_processing_depth {
                 return Err(ShadyError::MaxDepthReached(self.max_processing_depth));
             }
+            nodes_to_handle = tmp_nodes;
         }
+        log::trace!("Node Generation: {:#?}", res);
         Ok(res)
     }
 
@@ -316,6 +328,18 @@ mod tests {
                     field_name: "v".to_string(),
                 },
                 connection_to: ConnectionTo::ToNode {
+                    id: "b".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
                     id: "c".to_string(),
                     field: "x".to_string(),
                 },
@@ -503,7 +527,7 @@ mod tests {
 
                 // Main Function
                 void main() {{
-                    vec2 node_azerty = my_func(Gl_Pos123);
+                    vec2 node_azerty = my_func(Gl_Pos123); // MyNode Node
                     // Output properties
                     Out_Pos456 = node_azerty.out; // Out_Pos
                 }}"}
@@ -529,10 +553,10 @@ mod tests {
 
                 // Main Function
                 void main() {{
-                    float a = my_func(i, 0);
-                    float b = my_func(i, 0);
-                    float c = my_func(a.v, b.v);
-                    float d = my_func(c.v, b.v);
+                    float a = my_func(i, 0.0); // A Node
+                    float b = my_func(i, a.v); // B Node
+                    float c = my_func(a.v, b.v); // C Node
+                    float d = my_func(c.v, b.v); // D Node
                     // Output properties
                     o_1 = a.v; // O_1
                     o_2 = c.v; // O_2
