@@ -22,4 +22,16 @@ pub enum ShadyError {
     NodeLoopDetected(String),
     #[error("Tried to connect Node {0} to itself")]
     SameNodeConnection(String),
+    #[error("I/O Error: {0}")]
+    IOError(
+        #[source]
+        #[from]
+        std::io::Error,
+    ),
+    #[error("Failed to parse Shader file: {0}")]
+    WrongShaderSave(
+        #[from]
+        #[source]
+        serde_yaml::Error,
+    ),
 }

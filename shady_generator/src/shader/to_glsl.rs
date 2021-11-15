@@ -197,6 +197,7 @@ mod tests {
                 },
             })
             .unwrap();
+        shader.save_to("test/basic_shader.yaml").unwrap();
         shader
     }
 
@@ -249,10 +250,11 @@ mod tests {
                 },
             })
             .unwrap();
+        shader.save_to("test/simple_shader.yaml").unwrap();
         shader
     }
 
-    fn init_complex_shader() -> Shader {
+    fn init_example_shader_1() -> Shader {
         let mut shader = Shader::new("ComplexShader".to_string());
 
         shader.add_input_property(InputProperty {
@@ -429,6 +431,256 @@ mod tests {
                 },
             })
             .unwrap();
+        shader.save_to("test/shader_example_1.yaml").unwrap();
+        shader
+    }
+
+    fn init_example_shader_2() -> Shader {
+        let mut shader = Shader::new("ComplexShader".to_string());
+
+        shader.add_input_property(InputProperty {
+            name: "I_1".to_string(),
+            reference: "i1".to_string(),
+            glsl_type: GlslType::Float,
+            uniform: false,
+        });
+        shader.add_input_property(InputProperty {
+            name: "I_2".to_string(),
+            reference: "i2".to_string(),
+            glsl_type: GlslType::Float,
+            uniform: false,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O_1".to_string(),
+            reference: "o_1".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O_2".to_string(),
+            reference: "o_2".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O_3".to_string(),
+            reference: "o_3".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        let node_template = Node {
+            name: "MyNode".to_string(),
+            uuid: "node_azerty".to_string(),
+            input_param: Input {
+                fields: vec![
+                    ("x".to_string(), InputField::new(GlslType::Float)),
+                    ("y".to_string(), InputField::new(GlslType::Float)),
+                ],
+            },
+            output_param: Output::GlslType {
+                glsl_type: GlslType::Float,
+                field_name: "v".to_string(),
+            },
+            glsl_function: "my_func".to_string(),
+        };
+        shader.create_node(Node {
+            name: "A".to_string(),
+            uuid: "a".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "B".to_string(),
+            uuid: "b".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "C".to_string(),
+            uuid: "c".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "D".to_string(),
+            uuid: "d".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "E".to_string(),
+            uuid: "e".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "F".to_string(),
+            uuid: "f".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "G".to_string(),
+            uuid: "g".to_string(),
+            ..node_template.clone()
+        });
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "i1".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "a".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "i1".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "e".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "i2".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "g".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "f".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o_1".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "f".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "e".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "e".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "d".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "g".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "d".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "e".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "b".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "d".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "b".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "b".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "c".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "d".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "c".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "c".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o_3".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "b".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o_2".to_string(),
+                },
+            })
+            .unwrap();
+        shader.save_to("test/shader_example_2.yaml").unwrap();
         shader
     }
 
@@ -458,13 +710,29 @@ mod tests {
         }
 
         #[test]
-        fn works_with_complex_shader() {
-            let shader = init_complex_shader();
+        fn works_with_example_shader_1() {
+            let shader = init_example_shader_1();
 
             assert_eq!(
                 shader.get_property_declarations(),
                 formatdoc! {"
                     in float i; // I
+                    out float o_1; // O_1
+                    out float o_2; // O_2
+                    out float o_3; // O_3
+                "}
+            );
+        }
+
+        #[test]
+        fn works_with_example_shader_2() {
+            let shader = init_example_shader_2();
+
+            assert_eq!(
+                shader.get_property_declarations(),
+                formatdoc! {"
+                    in float i1; // I_1
+                    in float i2; // I_2
                     out float o_1; // O_1
                     out float o_2; // O_2
                     out float o_3; // O_3
@@ -555,12 +823,46 @@ mod tests {
 
         #[test]
         fn works_with_complex_shader() {
-            let shader = init_complex_shader();
+            let shader = init_example_shader_1();
             assert_eq!(
                 shader.to_glsl().unwrap().trim(),
                 formatdoc! {"
                 // Properties
                 in float i; // I
+                out float o_1; // O_1
+                out float o_2; // O_2
+                out float o_3; // O_3
+
+                // Struct Declarations
+
+                // Function declarations
+
+                // Main Function
+                void main() {{
+                    float a = my_func(i, 0.0); // A Node
+                    float b = my_func(i, a.v); // B Node
+                    float c = my_func(a.v, b.v); // C Node
+                    float d = my_func(b.v, c.v); // D Node
+                    
+                    // Output properties
+                    o_1 = a.v; // O_1
+                    o_2 = c.v; // O_2
+                    o_3 = d.v; // O_3
+                    
+                }}"}
+                .as_str()
+            )
+        }
+
+        #[test]
+        fn works_with_example_shader_2() {
+            let shader = init_example_shader_2();
+            assert_eq!(
+                shader.to_glsl().unwrap().trim(),
+                formatdoc! {"
+                // Properties
+                in float i1; // I_1
+                in float i2; // I_2
                 out float o_1; // O_1
                 out float o_2; // O_2
                 out float o_3; // O_3
