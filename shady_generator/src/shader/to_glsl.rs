@@ -518,8 +518,10 @@ mod tests {
                 shader.to_glsl().unwrap().trim(),
                 formatdoc! {"
                 // Properties
-                in vec3 Gl_Pos123; // Gl_Position
-                out vec2 Out_Pos456; // Out_Pos
+                in float i; // I
+                out float o_1; // O_1
+                out float o_2; // O_2
+                out float o_3; // O_3
 
                 // Struct Declarations
 
@@ -527,9 +529,14 @@ mod tests {
 
                 // Main Function
                 void main() {{
-                    vec2 node_azerty = my_func(Gl_Pos123);
+                    float a = my_func(i, 0);
+                    float b = my_func(i, 0);
+                    float c = my_func(a.v, b.v);
+                    float d = my_func(c.v, b.v);
                     // Output properties
-                    Out_Pos456 = node_azerty.out; // Out_Pos
+                    o_1 = a.v; // O_1
+                    o_2 = c.v; // O_2
+                    o_3 = d.v; // O_3
                 }}"}
                 .as_str()
             )
