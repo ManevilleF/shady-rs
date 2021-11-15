@@ -170,9 +170,9 @@ impl Shader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::glsl::GlslType;
     use crate::node::{ConnectionAttempt, ConnectionTo, Input, InputField, Node, Output};
     use crate::shader::{InputProperty, OutputProperty};
+    use crate::GlslType;
 
     fn init_basic_shader() -> Shader {
         let mut shader = Shader::new("Basic Shader".to_string());

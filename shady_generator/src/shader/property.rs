@@ -1,7 +1,7 @@
 use crate::error::ShadyError;
 use crate::generate_uuid;
-use crate::glsl::GlslType;
 use crate::node::{Connection, ConnectionMessage, ConnectionResponse};
+use crate::GlslType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

@@ -1,5 +1,5 @@
-use crate::glsl::GlslType;
 use crate::node::Connection;
+use crate::GlslType;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 

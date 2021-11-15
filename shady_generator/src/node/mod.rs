@@ -1,7 +1,7 @@
 pub use {connection::*, input::*, output::*, presets::*};
 
 use crate::error::ShadyError;
-use crate::glsl::GlslType;
+use crate::GlslType;
 use serde::{Deserialize, Serialize};
 
 mod connection;

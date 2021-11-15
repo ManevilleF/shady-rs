@@ -1,4 +1,4 @@
-use crate::glsl::GlslType;
+use crate::GlslType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

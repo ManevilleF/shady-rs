@@ -1,4 +1,4 @@
-use crate::glsl::GlslType;
+use crate::GlslType;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

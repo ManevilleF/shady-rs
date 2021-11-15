@@ -3,12 +3,13 @@
 // #![forbid(missing_docs)]
 // #![forbid(unsafe_code)]
 
-// TODO protection levels
-pub mod error;
-pub mod glsl;
-pub mod graphic_library;
-pub mod node;
-pub mod shader;
+pub use {glsl_type::GlslType, graphic_library::GraphicLibrary, node::*, shader::*};
+
+mod error;
+mod glsl_type;
+mod graphic_library;
+mod node;
+mod shader;
 
 use uuid::Uuid;
 

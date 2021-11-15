@@ -1,6 +1,6 @@
 use crate::generate_uuid;
-use crate::glsl::GlslType;
 use crate::node::*;
+use crate::GlslType;
 
 #[derive(Debug, Copy, Clone)]
 pub enum NodePreset {
