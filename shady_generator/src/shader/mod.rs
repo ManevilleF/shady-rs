@@ -20,6 +20,7 @@ pub struct Shader {
     pub input_properties: HashMap<String, InputProperty>,
     pub output_properties: HashMap<String, OutputProperty>,
     pub nodes: HashMap<String, Node>,
+    pub max_processing_depth: usize,
 }
 
 impl Shader {
@@ -142,6 +143,7 @@ impl Default for Shader {
             input_properties: Default::default(),
             output_properties: Default::default(),
             nodes: Default::default(),
+            max_processing_depth: 256,
         }
     }
 }
