@@ -114,7 +114,6 @@ impl Shader {
             // Main Function
             void main() {{
                 {main}
-
                 // Output properties
                 {output}
             }}
@@ -249,7 +248,6 @@ mod tests {
 
                 // Main Function
                 void main() {{
-                    
 
                     // Output properties
                     
