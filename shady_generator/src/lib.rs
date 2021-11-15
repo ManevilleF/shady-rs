@@ -18,3 +18,11 @@ extern crate indoc;
 pub fn generate_uuid() -> String {
     Uuid::new_v4().to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    #[ctor::ctor]
+    fn init() {
+        env_logger::init();
+    }
+}

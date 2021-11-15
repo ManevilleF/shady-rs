@@ -89,6 +89,12 @@ impl Node {
         target_field: &str,
         connect_message: ConnectionMessage,
     ) -> Result<ConnectionResponse, ShadyError> {
+        // Same connection check
+        if let Connection::NodeConnection { node_id, .. } = &connect_message.connection {
+            if node_id == &self.uuid {
+                return Err(ShadyError::SameNodeConnection(node_id.clone()));
+            }
+        }
         let field_pos = self.find_input_field_pos(target_field)?;
         let (_key, field) = self
             .input_param

@@ -20,4 +20,6 @@ pub enum ShadyError {
     MaxDepthReached(usize),
     #[error("Detected a loop for node {0}")]
     NodeLoopDetected(String),
+    #[error("Tried to connect Node {0} to itself")]
+    SameNodeConnection(String),
 }
