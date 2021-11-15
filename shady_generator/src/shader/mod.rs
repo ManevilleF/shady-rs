@@ -132,6 +132,13 @@ impl Shader {
             }
         }
     }
+
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            ..Self::default()
+        }
+    }
 }
 
 impl Default for Shader {

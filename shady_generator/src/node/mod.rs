@@ -69,10 +69,6 @@ impl Node {
         self.output_param.fields()
     }
 
-    pub fn output_var_name(&self) -> String {
-        format!("{}_{}", self.output_param.glsl_type(), self.uuid)
-    }
-
     pub fn node_connections(&self) -> Vec<String> {
         self.input_param
             .fields
@@ -123,7 +119,7 @@ impl Node {
         let mut buffer = format!(
             "{} {} = {}(",
             self.output_param.glsl_type(),
-            self.output_var_name(),
+            self.uuid,
             self.glsl_function
         );
         let len = self.input_param.len();
@@ -180,10 +176,7 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!(
-                "vec2 {} = vec2(some_var.a, other_var.z);",
-                node.output_var_name()
-            )
+            format!("vec2 {} = vec2(some_var.a, other_var.z);", node.uuid)
         );
     }
 }

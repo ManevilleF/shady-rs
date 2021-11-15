@@ -79,6 +79,7 @@ impl Shader {
         }
         Ok(res)
     }
+
     pub fn to_glsl(&self) -> Result<String, ShadyError> {
         let property_declarations = self.get_property_declarations();
 
@@ -86,7 +87,7 @@ impl Shader {
         let mut nodes_to_handle = Vec::new();
         // Output properties code
         for property in self.output_properties.values() {
-            output_properties = format!("{}\n{}", output_properties, property.to_glsl());
+            output_properties = format!("{}{}\n", output_properties, property.to_glsl());
             if let Some(Connection::NodeConnection { node_id, .. }) = &property.connection {
                 nodes_to_handle.push(node_id.clone());
             }
@@ -123,5 +124,128 @@ impl Shader {
             main = main_content.to_glsl(),
             output = output_properties
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::glsl::GlslType;
+    use crate::node::{ConnectionAttempt, ConnectionTo, Input, InputField, Node, Output};
+    use crate::shader::{InputProperty, OutputProperty};
+
+    fn init_simple_shader() -> Shader {
+        let mut shader = Shader::new("TestShader".to_string());
+
+        shader.add_input_property(InputProperty {
+            name: "Gl_Position".to_string(),
+            reference: "Gl_Pos123".to_string(),
+            glsl_type: GlslType::Vec3,
+            uniform: false,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "Out_Pos".to_string(),
+            reference: "Out_Pos456".to_string(),
+            glsl_type: GlslType::Vec2,
+            connection: None,
+        });
+        shader.create_node(Node {
+            name: "MyNode".to_string(),
+            uuid: "node_azerty".to_string(),
+            input_param: Input {
+                fields: vec![("pos".to_string(), InputField::new(GlslType::Vec3))],
+            },
+            output_param: Output::GlslType {
+                glsl_type: GlslType::Vec2,
+                field_name: "out".to_string(),
+            },
+            glsl_function: "my_func".to_string(),
+        });
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "Gl_Pos123".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "node_azerty".to_string(),
+                    field: "pos".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "node_azerty".to_string(),
+                    field_name: "out".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "Out_Pos456".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+    }
+
+    mod declarations {
+        use super::*;
+
+        #[test]
+        fn works_with_simple_shader() {
+            let shader = init_simple_shader();
+
+            assert_eq!(
+                shader.get_property_declarations().as_str(),
+                "\nin vec3 Gl_Pos123; // Gl_Position\n\
+                out vec2 Out_Pos456; // Out_Pos"
+            );
+        }
+    }
+
+    mod node_generation {
+        use super::*;
+    }
+
+    mod glsl {
+        use super::*;
+
+        #[test]
+        fn works_with_simple_shader() {
+            let shader = init_simple_shader();
+            assert_eq!(
+                shader.to_glsl().unwrap().trim(),
+                formatdoc! {"
+                in vec3 Gl_Pos123; // Gl_Position
+                out vec2 Out_Pos456; // Out_Pos
+
+
+
+
+
+                void main() {{
+                    vec2 node_azerty = my_func(Gl_Pos123);
+
+                    // Output properties
+                    Out_Pos456 = node_azerty.out; // Out_Pos
+
+                }}"}
+                .as_str()
+            )
+        }
+
+        #[test]
+        fn works_with_empty_shader() {
+            let shader = Shader::default();
+            assert_eq!(
+                shader.to_glsl().unwrap().trim(),
+                formatdoc! {"
+                void main() {{
+                    
+
+                    // Output properties
+                    
+                }}"}
+                .as_str()
+            )
+        }
     }
 }
