@@ -31,11 +31,11 @@ impl Shader {
         let mut property_declarations = String::new();
         for property in self.input_properties.values() {
             property_declarations =
-                format!("{}\n{}", property_declarations, property.glsl_declaration());
+                format!("{}{}\n", property_declarations, property.glsl_declaration());
         }
         for property in self.output_properties.values() {
             property_declarations =
-                format!("{}\n{}", property_declarations, property.glsl_declaration());
+                format!("{}{}\n", property_declarations, property.glsl_declaration());
         }
         property_declarations
     }
@@ -105,12 +105,13 @@ impl Shader {
         let function_declarations = function_declarations.join("\n\n");
 
         Ok(formatdoc! {"
+            // Properties
             {properties}
-            
+            // Struct Declarations
             {structs}
-
+            // Function declarations
             {functions}
-
+            // Main Function
             void main() {{
                 {main}
 
@@ -195,8 +196,8 @@ mod tests {
 
             assert_eq!(
                 shader.get_property_declarations().as_str(),
-                "\nin vec3 Gl_Pos123; // Gl_Position\n\
-                out vec2 Out_Pos456; // Out_Pos"
+                "in vec3 Gl_Pos123; // Gl_Position\n\
+                out vec2 Out_Pos456; // Out_Pos\n"
             );
         }
     }
@@ -214,13 +215,15 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap().trim(),
                 formatdoc! {"
+                // Properties
                 in vec3 Gl_Pos123; // Gl_Position
                 out vec2 Out_Pos456; // Out_Pos
 
+                // Struct Declarations
 
+                // Function declarations
 
-
-
+                // Main Function
                 void main() {{
                     vec2 node_azerty = my_func(Gl_Pos123);
 
@@ -238,6 +241,13 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap().trim(),
                 formatdoc! {"
+                // Properties
+
+                // Struct Declarations
+
+                // Function declarations
+
+                // Main Function
                 void main() {{
                     
 
