@@ -17,12 +17,15 @@ struct NodeGeneration {
 
 impl NodeGeneration {
     fn to_glsl(&self) -> String {
-        let res: Vec<String> = self
-            .ordered_nodes
-            .iter()
-            .map(|id| self.node_data.get(id).unwrap().glsl_code.clone())
-            .collect();
-        res.join("\n")
+        let mut buffer = String::new();
+        for id in self.ordered_nodes.iter() {
+            buffer = format!(
+                "{}{}\n    ",
+                buffer,
+                self.node_data.get(id).unwrap().glsl_code.clone()
+            );
+        }
+        buffer
     }
 }
 
@@ -48,6 +51,20 @@ impl Shader {
             property_declarations = format!("{}{}\n", property_declarations, value);
         }
         property_declarations
+    }
+
+    fn output_property_generation(&self) -> String {
+        let mut res = String::new();
+        let mut output: Vec<(String, String)> = self
+            .output_properties
+            .iter()
+            .map(|(k, v)| (k.clone(), v.to_glsl()))
+            .collect();
+        output.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+        for (_, value) in output {
+            res = format!("{}{}\n    ", res, value);
+        }
+        res
     }
 
     fn nodes_generation(&self, node_ids: Vec<String>) -> Result<NodeGeneration, ShadyError> {
@@ -105,15 +122,14 @@ impl Shader {
     pub fn to_glsl(&self) -> Result<String, ShadyError> {
         let property_declarations = self.get_property_declarations();
 
-        let mut output_properties = Vec::new();
         let mut nodes_to_handle = Vec::new();
         // Output properties code
         for property in self.output_properties.values() {
-            output_properties.push(property.to_glsl());
             if let Some(Connection::NodeConnection { node_id, .. }) = &property.connection {
                 nodes_to_handle.push(node_id.clone());
             }
         }
+        let output_properties = self.output_property_generation();
         let main_content = self.nodes_generation(nodes_to_handle)?;
 
         // TODO: implement the struct declarations
@@ -125,7 +141,6 @@ impl Shader {
         function_declarations.dedup();
         let struct_declarations = struct_declarations.join("\n\n");
         let function_declarations = function_declarations.join("\n\n");
-        let output_properties = output_properties.join("\n");
 
         Ok(formatdoc! {"
             // Properties
@@ -506,6 +521,7 @@ mod tests {
                     
                     // Output properties
                     Out_Pos456 = Gl_Pos123; // Out_Pos
+                    
                 }}"}
                 .as_str()
             )
@@ -528,8 +544,10 @@ mod tests {
                 // Main Function
                 void main() {{
                     vec2 node_azerty = my_func(Gl_Pos123); // MyNode Node
+                    
                     // Output properties
                     Out_Pos456 = node_azerty.out; // Out_Pos
+                    
                 }}"}
                 .as_str()
             )
@@ -556,11 +574,13 @@ mod tests {
                     float a = my_func(i, 0.0); // A Node
                     float b = my_func(i, a.v); // B Node
                     float c = my_func(a.v, b.v); // C Node
-                    float d = my_func(c.v, b.v); // D Node
+                    float d = my_func(b.v, c.v); // D Node
+                    
                     // Output properties
                     o_1 = a.v; // O_1
                     o_2 = c.v; // O_2
                     o_3 = d.v; // O_3
+                    
                 }}"}
                 .as_str()
             )
