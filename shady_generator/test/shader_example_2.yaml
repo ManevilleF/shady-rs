@@ -1,6 +1,6 @@
 # Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF
 ---
-name: ComplexShader
+name: Shader Example 2
 library: OpenGl
 shader_type: Vertex
 input_properties:
@@ -15,14 +15,6 @@ input_properties:
     glsl_type: Float
     uniform: false
 output_properties:
-  o_1:
-    name: O_1
-    reference: o_1
-    glsl_type: Float
-    connection:
-      NodeConnection:
-        node_id: a
-        field_name: v
   o_3:
     name: O_3
     reference: o_3
@@ -30,6 +22,14 @@ output_properties:
     connection:
       NodeConnection:
         node_id: c
+        field_name: v
+  o_1:
+    name: O_1
+    reference: o_1
+    glsl_type: Float
+    connection:
+      NodeConnection:
+        node_id: a
         field_name: v
   o_2:
     name: O_2
@@ -59,6 +59,46 @@ nodes:
         glsl_type: Float
         field_name: v
     glsl_function: my_func
+  g:
+    name: G
+    uuid: g
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              PropertyConnection:
+                property_id: i2
+        - - y
+          - glsl_type: Float
+            connection: ~
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
+  c:
+    name: C
+    uuid: c
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: b
+                field_name: v
+        - - y
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: d
+                field_name: v
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
   d:
     name: D
     uuid: d
@@ -76,24 +116,6 @@ nodes:
               NodeConnection:
                 node_id: g
                 field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
-    glsl_function: my_func
-  a:
-    name: A
-    uuid: a
-    input_param:
-      fields:
-        - - x
-          - glsl_type: Float
-            connection:
-              PropertyConnection:
-                property_id: i1
-        - - y
-          - glsl_type: Float
-            connection: ~
     output_param:
       GlslType:
         glsl_type: Float
@@ -142,41 +164,19 @@ nodes:
         glsl_type: Float
         field_name: v
     glsl_function: my_func
-  g:
-    name: G
-    uuid: g
+  a:
+    name: A
+    uuid: a
     input_param:
       fields:
         - - x
           - glsl_type: Float
             connection:
               PropertyConnection:
-                property_id: i2
+                property_id: i1
         - - y
           - glsl_type: Float
             connection: ~
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
-    glsl_function: my_func
-  c:
-    name: C
-    uuid: c
-    input_param:
-      fields:
-        - - x
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: b
-                field_name: v
-        - - y
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: d
-                field_name: v
     output_param:
       GlslType:
         glsl_type: Float

@@ -1,6 +1,6 @@
 # Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF
 ---
-name: Shader Example 1
+name: Looping Shader 1
 library: OpenGl
 shader_type: Vertex
 input_properties:
@@ -10,29 +10,13 @@ input_properties:
     glsl_type: Float
     uniform: false
 output_properties:
-  o_1:
-    name: O_1
-    reference: o_1
+  o:
+    name: O
+    reference: o
     glsl_type: Float
     connection:
       NodeConnection:
         node_id: a
-        field_name: v
-  o_3:
-    name: O_3
-    reference: o_3
-    glsl_type: Float
-    connection:
-      NodeConnection:
-        node_id: d
-        field_name: v
-  o_2:
-    name: O_2
-    reference: o_2
-    glsl_type: Float
-    connection:
-      NodeConnection:
-        node_id: c
         field_name: v
 nodes:
   c:
@@ -44,36 +28,11 @@ nodes:
           - glsl_type: Float
             connection:
               NodeConnection:
-                node_id: a
-                field_name: v
-        - - y
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: b
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
-    glsl_function: my_func
-  d:
-    name: D
-    uuid: d
-    input_param:
-      fields:
-        - - x
-          - glsl_type: Float
-            connection:
-              NodeConnection:
                 node_id: b
                 field_name: v
         - - y
           - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: c
-                field_name: v
+            connection: ~
     output_param:
       GlslType:
         glsl_type: Float
@@ -91,7 +50,10 @@ nodes:
                 property_id: i
         - - y
           - glsl_type: Float
-            connection: ~
+            connection:
+              NodeConnection:
+                node_id: c
+                field_name: v
     output_param:
       GlslType:
         glsl_type: Float
@@ -105,14 +67,12 @@ nodes:
         - - x
           - glsl_type: Float
             connection:
-              PropertyConnection:
-                property_id: i
-        - - y
-          - glsl_type: Float
-            connection:
               NodeConnection:
                 node_id: a
                 field_name: v
+        - - y
+          - glsl_type: Float
+            connection: ~
     output_param:
       GlslType:
         glsl_type: Float

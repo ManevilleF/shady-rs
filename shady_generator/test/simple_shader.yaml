@@ -1,6 +1,6 @@
 # Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF
 ---
-name: TestShader
+name: Simple Shader
 library: OpenGl
 shader_type: Vertex
 input_properties:

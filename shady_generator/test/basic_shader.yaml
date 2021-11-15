@@ -1,6 +1,6 @@
 # Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF
 ---
-name: TestShader
+name: Basic Shader
 library: OpenGl
 shader_type: Vertex
 input_properties:
@@ -18,4 +18,4 @@ output_properties:
       PropertyConnection:
         property_id: Gl_Pos123
 max_processing_depth: 256
-epth: 256
+th: 256

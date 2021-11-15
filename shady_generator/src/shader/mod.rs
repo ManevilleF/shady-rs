@@ -165,6 +165,11 @@ impl Shader {
         Ok(())
     }
 
+    pub fn save(&self) -> Result<(), ShadyError> {
+        let path = self.name.to_ascii_lowercase();
+        self.save_to(path.replace(" ", "_").as_str())
+    }
+
     pub fn export_glsl_to(&self, file_path: &str) -> Result<(), ShadyError> {
         let mut file = OpenOptions::new()
             .create(true)

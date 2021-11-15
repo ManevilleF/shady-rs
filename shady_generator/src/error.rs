@@ -18,8 +18,8 @@ pub enum ShadyError {
     MissingOutputProperty(String),
     #[error("Node processing reached depth {0}, check your nodes for potential loops")]
     MaxDepthReached(usize),
-    #[error("Detected a loop for node {0}")]
-    NodeLoopDetected(String),
+    #[error("Detected a loop for nodes {}", .0.join(", "))]
+    NodeLoopDetected(Vec<String>),
     #[error("Tried to connect Node {0} to itself")]
     SameNodeConnection(String),
     #[error("I/O Error: {0}")]

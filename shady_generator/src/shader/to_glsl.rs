@@ -70,6 +70,7 @@ impl Shader {
     fn nodes_generation(&self, node_ids: Vec<String>) -> Result<NodeGeneration, ShadyError> {
         let mut res = NodeGeneration::default();
         let mut nodes_to_handle = node_ids;
+        let mut required_nodes = Vec::new();
 
         for depth in 0..=self.max_processing_depth {
             log::debug!(
@@ -77,13 +78,11 @@ impl Shader {
                 depth,
                 nodes_to_handle.len()
             );
+            nodes_to_handle.sort_unstable();
             nodes_to_handle.dedup();
             let mut tmp_nodes = Vec::new();
             for node_id in nodes_to_handle.iter() {
                 log::trace!("Processing node {}", node_id);
-                if res.ordered_nodes.contains(node_id) {
-                    return Err(ShadyError::NodeLoopDetected(node_id.clone()));
-                }
                 let node = self.get_node(node_id)?;
                 let mut connections = node.node_connections();
                 if !res.node_data.contains_key(node_id) {
@@ -97,23 +96,26 @@ impl Shader {
                 }
                 tmp_nodes.append(&mut connections);
             }
-            for node_id in nodes_to_handle.iter() {
-                if !tmp_nodes.contains(node_id) {
-                    log::trace!("Adding node {} to ordering", node_id);
-                    res.ordered_nodes.push(node_id.clone())
-                }
+            // TODO: Check if this is enough to detect loops
+            if required_nodes.contains(&nodes_to_handle) {
+                return Err(ShadyError::NodeLoopDetected(nodes_to_handle));
             }
+            required_nodes.push(nodes_to_handle);
             if tmp_nodes.is_empty() {
-                // TODO: check if necessary
-                // res.ordered_nodes.append(&mut nodes_to_handle);
-                // res.ordered_nodes.dedup();
-                res.ordered_nodes.reverse();
                 log::info!("Finished processing nodes at depth {}", depth);
                 break;
             } else if depth == self.max_processing_depth {
                 return Err(ShadyError::MaxDepthReached(self.max_processing_depth));
             }
             nodes_to_handle = tmp_nodes;
+        }
+        required_nodes.reverse();
+        for required_node in required_nodes {
+            for node_id in required_node {
+                if !res.ordered_nodes.contains(&node_id) {
+                    res.ordered_nodes.push(node_id);
+                }
+            }
         }
         log::trace!("Node Generation: {:#?}", res);
         Ok(res)
@@ -173,7 +175,7 @@ mod tests {
     use crate::shader::{InputProperty, OutputProperty};
 
     fn init_basic_shader() -> Shader {
-        let mut shader = Shader::new("TestShader".to_string());
+        let mut shader = Shader::new("Basic Shader".to_string());
 
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
@@ -202,7 +204,7 @@ mod tests {
     }
 
     fn init_simple_shader() -> Shader {
-        let mut shader = Shader::new("TestShader".to_string());
+        let mut shader = Shader::new("Simple Shader".to_string());
 
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
@@ -255,7 +257,7 @@ mod tests {
     }
 
     fn init_example_shader_1() -> Shader {
-        let mut shader = Shader::new("ComplexShader".to_string());
+        let mut shader = Shader::new("Shader Example 1".to_string());
 
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
@@ -436,7 +438,7 @@ mod tests {
     }
 
     fn init_example_shader_2() -> Shader {
-        let mut shader = Shader::new("ComplexShader".to_string());
+        let mut shader = Shader::new("Shader Example 2".to_string());
 
         shader.add_input_property(InputProperty {
             name: "I_1".to_string(),
@@ -684,6 +686,114 @@ mod tests {
         shader
     }
 
+    fn init_looping_shader_1() -> Shader {
+        let mut shader = Shader::new("Looping Shader 1".to_string());
+
+        shader.add_input_property(InputProperty {
+            name: "I".to_string(),
+            reference: "i".to_string(),
+            glsl_type: GlslType::Float,
+            uniform: false,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O".to_string(),
+            reference: "o".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        let node_template = Node {
+            name: "MyNode".to_string(),
+            uuid: "node_azerty".to_string(),
+            input_param: Input {
+                fields: vec![
+                    ("x".to_string(), InputField::new(GlslType::Float)),
+                    ("y".to_string(), InputField::new(GlslType::Float)),
+                ],
+            },
+            output_param: Output::GlslType {
+                glsl_type: GlslType::Float,
+                field_name: "v".to_string(),
+            },
+            glsl_function: "my_func".to_string(),
+        };
+        shader.create_node(Node {
+            name: "A".to_string(),
+            uuid: "a".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "B".to_string(),
+            uuid: "b".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "C".to_string(),
+            uuid: "c".to_string(),
+            ..node_template.clone()
+        });
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "i".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "a".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "b".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "b".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "c".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "c".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "a".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o".to_string(),
+                },
+            })
+            .unwrap();
+        shader.save_to("test/looping_shader_1.yaml").unwrap();
+        shader
+    }
+
     mod declarations {
         use super::*;
 
@@ -799,7 +909,7 @@ mod tests {
         fn works_with_simple_shader() {
             let shader = init_simple_shader();
             assert_eq!(
-                shader.to_glsl().unwrap().trim(),
+                shader.to_glsl().unwrap(),
                 formatdoc! {"
                 // Properties
                 in vec3 Gl_Pos123; // Gl_Position
@@ -816,8 +926,8 @@ mod tests {
                     // Output properties
                     Out_Pos456 = node_azerty.out; // Out_Pos
                     
-                }}"}
-                .as_str()
+                }}
+                "}
             )
         }
 
@@ -825,7 +935,7 @@ mod tests {
         fn works_with_complex_shader() {
             let shader = init_example_shader_1();
             assert_eq!(
-                shader.to_glsl().unwrap().trim(),
+                shader.to_glsl().unwrap(),
                 formatdoc! {"
                 // Properties
                 in float i; // I
@@ -849,8 +959,8 @@ mod tests {
                     o_2 = c.v; // O_2
                     o_3 = d.v; // O_3
                     
-                }}"}
-                .as_str()
+                }}
+               "}
             )
         }
 
@@ -858,7 +968,7 @@ mod tests {
         fn works_with_example_shader_2() {
             let shader = init_example_shader_2();
             assert_eq!(
-                shader.to_glsl().unwrap().trim(),
+                shader.to_glsl().unwrap(),
                 formatdoc! {"
                 // Properties
                 in float i1; // I_1
@@ -873,19 +983,29 @@ mod tests {
 
                 // Main Function
                 void main() {{
-                    float a = my_func(i, 0.0); // A Node
-                    float b = my_func(i, a.v); // B Node
-                    float c = my_func(a.v, b.v); // C Node
-                    float d = my_func(b.v, c.v); // D Node
+                    float a = my_func(i1, 0.0); // A Node
+                    float f = my_func(a.v, 0.0); // F Node
+                    float e = my_func(i1, f.v); // E Node
+                    float g = my_func(i2, 0.0); // G Node
+                    float d = my_func(e.v, g.v); // D Node
+                    float b = my_func(e.v, d.v); // B Node
+                    float c = my_func(b.v, d.v); // C Node
                     
                     // Output properties
                     o_1 = a.v; // O_1
-                    o_2 = c.v; // O_2
-                    o_3 = d.v; // O_3
+                    o_2 = b.v; // O_2
+                    o_3 = c.v; // O_3
                     
-                }}"}
-                .as_str()
+                }}
+                "}
             )
+        }
+
+        #[should_panic = "NodeLoopDetected"]
+        #[test]
+        fn fails_with_looping_shader_1() {
+            let shader = init_looping_shader_1();
+            shader.to_glsl().unwrap();
         }
     }
 }
