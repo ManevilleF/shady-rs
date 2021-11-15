@@ -83,11 +83,11 @@ impl Shader {
     pub fn to_glsl(&self) -> Result<String, ShadyError> {
         let property_declarations = self.get_property_declarations();
 
-        let mut output_properties = String::new();
+        let mut output_properties = Vec::new();
         let mut nodes_to_handle = Vec::new();
         // Output properties code
         for property in self.output_properties.values() {
-            output_properties = format!("{}{}\n", output_properties, property.to_glsl());
+            output_properties.push(property.to_glsl());
             if let Some(Connection::NodeConnection { node_id, .. }) = &property.connection {
                 nodes_to_handle.push(node_id.clone());
             }
@@ -103,6 +103,7 @@ impl Shader {
         function_declarations.dedup();
         let struct_declarations = struct_declarations.join("\n\n");
         let function_declarations = function_declarations.join("\n\n");
+        let output_properties = output_properties.join("\n");
 
         Ok(formatdoc! {"
             // Properties
@@ -225,10 +226,8 @@ mod tests {
                 // Main Function
                 void main() {{
                     vec2 node_azerty = my_func(Gl_Pos123);
-
                     // Output properties
                     Out_Pos456 = node_azerty.out; // Out_Pos
-
                 }}"}
                 .as_str()
             )
@@ -248,7 +247,7 @@ mod tests {
 
                 // Main Function
                 void main() {{
-
+                    
                     // Output properties
                     
                 }}"}
