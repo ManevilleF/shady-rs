@@ -29,13 +29,23 @@ impl NodeGeneration {
 impl Shader {
     fn get_property_declarations(&self) -> String {
         let mut property_declarations = String::new();
-        for property in self.input_properties.values() {
-            property_declarations =
-                format!("{}{}\n", property_declarations, property.glsl_declaration());
+        let mut input: Vec<(String, String)> = self
+            .input_properties
+            .iter()
+            .map(|(k, v)| (k.clone(), v.glsl_declaration()))
+            .collect();
+        input.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+        for (_, value) in input {
+            property_declarations = format!("{}{}\n", property_declarations, value);
         }
-        for property in self.output_properties.values() {
-            property_declarations =
-                format!("{}{}\n", property_declarations, property.glsl_declaration());
+        let mut output: Vec<(String, String)> = self
+            .output_properties
+            .iter()
+            .map(|(k, v)| (k.clone(), v.glsl_declaration()))
+            .collect();
+        output.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+        for (_, value) in output {
+            property_declarations = format!("{}{}\n", property_declarations, value);
         }
         property_declarations
     }
@@ -135,6 +145,34 @@ mod tests {
     use crate::node::{ConnectionAttempt, ConnectionTo, Input, InputField, Node, Output};
     use crate::shader::{InputProperty, OutputProperty};
 
+    fn init_basic_shader() -> Shader {
+        let mut shader = Shader::new("TestShader".to_string());
+
+        shader.add_input_property(InputProperty {
+            name: "Gl_Position".to_string(),
+            reference: "Gl_Pos123".to_string(),
+            glsl_type: GlslType::Vec3,
+            uniform: false,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "Out_Pos".to_string(),
+            reference: "Out_Pos456".to_string(),
+            glsl_type: GlslType::Vec3,
+            connection: None,
+        });
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "Gl_Pos123".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "Out_Pos456".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+    }
+
     fn init_simple_shader() -> Shader {
         let mut shader = Shader::new("TestShader".to_string());
 
@@ -187,6 +225,174 @@ mod tests {
         shader
     }
 
+    fn init_complex_shader() -> Shader {
+        let mut shader = Shader::new("ComplexShader".to_string());
+
+        shader.add_input_property(InputProperty {
+            name: "I".to_string(),
+            reference: "i".to_string(),
+            glsl_type: GlslType::Float,
+            uniform: false,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O_1".to_string(),
+            reference: "o_1".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O_2".to_string(),
+            reference: "o_2".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        shader.add_output_property(OutputProperty {
+            name: "O_3".to_string(),
+            reference: "o_3".to_string(),
+            glsl_type: GlslType::Float,
+            connection: None,
+        });
+        let node_template = Node {
+            name: "MyNode".to_string(),
+            uuid: "node_azerty".to_string(),
+            input_param: Input {
+                fields: vec![
+                    ("x".to_string(), InputField::new(GlslType::Float)),
+                    ("y".to_string(), InputField::new(GlslType::Float)),
+                ],
+            },
+            output_param: Output::GlslType {
+                glsl_type: GlslType::Float,
+                field_name: "v".to_string(),
+            },
+            glsl_function: "my_func".to_string(),
+        };
+        shader.create_node(Node {
+            name: "A".to_string(),
+            uuid: "a".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "B".to_string(),
+            uuid: "b".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "C".to_string(),
+            uuid: "c".to_string(),
+            ..node_template.clone()
+        });
+        shader.create_node(Node {
+            name: "D".to_string(),
+            uuid: "d".to_string(),
+            ..node_template.clone()
+        });
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "i".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "a".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::PropertyConnection {
+                    property_id: "i".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "b".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "c".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "b".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "c".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "b".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "d".to_string(),
+                    field: "x".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "c".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::ToNode {
+                    id: "d".to_string(),
+                    field: "y".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "a".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o_1".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "c".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o_2".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+            .connect(ConnectionAttempt {
+                connection_from: Connection::NodeConnection {
+                    node_id: "d".to_string(),
+                    field_name: "v".to_string(),
+                },
+                connection_to: ConnectionTo::OutputProperty {
+                    id: "o_3".to_string(),
+                },
+            })
+            .unwrap();
+        shader
+    }
+
     mod declarations {
         use super::*;
 
@@ -200,6 +406,32 @@ mod tests {
                 out vec2 Out_Pos456; // Out_Pos\n"
             );
         }
+
+        #[test]
+        fn works_with_basic_shader() {
+            let shader = init_basic_shader();
+
+            assert_eq!(
+                shader.get_property_declarations().as_str(),
+                "in vec3 Gl_Pos123; // Gl_Position\n\
+                out vec3 Out_Pos456; // Out_Pos\n"
+            );
+        }
+
+        #[test]
+        fn works_with_complex_shader() {
+            let shader = init_complex_shader();
+
+            assert_eq!(
+                shader.get_property_declarations(),
+                formatdoc! {"
+                    in float i; // I
+                    out float o_1; // O_1
+                    out float o_2; // O_2
+                    out float o_3; // O_3
+                "}
+            );
+        }
     }
 
     mod node_generation {
@@ -208,6 +440,52 @@ mod tests {
 
     mod glsl {
         use super::*;
+
+        #[test]
+        fn works_with_empty_shader() {
+            let shader = Shader::default();
+            assert_eq!(
+                shader.to_glsl().unwrap().trim(),
+                formatdoc! {"
+                // Properties
+
+                // Struct Declarations
+
+                // Function declarations
+
+                // Main Function
+                void main() {{
+                    
+                    // Output properties
+                    
+                }}"}
+                .as_str()
+            )
+        }
+
+        #[test]
+        fn works_with_basic_shader() {
+            let shader = init_basic_shader();
+            assert_eq!(
+                shader.to_glsl().unwrap().trim(),
+                formatdoc! {"
+                // Properties
+                in vec3 Gl_Pos123; // Gl_Position
+                out vec3 Out_Pos456; // Out_Pos
+
+                // Struct Declarations
+
+                // Function declarations
+
+                // Main Function
+                void main() {{
+                    
+                    // Output properties
+                    Out_Pos456 = Gl_Pos123; // Out_Pos
+                }}"}
+                .as_str()
+            )
+        }
 
         #[test]
         fn works_with_simple_shader() {
@@ -234,12 +512,14 @@ mod tests {
         }
 
         #[test]
-        fn works_with_empty_shader() {
-            let shader = Shader::default();
+        fn works_with_complex_shader() {
+            let shader = init_complex_shader();
             assert_eq!(
                 shader.to_glsl().unwrap().trim(),
                 formatdoc! {"
                 // Properties
+                in vec3 Gl_Pos123; // Gl_Position
+                out vec2 Out_Pos456; // Out_Pos
 
                 // Struct Declarations
 
@@ -247,9 +527,9 @@ mod tests {
 
                 // Main Function
                 void main() {{
-                    
+                    vec2 node_azerty = my_func(Gl_Pos123);
                     // Output properties
-                    
+                    Out_Pos456 = node_azerty.out; // Out_Pos
                 }}"}
                 .as_str()
             )
