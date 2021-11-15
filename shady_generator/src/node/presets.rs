@@ -84,8 +84,6 @@ impl NodePreset {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::property::InputProperty;
-    use crate::shader::Shader;
 
     #[test]
     fn default_vec2_node() {

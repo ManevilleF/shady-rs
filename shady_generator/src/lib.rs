@@ -5,15 +5,10 @@
 
 // TODO protection levels
 pub mod error;
-pub mod generator;
 pub mod glsl;
 pub mod graphic_library;
 pub mod node;
-pub mod property;
 pub mod shader;
-pub mod shader_operation;
-pub mod shader_type;
-pub mod value;
 
 use uuid::Uuid;
 
