@@ -7,7 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy_prototype_debug_lines = "0.3"
-lyon_geom = "0.17"
 
 [dependencies.shady_generator]
 path = "shady_generator"

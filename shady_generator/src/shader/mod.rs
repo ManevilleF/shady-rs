@@ -139,6 +139,8 @@ impl Shader {
             ..Self::default()
         }
     }
+
+    pub fn save_to(file_path: &str) {}
 }
 
 impl Default for Shader {

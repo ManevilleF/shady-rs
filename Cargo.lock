@@ -1754,17 +1754,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lyon_geom"
-version = "0.17.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe153a6ce93cb97c85ba47a007fd437079bbff5592b9c0f77195973b8b169d69"
-dependencies = [
- "arrayvec",
- "euclid",
- "num-traits",
-]
-
-[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2402,7 +2391,6 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_prototype_debug_lines",
- "lyon_geom",
  "shady_generator",
 ]
 
