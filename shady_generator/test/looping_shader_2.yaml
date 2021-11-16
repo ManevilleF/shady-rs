@@ -8,15 +8,13 @@ input_properties:
   i:
     name: I
     reference: i
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     uniform: false
 output_properties:
   o:
     name: O
     reference: o
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     connection:
       NodeConnection:
         node_id: a
@@ -28,22 +26,19 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               PropertyConnection:
                 property_id: i
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: c
                 field_name: v
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -53,19 +48,16 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: a
                 field_name: v
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -75,19 +67,16 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: b
                 field_name: v
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func

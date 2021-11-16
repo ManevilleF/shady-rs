@@ -8,21 +8,18 @@ input_properties:
   i1:
     name: I_1
     reference: i1
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     uniform: false
   i2:
     name: I_2
     reference: i2
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     uniform: false
 output_properties:
   o_1:
     name: O_1
     reference: o_1
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     connection:
       NodeConnection:
         node_id: a
@@ -30,8 +27,7 @@ output_properties:
   o_2:
     name: O_2
     reference: o_2
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     connection:
       NodeConnection:
         node_id: b
@@ -39,8 +35,7 @@ output_properties:
   o_3:
     name: O_3
     reference: o_3
-    glsl_type:
-      Scalar: Float
+    glsl_type: Float
     connection:
       NodeConnection:
         node_id: c
@@ -52,18 +47,15 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               PropertyConnection:
                 property_id: i1
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -73,23 +65,20 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: e
                 field_name: v
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: d
                 field_name: v
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -99,23 +88,20 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: b
                 field_name: v
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: d
                 field_name: v
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -125,23 +111,20 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: e
                 field_name: v
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: g
                 field_name: v
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -151,22 +134,19 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               PropertyConnection:
                 property_id: i1
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: f
                 field_name: v
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -176,19 +156,16 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               NodeConnection:
                 node_id: a
                 field_name: v
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func
@@ -198,18 +175,15 @@ nodes:
     input_param:
       fields:
         - - x
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
             connection:
               PropertyConnection:
                 property_id: i2
         - - y
-          - glsl_type:
-              Scalar: Float
+          - glsl_type: Float
     output_param:
       GlslType:
-        glsl_type:
-          Scalar: Float
+        glsl_type: Float
         field_name: v
     operation:
       CustomOperation: test_func

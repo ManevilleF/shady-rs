@@ -173,7 +173,7 @@ impl Node {
             "{} {} = {}; // {} Node",
             self.output_param.glsl_type(),
             self.uuid,
-            self.operation.to_glsl(self),
+            self.operation.to_glsl(self.input_field_glsl_values()),
             self.name
         )
     }

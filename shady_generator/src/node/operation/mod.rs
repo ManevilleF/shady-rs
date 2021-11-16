@@ -1,0 +1,107 @@
+mod native_function;
+mod native_operation;
+
+pub use {native_function::*, native_operation::*};
+
+use crate::{GlslType, Input, NonScalarNativeType, Output, ShadyError};
+use serde::{Deserialize, Serialize};
+use std::fs::read_to_string;
+
+lazy_static::lazy_static! {
+    static ref FUNCTIONS_PATH: String = std::env::var("CUSTOM_FUNCTIONS_PATH").unwrap_or_else(|_| "functions".to_string());
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) enum InternalNodeOperation {
+    /// Custom function operation, with custom input and output
+    CustomOperation(String),
+    /// Native operation
+    NativeOperation(NativeOperation),
+    /// Non scalar type construction
+    TypeConstruction(NonScalarNativeType),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NodeOperation {
+    /// Custom function operation, with custom input and output
+    CustomOperation {
+        /// Custom function name
+        /// Must match a `functions` file
+        function_name: String,
+        /// Input fields
+        input: Input,
+        /// Output fields
+        output: Output,
+    },
+    /// Native operation
+    NativeOperation(NativeOperation),
+    /// Non scalar type construction
+    TypeConstruction(NonScalarNativeType),
+}
+
+impl NodeOperation {
+    pub fn input(&self) -> Input {
+        match self {
+            NodeOperation::CustomOperation { input, .. } => input.clone(),
+            NodeOperation::NativeOperation(o) => o.input(),
+            NodeOperation::TypeConstruction(t) => t.input(),
+        }
+    }
+
+    pub fn output(&self) -> Output {
+        match self {
+            NodeOperation::CustomOperation { output, .. } => output.clone(),
+            NodeOperation::NativeOperation(o) => o.output(),
+            NodeOperation::TypeConstruction(t) => Output::GlslType {
+                glsl_type: (*t).into(),
+                field_name: "v".to_string(),
+            },
+        }
+    }
+}
+
+impl InternalNodeOperation {
+    pub fn to_glsl(&self, input_fields: Vec<String>) -> String {
+        match self {
+            Self::CustomOperation(function_name) => {
+                format!("{}({})", function_name, input_fields.join(", "))
+            }
+            Self::TypeConstruction(t) => {
+                format!("{}({})", GlslType::from(*t), input_fields.join(", "))
+            }
+            Self::NativeOperation(o) => o.glsl_operation(input_fields),
+        }
+    }
+
+    pub fn function_declaration(&self) -> Result<Option<String>, ShadyError> {
+        match self {
+            Self::CustomOperation(function_name) => {
+                let path = format!("{}/{}.glsl", *FUNCTIONS_PATH, function_name);
+                log::info!("Loading function from {} file", path);
+                let buff = match read_to_string(path.as_str()) {
+                    Ok(b) => b,
+                    Err(e) => {
+                        return Err(ShadyError::FileNotFound {
+                            file: path,
+                            source: e,
+                        })
+                    }
+                };
+                Ok(Some(buff))
+            }
+            _ => Ok(None),
+        }
+    }
+}
+
+impl From<NodeOperation> for InternalNodeOperation {
+    fn from(o: NodeOperation) -> Self {
+        match o {
+            NodeOperation::CustomOperation { function_name, .. } => {
+                Self::CustomOperation(function_name)
+            }
+            NodeOperation::NativeOperation(t) => Self::NativeOperation(t),
+            NodeOperation::TypeConstruction(t) => Self::TypeConstruction(t),
+        }
+    }
+}

@@ -110,14 +110,13 @@ mod tests {
 
     mod input {
         use super::*;
-        use crate::ScalarNativeType;
 
         #[test]
         fn prints_to_glsl() {
             let property = InputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: GlslType::Scalar(ScalarNativeType::Bool),
+                glsl_type: GlslType::Bool,
                 uniform: false,
             };
             let res = property.glsl_declaration();
@@ -129,7 +128,7 @@ mod tests {
             let property = InputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: GlslType::Scalar(ScalarNativeType::Bool),
+                glsl_type: GlslType::Bool,
                 uniform: true,
             };
             let res = property.glsl_declaration();
@@ -139,14 +138,13 @@ mod tests {
 
     mod output {
         use super::*;
-        use crate::ScalarNativeType;
 
         #[test]
         fn prints_to_glsl() {
             let property = OutputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: GlslType::Scalar(ScalarNativeType::Bool),
+                glsl_type: GlslType::Bool,
                 connection: None,
             };
             let res = property.glsl_declaration();

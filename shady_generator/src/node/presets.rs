@@ -1,8 +1,6 @@
 use crate::node::*;
 
-use crate::{
-    GlslType::*, NativeOperation::*, NodeOperation::*, NonScalarNativeType::*, ScalarNativeType::*,
-};
+use crate::{NativeOperation::*, NodeOperation::*, NonScalarNativeType};
 
 // TODO: add remaining presets
 #[derive(Debug, Copy, Clone)]
@@ -25,22 +23,26 @@ pub enum NodePreset {
 impl NodePreset {
     pub fn get_node(&self) -> Node {
         match self {
-            NodePreset::Vec2 => Node::new("Vec2", TypeConstruction(Vec2)),
-            NodePreset::IVec2 => Node::new("IVec2", TypeConstruction(IVec2)),
-            NodePreset::Vec3 => Node::new("Vec3", TypeConstruction(Vec3)),
-            NodePreset::IVec3 => Node::new("IVec3", TypeConstruction(IVec3)),
-            NodePreset::Vec4 => Node::new("Vec4", TypeConstruction(Vec4)),
-            NodePreset::IVec4 => Node::new("IVec4", TypeConstruction(IVec4)),
-            NodePreset::FloatAdd => Node::new("Add floats", NativeOperation(Add(Scalar(Float)))),
+            NodePreset::Vec2 => Node::new("Vec2", TypeConstruction(NonScalarNativeType::Vec2)),
+            NodePreset::IVec2 => Node::new("IVec2", TypeConstruction(NonScalarNativeType::IVec2)),
+            NodePreset::Vec3 => Node::new("Vec3", TypeConstruction(NonScalarNativeType::Vec3)),
+            NodePreset::IVec3 => Node::new("IVec3", TypeConstruction(NonScalarNativeType::IVec3)),
+            NodePreset::Vec4 => Node::new("Vec4", TypeConstruction(NonScalarNativeType::Vec4)),
+            NodePreset::IVec4 => Node::new("IVec4", TypeConstruction(NonScalarNativeType::IVec4)),
+            NodePreset::FloatAdd => Node::new("Add floats", NativeOperation(Add(GlslType::Float))),
             NodePreset::FloatMul => {
-                Node::new("Multiply floats", NativeOperation(Mul(Scalar(Float))))
+                Node::new("Multiply floats", NativeOperation(Mul(GlslType::Float)))
             }
-            NodePreset::FloatDiv => Node::new("Divide floats", NativeOperation(Div(Scalar(Float)))),
-            NodePreset::IntAdd => Node::new("Add integers", NativeOperation(Add(Scalar(Int)))),
-            NodePreset::IntMul => Node::new("Multiply integers", NativeOperation(Mul(Scalar(Int)))),
-            NodePreset::IntDiv => Node::new("Divide integers", NativeOperation(Div(Scalar(Int)))),
+            NodePreset::FloatDiv => {
+                Node::new("Divide floats", NativeOperation(Div(GlslType::Float)))
+            }
+            NodePreset::IntAdd => Node::new("Add integers", NativeOperation(Add(GlslType::Int))),
+            NodePreset::IntMul => {
+                Node::new("Multiply integers", NativeOperation(Mul(GlslType::Int)))
+            }
+            NodePreset::IntDiv => Node::new("Divide integers", NativeOperation(Div(GlslType::Int))),
             NodePreset::FloatSelection => {
-                Node::new("Select float", NativeOperation(Selection(Scalar(Float))))
+                Node::new("Select float", NativeOperation(Selection(GlslType::Float)))
             }
         }
     }

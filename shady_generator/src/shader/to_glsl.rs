@@ -181,25 +181,19 @@ mod tests {
         ConnectionAttempt, ConnectionTo, Input, InputField, Node, NodeOperation, Output,
     };
     use crate::shader::{InputProperty, OutputProperty};
-    use crate::{GlslType, NonScalarNativeType, ScalarNativeType};
+    use crate::GlslType;
 
     fn init_base_operation() -> NodeOperation {
         NodeOperation::CustomOperation {
             function_name: "test_func".to_string(),
             input: Input {
                 fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
+                    ("x".to_string(), InputField::new(GlslType::Float)),
+                    ("y".to_string(), InputField::new(GlslType::Float)),
                 ],
             },
             output: Output::GlslType {
-                glsl_type: ScalarNativeType::Float.into(),
+                glsl_type: GlslType::Float,
                 field_name: "v".to_string(),
             },
         }
@@ -211,13 +205,13 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
             reference: "Gl_Pos123".to_string(),
-            glsl_type: GlslType::NonScalar(NonScalarNativeType::Vec3),
+            glsl_type: GlslType::Vec3,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "Out_Pos".to_string(),
             reference: "Out_Pos456".to_string(),
-            glsl_type: GlslType::NonScalar(NonScalarNativeType::Vec3),
+            glsl_type: GlslType::Vec3,
             connection: None,
         });
         shader
@@ -240,25 +234,22 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
             reference: "Gl_Pos123".to_string(),
-            glsl_type: NonScalarNativeType::Vec3.into(),
+            glsl_type: GlslType::Vec3,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "Out_Pos".to_string(),
             reference: "Out_Pos456".to_string(),
-            glsl_type: NonScalarNativeType::Vec2.into(),
+            glsl_type: GlslType::Vec2,
             connection: None,
         });
         let operation_template = NodeOperation::CustomOperation {
             function_name: "test_func".to_string(),
             input: Input {
-                fields: vec![(
-                    "pos".to_string(),
-                    InputField::new(NonScalarNativeType::Vec3.into()),
-                )],
+                fields: vec![("pos".to_string(), InputField::new(GlslType::Vec3))],
             },
             output: Output::GlslType {
-                glsl_type: NonScalarNativeType::Vec2.into(),
+                glsl_type: GlslType::Vec2,
                 field_name: "out".to_string(),
             },
         };
@@ -299,25 +290,25 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
@@ -449,31 +440,31 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I_1".to_string(),
             reference: "i1".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             uniform: false,
         });
         shader.add_input_property(InputProperty {
             name: "I_2".to_string(),
             reference: "i2".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
@@ -655,25 +646,25 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
@@ -819,13 +810,13 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O".to_string(),
             reference: "o".to_string(),
-            glsl_type: ScalarNativeType::Float.into(),
+            glsl_type: GlslType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
