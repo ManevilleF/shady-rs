@@ -23,7 +23,7 @@ output_properties:
         field_name: out
 nodes:
   node_azerty:
-    name: A
+    name: MyNode
     uuid: node_azerty
     input_param:
       fields:
@@ -39,5 +39,5 @@ nodes:
           NonScalar: Vec2
         field_name: out
     operation:
-      CustomOperation: my_func
+      CustomOperation: test_func
 max_processing_depth: 256

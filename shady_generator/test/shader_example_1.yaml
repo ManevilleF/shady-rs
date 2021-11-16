@@ -60,7 +60,7 @@ nodes:
           Scalar: Float
         field_name: v
     operation:
-      CustomOperation: my_func
+      CustomOperation: test_func
   b:
     name: B
     uuid: b
@@ -85,7 +85,7 @@ nodes:
           Scalar: Float
         field_name: v
     operation:
-      CustomOperation: my_func
+      CustomOperation: test_func
   c:
     name: C
     uuid: c
@@ -111,7 +111,7 @@ nodes:
           Scalar: Float
         field_name: v
     operation:
-      CustomOperation: my_func
+      CustomOperation: test_func
   d:
     name: D
     uuid: d
@@ -137,5 +137,5 @@ nodes:
           Scalar: Float
         field_name: v
     operation:
-      CustomOperation: my_func
+      CustomOperation: test_func
 max_processing_depth: 256

@@ -3,6 +3,10 @@ use crate::{GlslType, Input, InputField, Node, Output, ScalarNativeType, ShadyEr
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 
+lazy_static::lazy_static! {
+    static ref FUNCTIONS_PATH: String = std::env::var("CUSTOM_FUNCTIONS_PATH").unwrap_or_else(|_| "functions".to_string());
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) enum InternalNodeOperation {
     /// Custom function operation, with custom input and output
@@ -188,7 +192,7 @@ impl InternalNodeOperation {
     pub fn function_declaration(&self) -> Result<Option<String>, ShadyError> {
         match self {
             Self::CustomOperation(function_name) => {
-                let path = format!("functions/{}", function_name);
+                let path = format!("{}/{}.glsl", *FUNCTIONS_PATH, function_name);
                 log::info!("Loading function from {} file", path);
                 let buff = match read_to_string(path.as_str()) {
                     Ok(b) => b,

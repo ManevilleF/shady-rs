@@ -185,7 +185,7 @@ mod tests {
 
     fn init_base_operation() -> NodeOperation {
         NodeOperation::CustomOperation {
-            function_name: "my_func".to_string(),
+            function_name: "test_func".to_string(),
             input: Input {
                 fields: vec![
                     (
@@ -250,7 +250,7 @@ mod tests {
             connection: None,
         });
         let operation_template = NodeOperation::CustomOperation {
-            function_name: "my_func".to_string(),
+            function_name: "test_func".to_string(),
             input: Input {
                 fields: vec![(
                     "pos".to_string(),
@@ -263,7 +263,7 @@ mod tests {
             },
         };
         shader.create_node(Node::new_with_custom_id(
-            "A",
+            "MyNode",
             "node_azerty",
             operation_template,
         ));
@@ -951,10 +951,6 @@ mod tests {
         }
     }
 
-    mod node_generation {
-        use super::*;
-    }
-
     mod glsl {
         use super::*;
 
@@ -962,7 +958,7 @@ mod tests {
         fn works_with_empty_shader() {
             let shader = Shader::default();
             assert_eq!(
-                shader.to_glsl().unwrap().trim(),
+                shader.to_glsl().unwrap(),
                 formatdoc! {"
                 // Properties
 
@@ -975,8 +971,8 @@ mod tests {
                     
                     // Output properties
                     
-                }}"}
-                .as_str()
+                }}
+                "}
             )
         }
 
@@ -984,7 +980,7 @@ mod tests {
         fn works_with_basic_shader() {
             let shader = init_basic_shader();
             assert_eq!(
-                shader.to_glsl().unwrap().trim(),
+                shader.to_glsl().unwrap(),
                 formatdoc! {"
                 // Properties
                 in vec3 Gl_Pos123; // Gl_Position
@@ -1000,8 +996,8 @@ mod tests {
                     // Output properties
                     Out_Pos456 = Gl_Pos123; // Out_Pos
                     
-                }}"}
-                .as_str()
+                }}
+                "}
             )
         }
 
@@ -1018,10 +1014,14 @@ mod tests {
                 // Struct Declarations
 
                 // Function declarations
-
+                // Test function
+                float test_func(float a, float b) {{
+                    // This function does nothing
+                    return a;
+                }}
                 // Main Function
                 void main() {{
-                    vec2 node_azerty = my_func(Gl_Pos123); // MyNode Node
+                    vec2 node_azerty = test_func(Gl_Pos123); // MyNode Node
                     
                     // Output properties
                     Out_Pos456 = node_azerty.out; // Out_Pos
@@ -1046,13 +1046,17 @@ mod tests {
                 // Struct Declarations
 
                 // Function declarations
-
+                // Test function
+                float test_func(float a, float b) {{
+                    // This function does nothing
+                    return a;
+                }}
                 // Main Function
                 void main() {{
-                    float a = my_func(i, 0.0); // A Node
-                    float b = my_func(i, a.v); // B Node
-                    float c = my_func(a.v, b.v); // C Node
-                    float d = my_func(b.v, c.v); // D Node
+                    float a = test_func(i, 0.0); // A Node
+                    float b = test_func(i, a.v); // B Node
+                    float c = test_func(a.v, b.v); // C Node
+                    float d = test_func(b.v, c.v); // D Node
                     
                     // Output properties
                     o_1 = a.v; // O_1
@@ -1080,16 +1084,20 @@ mod tests {
                 // Struct Declarations
 
                 // Function declarations
-
+                // Test function
+                float test_func(float a, float b) {{
+                    // This function does nothing
+                    return a;
+                }}
                 // Main Function
                 void main() {{
-                    float a = my_func(i1, 0.0); // A Node
-                    float f = my_func(a.v, 0.0); // F Node
-                    float e = my_func(i1, f.v); // E Node
-                    float g = my_func(i2, 0.0); // G Node
-                    float d = my_func(e.v, g.v); // D Node
-                    float b = my_func(e.v, d.v); // B Node
-                    float c = my_func(b.v, d.v); // C Node
+                    float a = test_func(i1, 0.0); // A Node
+                    float f = test_func(a.v, 0.0); // F Node
+                    float e = test_func(i1, f.v); // E Node
+                    float g = test_func(i2, 0.0); // G Node
+                    float d = test_func(e.v, g.v); // D Node
+                    float b = test_func(e.v, d.v); // B Node
+                    float c = test_func(b.v, d.v); // C Node
                     
                     // Output properties
                     o_1 = a.v; // O_1

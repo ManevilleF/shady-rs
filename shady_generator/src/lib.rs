@@ -38,6 +38,7 @@ where
 mod tests {
     #[ctor::ctor]
     fn init() {
+        std::env::set_var("CUSTOM_FUNCTIONS_PATH", "test");
         env_logger::init();
     }
 }
