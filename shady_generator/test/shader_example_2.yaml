@@ -52,7 +52,6 @@ nodes:
                 property_id: i1
         - - y
           - glsl_type: Float
-            connection: ~
     output_param:
       GlslType:
         glsl_type: Float
@@ -158,7 +157,6 @@ nodes:
                 field_name: v
         - - y
           - glsl_type: Float
-            connection: ~
     output_param:
       GlslType:
         glsl_type: Float
@@ -176,7 +174,6 @@ nodes:
                 property_id: i2
         - - y
           - glsl_type: Float
-            connection: ~
     output_param:
       GlslType:
         glsl_type: Float

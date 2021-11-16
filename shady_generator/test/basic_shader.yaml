@@ -18,4 +18,3 @@ output_properties:
       PropertyConnection:
         property_id: Gl_Pos123
 max_processing_depth: 256
-th: 256

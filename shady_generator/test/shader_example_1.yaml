@@ -47,7 +47,6 @@ nodes:
                 property_id: i
         - - y
           - glsl_type: Float
-            connection: ~
     output_param:
       GlslType:
         glsl_type: Float

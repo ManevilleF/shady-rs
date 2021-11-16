@@ -14,6 +14,7 @@ pub enum Output {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomOutput {
     pub struct_name: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fields: Vec<(String, GlslType)>,
 }
 

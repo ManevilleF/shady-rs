@@ -6,11 +6,13 @@ use std::ops::Deref;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InputField {
     pub glsl_type: GlslType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub connection: Option<Connection>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Input {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fields: Vec<(String, InputField)>,
 }
 

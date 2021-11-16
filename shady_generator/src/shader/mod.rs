@@ -167,6 +167,7 @@ impl Shader {
     pub fn save_to(&self, file_path: &str) -> Result<(), ShadyError> {
         let mut file = OpenOptions::new()
             .create(true)
+            .truncate(true)
             .write(true)
             .open(file_path)?;
         let data = serde_yaml::to_string(&self)?;

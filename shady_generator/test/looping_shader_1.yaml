@@ -10,13 +10,29 @@ input_properties:
     glsl_type: Float
     uniform: false
 output_properties:
-  o:
-    name: O
-    reference: o
+  o_1:
+    name: O_1
+    reference: o_1
     glsl_type: Float
     connection:
       NodeConnection:
         node_id: a
+        field_name: v
+  o_2:
+    name: O_2
+    reference: o_2
+    glsl_type: Float
+    connection:
+      NodeConnection:
+        node_id: c
+        field_name: v
+  o_3:
+    name: O_3
+    reference: o_3
+    glsl_type: Float
+    connection:
+      NodeConnection:
+        node_id: d
         field_name: v
 nodes:
   a:
@@ -31,10 +47,6 @@ nodes:
                 property_id: i
         - - y
           - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: c
-                field_name: v
     output_param:
       GlslType:
         glsl_type: Float
@@ -49,11 +61,14 @@ nodes:
           - glsl_type: Float
             connection:
               NodeConnection:
-                node_id: a
+                node_id: e
                 field_name: v
         - - y
           - glsl_type: Float
-            connection: ~
+            connection:
+              NodeConnection:
+                node_id: a
+                field_name: v
     output_param:
       GlslType:
         glsl_type: Float
@@ -68,11 +83,54 @@ nodes:
           - glsl_type: Float
             connection:
               NodeConnection:
+                node_id: a
+                field_name: v
+        - - y
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: b
+                field_name: v
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
+  d:
+    name: D
+    uuid: d
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
                 node_id: b
                 field_name: v
         - - y
           - glsl_type: Float
-            connection: ~
+            connection:
+              NodeConnection:
+                node_id: c
+                field_name: v
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
+  e:
+    name: E
+    uuid: e
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: c
+                field_name: v
+        - - y
+          - glsl_type: Float
     output_param:
       GlslType:
         glsl_type: Float
