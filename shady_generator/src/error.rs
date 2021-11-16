@@ -1,33 +1,44 @@
 use crate::GlslType;
 use thiserror::Error;
 
+/// Shady Generator Error types
 #[derive(Debug, Error)]
 pub enum ShadyError {
+    /// Glsl type mismatch
     #[error("Wrong input value type, got {input_type} expected {expected_type}")]
     WrongGlslType {
         input_type: GlslType,
         expected_type: GlslType,
     },
+    /// Wrong Node field
     #[error("Could not find a field with key `{0}`")]
     WrongFieldKey(String),
+    /// Missing Node
     #[error("Could not find node with uuid `{0}`")]
     MissingNode(String),
+    /// Missing input Property
     #[error("Could not find input property with uuid `{0}`")]
     MissingInputProperty(String),
+    /// Missing output Property
     #[error("Could not find output property with uuid `{0}`")]
     MissingOutputProperty(String),
+    /// Node generation processing reached its max depth
     #[error("Node processing reached depth {0}, check your nodes for potential loops")]
     MaxDepthReached(usize),
+    /// Node generation detected a Node loop in the shader
     #[error("Detected a loop for nodes {}", .0.join(", "))]
     NodeLoopDetected(Vec<String>),
+    /// A Node can't be connected to itself
     #[error("Tried to connect Node {0} to itself")]
     SameNodeConnection(String),
+    /// I/O Error from `std::io::Error`
     #[error("I/O Error: {0}")]
     IOError(
         #[source]
         #[from]
         std::io::Error,
     ),
+    /// Serialization error for Shader from `serde_yaml::Error`
     #[error("Failed to parse Shader file: {0}")]
     WrongShaderSave(
         #[from]

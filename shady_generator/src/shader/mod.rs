@@ -5,9 +5,10 @@ mod shader_operations;
 mod shader_type;
 mod to_glsl;
 
-use crate::error::ShadyError;
-use crate::graphic_library::GraphicLibrary;
-use crate::node::*;
+use crate::{
+    ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
+    ConnectionTo, GraphicLibrary, Node, NodePreset, ShadyError,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{read_to_string, OpenOptions};
@@ -28,11 +29,20 @@ pub struct Shader {
     pub library: GraphicLibrary,
     #[serde(default)]
     pub shader_type: ShaderType,
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(
+        skip_serializing_if = "HashMap::is_empty",
+        serialize_with = "ordered_map"
+    )]
     pub input_properties: HashMap<String, InputProperty>,
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(
+        skip_serializing_if = "HashMap::is_empty",
+        serialize_with = "ordered_map"
+    )]
     pub output_properties: HashMap<String, OutputProperty>,
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(
+        skip_serializing_if = "HashMap::is_empty",
+        serialize_with = "ordered_map"
+    )]
     pub nodes: HashMap<String, Node>,
     pub max_processing_depth: usize,
 }

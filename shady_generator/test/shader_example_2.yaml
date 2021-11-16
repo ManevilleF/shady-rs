@@ -4,25 +4,17 @@ name: Shader Example 2
 library: OpenGl
 shader_type: Vertex
 input_properties:
-  i2:
-    name: I_2
-    reference: i2
-    glsl_type: Float
-    uniform: false
   i1:
     name: I_1
     reference: i1
     glsl_type: Float
     uniform: false
-output_properties:
-  o_3:
-    name: O_3
-    reference: o_3
+  i2:
+    name: I_2
+    reference: i2
     glsl_type: Float
-    connection:
-      NodeConnection:
-        node_id: c
-        field_name: v
+    uniform: false
+output_properties:
   o_1:
     name: O_1
     reference: o_1
@@ -39,20 +31,72 @@ output_properties:
       NodeConnection:
         node_id: b
         field_name: v
+  o_3:
+    name: O_3
+    reference: o_3
+    glsl_type: Float
+    connection:
+      NodeConnection:
+        node_id: c
+        field_name: v
 nodes:
-  g:
-    name: G
-    uuid: g
+  a:
+    name: A
+    uuid: a
     input_param:
       fields:
         - - x
           - glsl_type: Float
             connection:
               PropertyConnection:
-                property_id: i2
+                property_id: i1
         - - y
           - glsl_type: Float
             connection: ~
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
+  b:
+    name: B
+    uuid: b
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: e
+                field_name: v
+        - - y
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: d
+                field_name: v
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
+  c:
+    name: C
+    uuid: c
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: b
+                field_name: v
+        - - y
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: d
+                field_name: v
     output_param:
       GlslType:
         glsl_type: Float
@@ -101,68 +145,6 @@ nodes:
         glsl_type: Float
         field_name: v
     glsl_function: my_func
-  a:
-    name: A
-    uuid: a
-    input_param:
-      fields:
-        - - x
-          - glsl_type: Float
-            connection:
-              PropertyConnection:
-                property_id: i1
-        - - y
-          - glsl_type: Float
-            connection: ~
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
-    glsl_function: my_func
-  c:
-    name: C
-    uuid: c
-    input_param:
-      fields:
-        - - x
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: b
-                field_name: v
-        - - y
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: d
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
-    glsl_function: my_func
-  b:
-    name: B
-    uuid: b
-    input_param:
-      fields:
-        - - x
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: e
-                field_name: v
-        - - y
-          - glsl_type: Float
-            connection:
-              NodeConnection:
-                node_id: d
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
-    glsl_function: my_func
   f:
     name: F
     uuid: f
@@ -174,6 +156,24 @@ nodes:
               NodeConnection:
                 node_id: a
                 field_name: v
+        - - y
+          - glsl_type: Float
+            connection: ~
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    glsl_function: my_func
+  g:
+    name: G
+    uuid: g
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              PropertyConnection:
+                property_id: i2
         - - y
           - glsl_type: Float
             connection: ~

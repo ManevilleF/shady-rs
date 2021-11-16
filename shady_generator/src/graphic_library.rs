@@ -1,14 +1,15 @@
 use serde::{Deserialize, Serialize};
 
+/// Supported graphics libraries
 #[derive(Debug, Serialize, Deserialize)]
 pub enum GraphicLibrary {
-    // GLSL
+    /// OpenGL (GLSL code)
     OpenGl,
-    // GLSL
+    /// OpenGL ES (GLSL code)
     OpenGlEs,
-    // WGSL
+    /// WebGPU (WGSL code)
     WebGPU,
-    // TODO: Add DirectX
+    // TODO: Add DirectX and Vulkan
 }
 
 impl Default for GraphicLibrary {
