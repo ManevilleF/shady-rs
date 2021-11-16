@@ -38,6 +38,13 @@ pub enum ShadyError {
         #[from]
         std::io::Error,
     ),
+    /// File not found from `std::io::Error`
+    #[error("File `{file}` not found")]
+    FileNotFound {
+        file: String,
+        #[source]
+        source: std::io::Error,
+    },
     /// Serialization error for Shader from `serde_yaml::Error`
     #[error("Failed to parse Shader file: {0}")]
     WrongShaderSave(

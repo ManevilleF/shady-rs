@@ -134,10 +134,17 @@ impl Shader {
         let output_properties = self.output_property_generation();
         let main_content = self.nodes_generation(nodes_to_handle)?;
 
-        // TODO: implement the struct declarations
-        let mut struct_declarations = vec![""];
-        // TODO: implement the function loading
-        let mut function_declarations = vec![""];
+        let mut struct_declarations = Vec::new();
+        let mut function_declarations = Vec::new();
+        for node_id in main_content.node_data.keys() {
+            let node = self.get_node(node_id)?;
+            if let Some(declaration) = node.function_declaration()? {
+                function_declarations.push(declaration);
+            }
+            if let Some(declaration) = node.struct_declaration() {
+                struct_declarations.push(declaration)
+            }
+        }
 
         struct_declarations.dedup();
         function_declarations.dedup();
@@ -170,9 +177,33 @@ impl Shader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::node::{ConnectionAttempt, ConnectionTo, Input, InputField, Node, Output};
+    use crate::node::{
+        ConnectionAttempt, ConnectionTo, Input, InputField, Node, NodeOperation, Output,
+    };
     use crate::shader::{InputProperty, OutputProperty};
-    use crate::GlslType;
+    use crate::{GlslType, NonScalarNativeType, ScalarNativeType};
+
+    fn init_base_operation() -> NodeOperation {
+        NodeOperation::CustomOperation {
+            function_name: "my_func".to_string(),
+            input: Input {
+                fields: vec![
+                    (
+                        "x".to_string(),
+                        InputField::new(ScalarNativeType::Float.into()),
+                    ),
+                    (
+                        "y".to_string(),
+                        InputField::new(ScalarNativeType::Float.into()),
+                    ),
+                ],
+            },
+            output: Output::GlslType {
+                glsl_type: ScalarNativeType::Float.into(),
+                field_name: "v".to_string(),
+            },
+        }
+    }
 
     fn init_basic_shader() -> Shader {
         let mut shader = Shader::new("Basic Shader".to_string());
@@ -180,13 +211,13 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
             reference: "Gl_Pos123".to_string(),
-            glsl_type: GlslType::Vec3,
+            glsl_type: GlslType::NonScalar(NonScalarNativeType::Vec3),
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "Out_Pos".to_string(),
             reference: "Out_Pos456".to_string(),
-            glsl_type: GlslType::Vec3,
+            glsl_type: GlslType::NonScalar(NonScalarNativeType::Vec3),
             connection: None,
         });
         shader
@@ -209,27 +240,33 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
             reference: "Gl_Pos123".to_string(),
-            glsl_type: GlslType::Vec3,
+            glsl_type: NonScalarNativeType::Vec3.into(),
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "Out_Pos".to_string(),
             reference: "Out_Pos456".to_string(),
-            glsl_type: GlslType::Vec2,
+            glsl_type: NonScalarNativeType::Vec2.into(),
             connection: None,
         });
-        shader.create_node(Node {
-            name: "MyNode".to_string(),
-            uuid: "node_azerty".to_string(),
-            input_param: Input {
-                fields: vec![("pos".to_string(), InputField::new(GlslType::Vec3))],
+        let operation_template = NodeOperation::CustomOperation {
+            function_name: "my_func".to_string(),
+            input: Input {
+                fields: vec![(
+                    "pos".to_string(),
+                    InputField::new(NonScalarNativeType::Vec3.into()),
+                )],
             },
-            output_param: Output::GlslType {
-                glsl_type: GlslType::Vec2,
+            output: Output::GlslType {
+                glsl_type: NonScalarNativeType::Vec2.into(),
                 field_name: "out".to_string(),
             },
-            glsl_function: "my_func".to_string(),
-        });
+        };
+        shader.create_node(Node::new_with_custom_id(
+            "A",
+            "node_azerty",
+            operation_template,
+        ));
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::PropertyConnection {
@@ -262,62 +299,31 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
-        let node_template = Node {
-            name: "MyNode".to_string(),
-            uuid: "node_azerty".to_string(),
-            input_param: Input {
-                fields: vec![
-                    ("x".to_string(), InputField::new(GlslType::Float)),
-                    ("y".to_string(), InputField::new(GlslType::Float)),
-                ],
-            },
-            output_param: Output::GlslType {
-                glsl_type: GlslType::Float,
-                field_name: "v".to_string(),
-            },
-            glsl_function: "my_func".to_string(),
-        };
-        shader.create_node(Node {
-            name: "A".to_string(),
-            uuid: "a".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "B".to_string(),
-            uuid: "b".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "C".to_string(),
-            uuid: "c".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "D".to_string(),
-            uuid: "d".to_string(),
-            ..node_template.clone()
-        });
+        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("D", "d", init_base_operation()));
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::PropertyConnection {
@@ -443,83 +449,40 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I_1".to_string(),
             reference: "i1".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             uniform: false,
         });
         shader.add_input_property(InputProperty {
             name: "I_2".to_string(),
             reference: "i2".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
-        let node_template = Node {
-            name: "MyNode".to_string(),
-            uuid: "node_azerty".to_string(),
-            input_param: Input {
-                fields: vec![
-                    ("x".to_string(), InputField::new(GlslType::Float)),
-                    ("y".to_string(), InputField::new(GlslType::Float)),
-                ],
-            },
-            output_param: Output::GlslType {
-                glsl_type: GlslType::Float,
-                field_name: "v".to_string(),
-            },
-            glsl_function: "my_func".to_string(),
-        };
-        shader.create_node(Node {
-            name: "A".to_string(),
-            uuid: "a".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "B".to_string(),
-            uuid: "b".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "C".to_string(),
-            uuid: "c".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "D".to_string(),
-            uuid: "d".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "E".to_string(),
-            uuid: "e".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "F".to_string(),
-            uuid: "f".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "G".to_string(),
-            uuid: "g".to_string(),
-            ..node_template.clone()
-        });
+        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("D", "d", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("E", "e", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("F", "f", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("G", "g", init_base_operation()));
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::PropertyConnection {
@@ -692,67 +655,32 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
-        let node_template = Node {
-            name: "MyNode".to_string(),
-            uuid: "node_azerty".to_string(),
-            input_param: Input {
-                fields: vec![
-                    ("x".to_string(), InputField::new(GlslType::Float)),
-                    ("y".to_string(), InputField::new(GlslType::Float)),
-                ],
-            },
-            output_param: Output::GlslType {
-                glsl_type: GlslType::Float,
-                field_name: "v".to_string(),
-            },
-            glsl_function: "my_func".to_string(),
-        };
-        shader.create_node(Node {
-            name: "A".to_string(),
-            uuid: "a".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "B".to_string(),
-            uuid: "b".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "C".to_string(),
-            uuid: "c".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "D".to_string(),
-            uuid: "d".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "E".to_string(),
-            uuid: "e".to_string(),
-            ..node_template.clone()
-        });
+        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("D", "d", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("E", "e", init_base_operation()));
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::PropertyConnection {
@@ -891,45 +819,18 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O".to_string(),
             reference: "o".to_string(),
-            glsl_type: GlslType::Float,
+            glsl_type: ScalarNativeType::Float.into(),
             connection: None,
         });
-        let node_template = Node {
-            name: "MyNode".to_string(),
-            uuid: "node_azerty".to_string(),
-            input_param: Input {
-                fields: vec![
-                    ("x".to_string(), InputField::new(GlslType::Float)),
-                    ("y".to_string(), InputField::new(GlslType::Float)),
-                ],
-            },
-            output_param: Output::GlslType {
-                glsl_type: GlslType::Float,
-                field_name: "v".to_string(),
-            },
-            glsl_function: "my_func".to_string(),
-        };
-        shader.create_node(Node {
-            name: "A".to_string(),
-            uuid: "a".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "B".to_string(),
-            uuid: "b".to_string(),
-            ..node_template.clone()
-        });
-        shader.create_node(Node {
-            name: "C".to_string(),
-            uuid: "c".to_string(),
-            ..node_template.clone()
-        });
+        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
+        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::PropertyConnection {

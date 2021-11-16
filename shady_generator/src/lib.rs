@@ -3,7 +3,7 @@
 // #![forbid(missing_docs)]
 // #![forbid(unsafe_code)]
 
-pub use {error::*, glsl_type::GlslType, graphic_library::GraphicLibrary, node::*, shader::*};
+pub use {error::*, glsl_type::*, graphic_library::GraphicLibrary, node::*, shader::*};
 
 mod error;
 mod glsl_type;

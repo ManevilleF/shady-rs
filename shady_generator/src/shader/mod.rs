@@ -1,13 +1,15 @@
 pub use {property::*, shader_operations::*, shader_type::*, to_glsl::*};
 
+mod precision;
 mod property;
 mod shader_operations;
 mod shader_type;
 mod to_glsl;
 
+use crate::shader::precision::ShaderPrecision;
 use crate::{
     ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
-    ConnectionTo, GraphicLibrary, Node, NodePreset, ShadyError,
+    ConnectionTo, GlslType, GraphicLibrary, Node, NodePreset, ShadyError,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -29,6 +31,12 @@ pub struct Shader {
     pub library: GraphicLibrary,
     #[serde(default)]
     pub shader_type: ShaderType,
+    // TODO: enable
+    // #[serde(
+    //     skip_serializing_if = "HashMap::is_empty",
+    //     serialize_with = "ordered_map"
+    // )]
+    pub default_precisions: HashMap<GlslType, ShaderPrecision>,
     #[serde(
         skip_serializing_if = "HashMap::is_empty",
         serialize_with = "ordered_map"
@@ -49,11 +57,11 @@ pub struct Shader {
 
 impl Shader {
     pub fn create_node(&mut self, node: Node) {
-        if let Some(n) = self.nodes.insert(node.uuid.clone(), node) {
+        if let Some(n) = self.nodes.insert(node.unique_id().clone(), node) {
             log::error!(
-                "FATAL: Overwrote node {}_{} because of identical uuid",
-                n.name,
-                n.uuid
+                "FATAL: Overwrote node {}_{} because of identical ids",
+                n.name(),
+                n.unique_id()
             );
         }
     }
@@ -205,6 +213,7 @@ impl Default for Shader {
             name: "MyShader".to_string(),
             library: Default::default(),
             shader_type: Default::default(),
+            default_precisions: Default::default(),
             input_properties: Default::default(),
             output_properties: Default::default(),
             nodes: Default::default(),

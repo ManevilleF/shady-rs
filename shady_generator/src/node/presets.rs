@@ -1,82 +1,47 @@
-use crate::generate_uuid;
 use crate::node::*;
-use crate::GlslType;
 
+use crate::{
+    GlslType::*, NativeOperation::*, NodeOperation::*, NonScalarNativeType::*, ScalarNativeType::*,
+};
+
+// TODO: add remaining presets
 #[derive(Debug, Copy, Clone)]
 pub enum NodePreset {
     Vec2,
+    IVec2,
     Vec3,
+    IVec3,
     Vec4,
+    IVec4,
     FloatAdd,
-    // FloatMultiply,
+    FloatMul,
+    FloatDiv,
+    IntAdd,
+    IntMul,
+    IntDiv,
+    FloatSelection,
 }
 
 impl NodePreset {
     pub fn get_node(&self) -> Node {
         match self {
-            NodePreset::Vec2 => Node {
-                name: "Vec2".to_string(),
-                uuid: generate_uuid(),
-                input_param: Input {
-                    fields: vec![
-                        ("x".to_string(), InputField::new(GlslType::Float)),
-                        ("y".to_string(), InputField::new(GlslType::Float)),
-                    ],
-                },
-                output_param: Output::GlslType {
-                    glsl_type: GlslType::Vec2,
-                    field_name: "vec2".to_string(),
-                },
-                glsl_function: "vec2".to_string(),
-            },
-            NodePreset::Vec3 => Node {
-                name: "Vec3".to_string(),
-                uuid: generate_uuid(),
-                input_param: Input {
-                    fields: vec![
-                        ("x".to_string(), InputField::new(GlslType::Float)),
-                        ("y".to_string(), InputField::new(GlslType::Float)),
-                        ("z".to_string(), InputField::new(GlslType::Float)),
-                    ],
-                },
-                output_param: Output::GlslType {
-                    glsl_type: GlslType::Vec3,
-                    field_name: "vec3".to_string(),
-                },
-                glsl_function: "vec3".to_string(),
-            },
-            NodePreset::Vec4 => Node {
-                name: "Vec4".to_string(),
-                uuid: generate_uuid(),
-                input_param: Input {
-                    fields: vec![
-                        ("x".to_string(), InputField::new(GlslType::Float)),
-                        ("y".to_string(), InputField::new(GlslType::Float)),
-                        ("z".to_string(), InputField::new(GlslType::Float)),
-                        ("w".to_string(), InputField::new(GlslType::Float)),
-                    ],
-                },
-                output_param: Output::GlslType {
-                    glsl_type: GlslType::Vec4,
-                    field_name: "vec4".to_string(),
-                },
-                glsl_function: "vec4".to_string(),
-            },
-            NodePreset::FloatAdd => Node {
-                name: "Add Float".to_string(),
-                uuid: generate_uuid(),
-                input_param: Input {
-                    fields: vec![
-                        ("a".to_string(), InputField::new(GlslType::Float)),
-                        ("b".to_string(), InputField::new(GlslType::Float)),
-                    ],
-                },
-                output_param: Output::GlslType {
-                    glsl_type: GlslType::Float,
-                    field_name: "v".to_string(),
-                },
-                glsl_function: "float_add".to_string(),
-            },
+            NodePreset::Vec2 => Node::new("Vec2", TypeConstruction(Vec2)),
+            NodePreset::IVec2 => Node::new("IVec2", TypeConstruction(IVec2)),
+            NodePreset::Vec3 => Node::new("Vec3", TypeConstruction(Vec3)),
+            NodePreset::IVec3 => Node::new("IVec3", TypeConstruction(IVec3)),
+            NodePreset::Vec4 => Node::new("Vec4", TypeConstruction(Vec4)),
+            NodePreset::IVec4 => Node::new("IVec4", TypeConstruction(IVec4)),
+            NodePreset::FloatAdd => Node::new("Add floats", NativeOperation(Add(Scalar(Float)))),
+            NodePreset::FloatMul => {
+                Node::new("Multiply floats", NativeOperation(Mul(Scalar(Float))))
+            }
+            NodePreset::FloatDiv => Node::new("Divide floats", NativeOperation(Div(Scalar(Float)))),
+            NodePreset::IntAdd => Node::new("Add integers", NativeOperation(Add(Scalar(Int)))),
+            NodePreset::IntMul => Node::new("Multiply integers", NativeOperation(Mul(Scalar(Int)))),
+            NodePreset::IntDiv => Node::new("Divide integers", NativeOperation(Div(Scalar(Int)))),
+            NodePreset::FloatSelection => {
+                Node::new("Select float", NativeOperation(Selection(Scalar(Float))))
+            }
         }
     }
 }
@@ -113,6 +78,19 @@ mod tests {
             res,
             format!(
                 "vec4 {} = vec4(0.0, 0.0, 0.0, 0.0); // Vec4 Node",
+                node.uuid
+            )
+        );
+    }
+
+    #[test]
+    fn default_float_selection_node() {
+        let node = NodePreset::FloatSelection.get_node();
+        let res = node.to_glsl();
+        assert_eq!(
+            res,
+            format!(
+                "float {} = false ? 0.0 : 0.0; // Select float Node",
                 node.uuid
             )
         );

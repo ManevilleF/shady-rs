@@ -1,6 +1,6 @@
 # Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF
 ---
-name: Looping Shader 1
+name: Looping Shader 2
 library: OpenGl
 shader_type: Vertex
 default_precisions: {}
@@ -12,32 +12,14 @@ input_properties:
       Scalar: Float
     uniform: false
 output_properties:
-  o_1:
-    name: O_1
-    reference: o_1
+  o:
+    name: O
+    reference: o
     glsl_type:
       Scalar: Float
     connection:
       NodeConnection:
         node_id: a
-        field_name: v
-  o_2:
-    name: O_2
-    reference: o_2
-    glsl_type:
-      Scalar: Float
-    connection:
-      NodeConnection:
-        node_id: c
-        field_name: v
-  o_3:
-    name: O_3
-    reference: o_3
-    glsl_type:
-      Scalar: Float
-    connection:
-      NodeConnection:
-        node_id: d
         field_name: v
 nodes:
   a:
@@ -54,6 +36,10 @@ nodes:
         - - y
           - glsl_type:
               Scalar: Float
+            connection:
+              NodeConnection:
+                node_id: c
+                field_name: v
     output_param:
       GlslType:
         glsl_type:
@@ -71,15 +57,11 @@ nodes:
               Scalar: Float
             connection:
               NodeConnection:
-                node_id: e
+                node_id: a
                 field_name: v
         - - y
           - glsl_type:
               Scalar: Float
-            connection:
-              NodeConnection:
-                node_id: a
-                field_name: v
     output_param:
       GlslType:
         glsl_type:
@@ -97,59 +79,7 @@ nodes:
               Scalar: Float
             connection:
               NodeConnection:
-                node_id: a
-                field_name: v
-        - - y
-          - glsl_type:
-              Scalar: Float
-            connection:
-              NodeConnection:
                 node_id: b
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type:
-          Scalar: Float
-        field_name: v
-    operation:
-      CustomOperation: my_func
-  d:
-    name: D
-    uuid: d
-    input_param:
-      fields:
-        - - x
-          - glsl_type:
-              Scalar: Float
-            connection:
-              NodeConnection:
-                node_id: b
-                field_name: v
-        - - y
-          - glsl_type:
-              Scalar: Float
-            connection:
-              NodeConnection:
-                node_id: c
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type:
-          Scalar: Float
-        field_name: v
-    operation:
-      CustomOperation: my_func
-  e:
-    name: E
-    uuid: e
-    input_param:
-      fields:
-        - - x
-          - glsl_type:
-              Scalar: Float
-            connection:
-              NodeConnection:
-                node_id: c
                 field_name: v
         - - y
           - glsl_type:

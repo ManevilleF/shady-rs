@@ -66,16 +66,17 @@ impl Deref for CustomOutput {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{NonScalarNativeType, ScalarNativeType};
 
     #[test]
     fn custom_declaration_works() {
         let field = Output::CustomType(CustomOutput {
             struct_name: "MyStruct".to_string(),
             fields: vec![
-                ("coords".to_string(), GlslType::IVec2),
-                ("n".to_string(), GlslType::Float),
-                ("matrix".to_string(), GlslType::Vec4),
-                ("count".to_string(), GlslType::UInt),
+                ("coords".to_string(), NonScalarNativeType::IVec2.into()),
+                ("n".to_string(), ScalarNativeType::Float.into()),
+                ("matrix".to_string(), NonScalarNativeType::Vec4.into()),
+                ("count".to_string(), ScalarNativeType::UInt.into()),
             ],
         });
         assert_eq!(field.glsl_type(), "MyStruct".to_string());

@@ -1,27 +1,51 @@
-pub use {connection::*, input::*, output::*, presets::*};
+pub use {connection::*, input::*, operation::*, output::*, presets::*};
 
 use crate::error::ShadyError;
-use crate::GlslType;
+use crate::{generate_uuid, GlslType};
 use serde::{Deserialize, Serialize};
 
 mod connection;
 mod input;
+mod operation;
 mod output;
 mod presets;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Node {
-    pub name: String,
-    pub uuid: String,
-    pub input_param: Input,
-    pub output_param: Output,
-    // TODO: Add native operations possibilities (Add/Sub/Div/Etc)
-    pub glsl_function: String,
+    name: String,
+    uuid: String,
+    input_param: Input,
+    output_param: Output,
+    operation: InternalNodeOperation,
 }
 
 impl Node {
+    pub fn new(name: &str, operation: NodeOperation) -> Self {
+        Self {
+            name: name.to_string(),
+            uuid: generate_uuid(),
+            input_param: operation.input(),
+            output_param: operation.output(),
+            operation: operation.into(),
+        }
+    }
+
+    pub fn new_with_custom_id(name: &str, custom_id: &str, operation: NodeOperation) -> Self {
+        Self {
+            name: name.to_string(),
+            uuid: custom_id.to_string(),
+            input_param: operation.input(),
+            output_param: operation.output(),
+            operation: operation.into(),
+        }
+    }
+
     pub fn name(&self) -> &String {
         &self.name
+    }
+
+    pub fn unique_id(&self) -> &String {
+        &self.uuid
     }
 
     pub fn unique_name(&self) -> String {
@@ -46,6 +70,25 @@ impl Node {
             .position(|(key, _f)| key == field)
             .ok_or_else(|| ShadyError::WrongFieldKey(field.to_string()))?;
         Ok(field_pos)
+    }
+
+    fn input_field_glsl_values(&self) -> Vec<String> {
+        let mut fields = Vec::new();
+        for (key, field) in self.input_fields().iter() {
+            let val = match &field.connection {
+                Some(connection) => connection.glsl_call(),
+                None => {
+                    log::warn!(
+                        "No connection set for Node {}::{}. Using default value",
+                        self.unique_name(),
+                        key
+                    );
+                    field.glsl_type.default_glsl_value().to_string()
+                }
+            };
+            fields.push(val);
+        }
+        fields
     }
 
     pub fn get_input_field(&self, field: &str) -> Option<GlslType> {
@@ -82,6 +125,10 @@ impl Node {
 
     pub fn struct_declaration(&self) -> Option<String> {
         self.output_param.custom_declaration()
+    }
+
+    pub fn function_declaration(&self) -> Result<Option<String>, ShadyError> {
+        self.operation.function_declaration()
     }
 
     pub fn connect_input(
@@ -122,37 +169,20 @@ impl Node {
     }
 
     pub fn to_glsl(&self) -> String {
-        let mut buffer = format!(
-            "{} {} = {}(",
+        format!(
+            "{} {} = {}; // {} Node",
             self.output_param.glsl_type(),
             self.uuid,
-            self.glsl_function
-        );
-        let len = self.input_param.len();
-        for (i, (field, val)) in self.input_param.fields.iter().enumerate() {
-            let val = match &val.connection {
-                Some(connection) => connection.glsl_call(),
-                None => {
-                    log::warn!(
-                        "No connection set for Node {}::{}. Using default value",
-                        self.unique_name(),
-                        field
-                    );
-                    val.glsl_type.default_glsl_value().to_string()
-                }
-            };
-            buffer = format!("{}{}", buffer, val);
-            if i < len - 1 {
-                buffer = format!("{}, ", buffer)
-            }
-        }
-        format!("{}); // {} Node", buffer, self.name)
+            self.operation.to_glsl(self),
+            self.name
+        )
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ScalarNativeType;
 
     #[test]
     fn custom_vec2_node() {
@@ -164,7 +194,7 @@ mod tests {
                     node_id: "some_var".to_string(),
                     field_name: "a".to_string(),
                 },
-                glsl_type: GlslType::Float,
+                glsl_type: ScalarNativeType::Float.into(),
             },
         )
         .unwrap();
@@ -175,7 +205,7 @@ mod tests {
                     node_id: "other_var".to_string(),
                     field_name: "z".to_string(),
                 },
-                glsl_type: GlslType::Float,
+                glsl_type: ScalarNativeType::Float.into(),
             },
         )
         .unwrap();

@@ -28,12 +28,12 @@ impl Shader {
         match operation {
             ShaderOperation::CreateNodeFromPreset(preset) => {
                 let node = preset.get_node();
-                let id = node.uuid.clone();
+                let id = node.unique_id().clone();
                 self.create_node(node);
                 vec.push(ShaderOperationResponse::AddedNode(id));
             }
             ShaderOperation::CreateNode(node) => {
-                let id = node.uuid.clone();
+                let id = node.unique_id().clone();
                 self.create_node(node);
                 vec.push(ShaderOperationResponse::AddedNode(id));
             }
