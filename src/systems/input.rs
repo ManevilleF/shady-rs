@@ -7,6 +7,7 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy::reflect::List;
 use bevy::ui::node::NODE;
+use shady_generator::NodePreset;
 
 pub fn handle_mouse_position(mut commands: Commands, windows: Res<Windows>) {
     match WorldCursorPosition::world_cursor_position(&windows) {
@@ -60,6 +61,7 @@ pub fn handle_mouse_input(
             None => {
                 spawn_node_evw.send(SpawnNode {
                     target_position: position.0,
+                    node_preset: NodePreset::Vec2,
                 });
                 commands.remove_resource::<NodeConnectorCandidate>();
             }

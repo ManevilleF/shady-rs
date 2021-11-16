@@ -5,7 +5,7 @@ mod resources;
 mod systems;
 
 use crate::events::*;
-use crate::resources::SelectedEntities;
+use crate::resources::{CurrentShader, SelectedEntities};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
@@ -42,5 +42,6 @@ fn main() {
         )
         .add_system(systems::ui::menu.system())
         .add_event::<SpawnNode>()
+        .insert_resource(CurrentShader::default())
         .run()
 }

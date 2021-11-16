@@ -41,32 +41,34 @@ pub struct Shader {
         skip_serializing_if = "HashMap::is_empty",
         serialize_with = "ordered_map"
     )]
-    pub input_properties: HashMap<String, InputProperty>,
+    input_properties: HashMap<String, InputProperty>,
     #[serde(
         skip_serializing_if = "HashMap::is_empty",
         serialize_with = "ordered_map"
     )]
-    pub output_properties: HashMap<String, OutputProperty>,
+    output_properties: HashMap<String, OutputProperty>,
     #[serde(
         skip_serializing_if = "HashMap::is_empty",
         serialize_with = "ordered_map"
     )]
-    pub nodes: HashMap<String, Node>,
+    nodes: HashMap<String, Node>,
     pub max_processing_depth: usize,
 }
 
 impl Shader {
-    pub fn create_node(&mut self, node: Node) {
-        if let Some(n) = self.nodes.insert(node.unique_id().clone(), node) {
+    pub fn create_node(&mut self, node: Node) -> &Node {
+        let id = node.unique_id().clone();
+        if let Some(n) = self.nodes.insert(id.clone(), node) {
             log::error!(
                 "FATAL: Overwrote node {}_{} because of identical ids",
                 n.name(),
                 n.unique_id()
             );
         }
+        self.get_node(&id).unwrap()
     }
 
-    pub fn create_node_from_preset(&mut self, node: NodePreset) {
+    pub fn create_node_from_preset(&mut self, node: NodePreset) -> &Node {
         let node = node.get_node();
         self.create_node(node)
     }
@@ -79,6 +81,10 @@ impl Shader {
             }
             Some(n) => Some(n),
         }
+    }
+
+    fn node(&self, id: &str) -> Option<&Node> {
+        self.nodes.get(id)
     }
 
     fn get_node(&self, id: &str) -> Result<&Node, ShadyError> {
