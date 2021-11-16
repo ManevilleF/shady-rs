@@ -81,7 +81,7 @@ pub enum NativeFunction {
     Distance(FloatingNativeType),
     /// The `length` function returns the length of a vector defined by the Euclidean norm,
     /// i.e. the square root of the sum of the squared components.
-    Len(FloatingNativeType),
+    Length(FloatingNativeType),
     /// The `dot` function returns the dot product of the two input parameters,
     /// i.e. the sum of the component-wise products.
     /// If x and y are the same the square root of the dot product is equivalent to the length of the vector.
@@ -139,6 +139,48 @@ pub enum NativeFunction {
 }
 
 impl NativeFunction {
+    pub fn function_name(&self) -> &'static str {
+        match self {
+            NativeFunction::Radians(_) => "radians",
+            NativeFunction::Degrees(_) => "degrees",
+            NativeFunction::Sine(_) => "sin",
+            NativeFunction::Cosine(_) => "cos",
+            NativeFunction::Tangent(_) => "tan",
+            NativeFunction::ArcSine(_) => "asin",
+            NativeFunction::ArcCosine(_) => "acos",
+            NativeFunction::ArcTangent(_) | NativeFunction::ArcTangent2(_) => "atan",
+            NativeFunction::Power(_) => "pow",
+            NativeFunction::Exponential(_) => "exp",
+            NativeFunction::Exponential2(_) => "exp2",
+            NativeFunction::Logarithm(_) => "log",
+            NativeFunction::Logarithm2(_) => "log2",
+            NativeFunction::SquareRoot(_) => "sqrt",
+            NativeFunction::InverseSquareRoot(_) => "inversesqrt",
+            NativeFunction::Absolute(_) => "abs",
+            NativeFunction::Sign(_) => "sign",
+            NativeFunction::Floor(_) => "floor",
+            NativeFunction::Ceiling(_) => "ceil",
+            NativeFunction::FractionalPart(_) => "fract",
+            NativeFunction::Modulo(_) | NativeFunction::FloatModulo(_) => "mod",
+            NativeFunction::Minimum(_) | NativeFunction::FloatMinimum(_) => "min",
+            NativeFunction::Maximum(_) | NativeFunction::FloatMaximum(_) => "max",
+            NativeFunction::Clamp(_) | NativeFunction::FloatClamp(_) => "clamp",
+            NativeFunction::Mix(_) | NativeFunction::FloatMix(_) => "mix",
+            NativeFunction::Step(_) | NativeFunction::FloatStep(_) => "step",
+            NativeFunction::SmoothStep(_) | NativeFunction::FloatSmoothStep(_) => "smoothstep",
+            NativeFunction::Distance(_) => "distance",
+            NativeFunction::Length(_) => "length",
+            NativeFunction::DotProduct(_) => "dot",
+            NativeFunction::CrossProduct => "cross",
+            NativeFunction::Normalize(_) => "normalize",
+            NativeFunction::FaceForward(_) => "faceforward",
+            NativeFunction::Reflect(_) => "reflect",
+            NativeFunction::Refract(_) => "refract",
+            NativeFunction::Texture2d | NativeFunction::Texture2dBias => "texture2d",
+            NativeFunction::TextureCube | NativeFunction::TextureCubeBias => "textureCube",
+        }
+    }
+
     pub fn input(&self) -> Input {
         match self {
             NativeFunction::Radians(t)
@@ -159,7 +201,7 @@ impl NativeFunction {
             | NativeFunction::Sign(t)
             | NativeFunction::Floor(t)
             | NativeFunction::Ceiling(t)
-            | NativeFunction::Len(t)
+            | NativeFunction::Length(t)
             | NativeFunction::Normalize(t)
             | NativeFunction::FractionalPart(t) => Input {
                 fields: vec![("v".to_string(), InputField::new(GlslType::from(*t)))],
@@ -339,7 +381,7 @@ impl NativeFunction {
                 glsl_type: GlslType::from(*t),
             },
             NativeFunction::Distance(_)
-            | NativeFunction::Len(_)
+            | NativeFunction::Length(_)
             | NativeFunction::DotProduct(_) => Output::GlslType {
                 field_name: "o".to_string(),
                 glsl_type: GlslType::Float,

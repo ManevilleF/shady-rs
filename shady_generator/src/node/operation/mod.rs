@@ -19,6 +19,8 @@ pub(crate) enum InternalNodeOperation {
     NativeOperation(NativeOperation),
     /// Non scalar type construction
     TypeConstruction(NonScalarNativeType),
+    /// Native Function
+    NativeFunction(NativeFunction),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,6 +39,8 @@ pub enum NodeOperation {
     NativeOperation(NativeOperation),
     /// Non scalar type construction
     TypeConstruction(NonScalarNativeType),
+    /// Native Function
+    NativeFunction(NativeFunction),
 }
 
 impl NodeOperation {
@@ -45,6 +49,7 @@ impl NodeOperation {
             NodeOperation::CustomOperation { input, .. } => input.clone(),
             NodeOperation::NativeOperation(o) => o.input(),
             NodeOperation::TypeConstruction(t) => t.input(),
+            NodeOperation::NativeFunction(f) => f.input(),
         }
     }
 
@@ -52,6 +57,7 @@ impl NodeOperation {
         match self {
             NodeOperation::CustomOperation { output, .. } => output.clone(),
             NodeOperation::NativeOperation(o) => o.output(),
+            NodeOperation::NativeFunction(f) => f.output(),
             NodeOperation::TypeConstruction(t) => Output::GlslType {
                 glsl_type: (*t).into(),
                 field_name: "v".to_string(),
@@ -70,6 +76,9 @@ impl InternalNodeOperation {
                 format!("{}({})", GlslType::from(*t), input_fields.join(", "))
             }
             Self::NativeOperation(o) => o.glsl_operation(input_fields),
+            Self::NativeFunction(f) => {
+                format!("{}({})", f.function_name(), input_fields.join(", "))
+            }
         }
     }
 
@@ -102,6 +111,7 @@ impl From<NodeOperation> for InternalNodeOperation {
             }
             NodeOperation::NativeOperation(t) => Self::NativeOperation(t),
             NodeOperation::TypeConstruction(t) => Self::TypeConstruction(t),
+            NodeOperation::NativeFunction(f) => Self::NativeFunction(f),
         }
     }
 }
