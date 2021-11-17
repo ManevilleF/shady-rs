@@ -1,0 +1,25 @@
+[package]
+name = "shady_generator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+indoc = "1.0"
+thiserror = "1.0"
+log = "0.4"
+serde_yaml = "0.8"
+lazy_static = "1.4"
+
+[dependencies.uuid]
+version = "0.8"
+features = ["v4"]
+
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
+[dev-dependencies]
+env_logger = "0.9"
+ctor = "0.1"

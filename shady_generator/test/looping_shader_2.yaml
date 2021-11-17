@@ -1,0 +1,83 @@
+# Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF
+---
+name: Looping Shader 2
+library: OpenGl
+shader_type: Vertex
+default_precisions: {}
+input_properties:
+  i:
+    name: I
+    reference: i
+    glsl_type: Float
+    uniform: false
+output_properties:
+  o:
+    name: O
+    reference: o
+    glsl_type: Float
+    connection:
+      NodeConnection:
+        node_id: a
+        field_name: v
+nodes:
+  a:
+    name: A
+    uuid: a
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              PropertyConnection:
+                property_id: i
+        - - y
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: c
+                field_name: v
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    operation:
+      CustomOperation: test_func
+  b:
+    name: B
+    uuid: b
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: a
+                field_name: v
+        - - y
+          - glsl_type: Float
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    operation:
+      CustomOperation: test_func
+  c:
+    name: C
+    uuid: c
+    input_param:
+      fields:
+        - - x
+          - glsl_type: Float
+            connection:
+              NodeConnection:
+                node_id: b
+                field_name: v
+        - - y
+          - glsl_type: Float
+    output_param:
+      GlslType:
+        glsl_type: Float
+        field_name: v
+    operation:
+      CustomOperation: test_func
+max_processing_depth: 256
