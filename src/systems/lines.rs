@@ -44,11 +44,15 @@ pub fn handle_candidate_line(
 }
 
 macro_rules! get_vec2_transform {
-    ($res:expr) => {
+    ($res:expr, $entity:ident, $cmd:ident) => {
         match $res {
             Ok(t) => t.translation.xy(),
             Err(e) => {
-                log::error!("Failed to retrieve node connector entity: {}", e);
+                log::warn!(
+                    "Failed to retrieve node connector entity: {}, deleting line.",
+                    e
+                );
+                $cmd.entity($entity).despawn_recursive();
                 continue;
             }
         }
@@ -56,14 +60,23 @@ macro_rules! get_vec2_transform {
 }
 
 pub fn handle_connector_lines(
-    connector_query: Query<&NodeConnector>,
+    mut commands: Commands,
+    connector_query: Query<(Entity, &NodeConnector)>,
     connector_box_query: Query<&GlobalTransform>, // , Or<(NodeInput, NodeOutput)>>,
     mut lines: ResMut<DebugLines>,
     assets: Res<ShadyAssets>,
 ) {
-    for node_connector in connector_query.iter() {
-        let from = get_vec2_transform!(connector_box_query.get(node_connector.output_from));
-        let to = get_vec2_transform!(connector_box_query.get(node_connector.input_to));
+    for (entity, node_connector) in connector_query.iter() {
+        let from = get_vec2_transform!(
+            connector_box_query.get(node_connector.output_from),
+            entity,
+            commands
+        );
+        let to = get_vec2_transform!(
+            connector_box_query.get(node_connector.input_to),
+            entity,
+            commands
+        );
         draw_bezier_line((from, to), &mut lines, assets.connector_color);
     }
 }

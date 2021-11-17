@@ -40,7 +40,7 @@ pub fn handle_mouse_input(
     mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
-    mut dragged_entities: Option<ResMut<DraggedEntities>>,
+    dragged_entities: Option<ResMut<DraggedEntities>>,
     mut node_evw: EventWriter<NodeEvent>,
     mouse_input: Res<Input<MouseButton>>,
     box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,

@@ -22,6 +22,7 @@ pub struct GlslTypeMaterials {
 pub struct ShadyAssets {
     pub font: Handle<Font>,
     pub node_title_material: Handle<ColorMaterial>,
+    pub close_node_material: Handle<ColorMaterial>,
     pub node_body_material: Handle<ColorMaterial>,
     pub connector_color: Color,
     pub selected_connector_color: Color,
@@ -41,6 +42,7 @@ impl ShadyAssets {
         Self {
             font: asset_server.load("fonts/AvenirNext-Regular.ttf"),
             node_title_material: assets.add(Color::CYAN.into()),
+            close_node_material: assets.add(Color::RED.into()),
             node_body_material: assets.add(Color::GRAY.into()),
             connector_color: Color::WHITE,
             selected_connector_color: Color::GOLD,
