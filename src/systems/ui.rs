@@ -1,4 +1,4 @@
-use crate::SelectedNodePreset;
+use crate::{CurrentShader, SelectedNodePreset};
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 use shady_generator::NodePreset;
@@ -10,7 +10,11 @@ pub fn setup(egui_ctx: ResMut<EguiContext>) {
     });
 }
 
-pub fn menu(egui_ctx: ResMut<EguiContext>, mut selected_preset: ResMut<SelectedNodePreset>) {
+pub fn menu(
+    egui_ctx: ResMut<EguiContext>,
+    mut selected_preset: ResMut<SelectedNodePreset>,
+    mut shader: ResMut<CurrentShader>,
+) {
     egui::SidePanel::left("Menu")
         .default_width(150.)
         .min_width(100.)
@@ -18,6 +22,7 @@ pub fn menu(egui_ctx: ResMut<EguiContext>, mut selected_preset: ResMut<SelectedN
         .show(egui_ctx.ctx(), |ui| {
             ui.heading("Shady");
 
+            ui.text_edit_singleline(&mut shader.name);
             for preset in NodePreset::VARIANTS.iter() {
                 if ui.button(preset.name()).clicked() {
                     selected_preset.0 = Some(preset.clone());

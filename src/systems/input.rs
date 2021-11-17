@@ -1,11 +1,10 @@
 use crate::components::{BoxInteraction, InteractionBox, NodeConnector};
-use crate::events::SpawnNode;
+use crate::events::NodeEvent;
 use crate::resources::{DraggedEntities, NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
 use crate::{get_cursor_position, get_or_continue, SelectedNodePreset};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
-use bevy::reflect::List;
 use bevy::ui::node::NODE;
 use shady_generator::NodePreset;
 
@@ -20,15 +19,21 @@ fn get_interaction(
     box_query: &Query<(Entity, &GlobalTransform, &InteractionBox)>,
     position: Vec2,
 ) -> Option<(Entity, BoxInteraction)> {
-    for (entity, transform, interaction_box) in box_query.iter() {
-        if let Some(interaction) =
-            interaction_box.get_interaction(transform.translation.xy(), position)
-        {
-            log::info!("Found interaction: {:?}", interaction);
-            return Some((entity, interaction));
-        }
-    }
-    None
+    let mut interactions: Vec<(Entity, BoxInteraction)> = box_query
+        .iter()
+        .filter_map(|(entity, transform, interaction_box)| {
+            if let Some(interaction) =
+                interaction_box.get_interaction(transform.translation.xy(), position)
+            {
+                log::info!("Found interaction: {:?}", interaction);
+                Some((entity, interaction))
+            } else {
+                None
+            }
+        })
+        .collect();
+    interactions.sort_by_key(|(e, b)| b.clone());
+    interactions.first().cloned()
 }
 
 pub fn handle_mouse_input(
@@ -36,7 +41,7 @@ pub fn handle_mouse_input(
     cursor_position: Option<Res<WorldCursorPosition>>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
     mut dragged_entities: Option<ResMut<DraggedEntities>>,
-    mut spawn_node_evw: EventWriter<SpawnNode>,
+    mut node_evw: EventWriter<NodeEvent>,
     mouse_input: Res<Input<MouseButton>>,
     box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
     mut current_preset: ResMut<SelectedNodePreset>,
@@ -57,11 +62,12 @@ pub fn handle_mouse_input(
         dragged_entities.previous_cursor_position = position.0;
         return;
     }
+    // Interaction
     if mouse_input.just_pressed(MouseButton::Left) {
         match get_interaction(&box_query, position.0) {
             None => {
                 if let Some(preset) = current_preset.0 {
-                    spawn_node_evw.send(SpawnNode {
+                    node_evw.send(NodeEvent::CreateNode {
                         target_position: position.0,
                         node_preset: preset,
                     });
@@ -92,6 +98,7 @@ pub fn handle_mouse_input(
                 BoxInteraction::Ignore => {
                     commands.remove_resource::<NodeConnectorCandidate>();
                 }
+                BoxInteraction::DeleteNode(id) => node_evw.send(NodeEvent::DeleteNode { id }),
             },
         }
     }

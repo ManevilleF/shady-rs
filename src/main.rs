@@ -45,7 +45,7 @@ fn main() {
         // UI
         .add_startup_system(systems::ui::setup.system())
         .add_system_set(SystemSet::new().with_system(systems::ui::menu.system()))
-        .add_event::<SpawnNode>()
+        .add_event::<NodeEvent>()
         .insert_resource(CurrentShader::default())
         .insert_resource(SelectedNodePreset::default())
         .run()

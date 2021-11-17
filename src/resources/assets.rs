@@ -25,35 +25,43 @@ pub struct ShadyAssets {
     pub node_body_material: Handle<ColorMaterial>,
     pub connector_color: Color,
     pub selected_connector_color: Color,
-    pub input_slot_material: Handle<ColorMaterial>,
-    pub output_slot_material: Handle<ColorMaterial>,
     pub glsl_type_materials: GlslTypeMaterials,
 }
 
 impl ShadyAssets {
+    fn slot_material(texture: Handle<Texture>, color: Color) -> ColorMaterial {
+        ColorMaterial {
+            color,
+            texture: Some(texture),
+        }
+    }
+
     pub fn load(assets: &mut Assets<ColorMaterial>, asset_server: &AssetServer) -> Self {
+        let texture = asset_server.load("sprites/circle.png");
         Self {
             font: asset_server.load("fonts/AvenirNext-Regular.ttf"),
             node_title_material: assets.add(Color::CYAN.into()),
             node_body_material: assets.add(Color::GRAY.into()),
             connector_color: Color::WHITE,
             selected_connector_color: Color::GOLD,
-            input_slot_material: assets.add(Color::LIME_GREEN.into()),
-            output_slot_material: assets.add(Color::BLUE.into()),
             glsl_type_materials: GlslTypeMaterials {
-                bool_material: assets.add(Color::CYAN.into()),
-                int_material: assets.add(Color::DARK_GREEN.into()),
-                uint_material: assets.add(Color::DARK_GREEN.into()),
-                float_material: assets.add(Color::LIME_GREEN.into()),
-                double_material: assets.add(Color::GREEN.into()),
-                vec2_material: assets.add(Color::BLUE.into()),
-                ivec2_material: assets.add(Color::BLUE.into()),
-                vec3_material: assets.add(Color::YELLOW.into()),
-                ivec3_material: assets.add(Color::YELLOW.into()),
-                vec4_material: assets.add(Color::ORANGE.into()),
-                ivec4_material: assets.add(Color::ORANGE.into()),
-                sampler_2d_material: assets.add(Color::RED.into()),
-                sampler_cube_material: assets.add(Color::RED.into()),
+                bool_material: assets.add(Self::slot_material(texture.clone(), Color::CYAN)),
+                int_material: assets.add(Self::slot_material(texture.clone(), Color::DARK_GREEN)),
+                uint_material: assets
+                    .add(Self::slot_material(texture.clone(), Color::YELLOW_GREEN)),
+                float_material: assets.add(Self::slot_material(texture.clone(), Color::LIME_GREEN)),
+                double_material: assets.add(Self::slot_material(texture.clone(), Color::GREEN)),
+                vec2_material: assets.add(Self::slot_material(texture.clone(), Color::BLUE)),
+                ivec2_material: assets
+                    .add(Self::slot_material(texture.clone(), Color::MIDNIGHT_BLUE)),
+                vec3_material: assets.add(Self::slot_material(texture.clone(), Color::YELLOW)),
+                ivec3_material: assets.add(Self::slot_material(texture.clone(), Color::GOLD)),
+                vec4_material: assets.add(Self::slot_material(texture.clone(), Color::ORANGE)),
+                ivec4_material: assets.add(Self::slot_material(texture.clone(), Color::ORANGE_RED)),
+                sampler_2d_material: assets
+                    .add(Self::slot_material(texture.clone(), Color::PURPLE)),
+                sampler_cube_material: assets
+                    .add(Self::slot_material(texture.clone(), Color::PINK)),
             },
         }
     }

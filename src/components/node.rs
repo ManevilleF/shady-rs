@@ -36,7 +36,7 @@ impl ShadyNode {
         let node_name = node.name();
         let header_size = Vec2::new(NODE_SIZE_X, NODE_HEADER_SIZE_Y);
         let slot_size = Vec2::splat(SLOT_SIZE);
-        let slot_x_pos = NODE_SIZE_X / 2. + slot_size.x / 2.;
+        let slot_x_pos = NODE_SIZE_X / 2. - slot_size.x / 2. - 5.;
         let input_fields = node.input_fields();
         let output_fields = node.output_fields();
         let field_len = max(input_fields.len(), output_fields.len()) as f32;
