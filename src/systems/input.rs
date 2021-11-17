@@ -1,7 +1,7 @@
 use crate::components::{BoxInteraction, InteractionBox, NodeConnector};
 use crate::events::SpawnNode;
 use crate::resources::{DraggedEntities, NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
-use crate::{get_cursor_position, get_or_continue};
+use crate::{get_cursor_position, get_or_continue, SelectedNodePreset};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -39,6 +39,7 @@ pub fn handle_mouse_input(
     mut spawn_node_evw: EventWriter<SpawnNode>,
     mouse_input: Res<Input<MouseButton>>,
     box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
+    mut current_preset: ResMut<SelectedNodePreset>,
     mut transform_query: Query<&mut Transform, With<InteractionBox>>,
 ) {
     let position = get_cursor_position!(cursor_position);
@@ -59,10 +60,13 @@ pub fn handle_mouse_input(
     if mouse_input.just_pressed(MouseButton::Left) {
         match get_interaction(&box_query, position.0) {
             None => {
-                spawn_node_evw.send(SpawnNode {
-                    target_position: position.0,
-                    node_preset: NodePreset::Vec2,
-                });
+                if let Some(preset) = current_preset.0 {
+                    spawn_node_evw.send(SpawnNode {
+                        target_position: position.0,
+                        node_preset: preset,
+                    });
+                    current_preset.0 = None;
+                }
                 commands.remove_resource::<NodeConnectorCandidate>();
             }
             Some((entity, interaction)) => match interaction {

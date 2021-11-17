@@ -125,6 +125,21 @@ impl GlslType {
             }
         }
     }
+
+    pub fn type_complexity(&self) -> &'static str {
+        match self {
+            GlslType::Bool
+            | GlslType::Int
+            | GlslType::UInt
+            | GlslType::Float
+            | GlslType::Double => "1",
+            GlslType::Vec2 | GlslType::IVec2 => "2",
+            GlslType::Vec3 | GlslType::IVec3 => "3",
+            GlslType::Vec4 | GlslType::IVec4 => "4",
+            GlslType::Sampler2d => "T2",
+            GlslType::SamplerCube => "T4",
+        }
+    }
 }
 
 impl NonScalarNativeType {

@@ -2,9 +2,26 @@ use crate::node::*;
 
 use crate::{NativeOperation::*, NodeOperation::*, NonScalarNativeType};
 
-// TODO: add remaining presets
-#[derive(Debug, Copy, Clone)]
-pub enum NodePreset {
+macro_rules! make_enum {
+    (
+        $name:ident $array:ident {
+            $( $variant:ident, )*
+        }
+    ) => {
+        #[derive(Debug, Copy, Clone)]
+        pub enum $name {
+            $( $variant, )*
+        }
+
+        impl $name {
+            pub const  $array: &'static [$name] = &[
+                $( $name::$variant, )*
+            ];
+        }
+    }
+}
+
+make_enum!(NodePreset VARIANTS {
     Vec2,
     IVec2,
     Vec3,
@@ -18,32 +35,43 @@ pub enum NodePreset {
     IntMul,
     IntDiv,
     FloatSelection,
-}
+});
 
 impl NodePreset {
     pub fn get_node(&self) -> Node {
+        let name = self.name();
         match self {
-            NodePreset::Vec2 => Node::new("Vec2", TypeConstruction(NonScalarNativeType::Vec2)),
-            NodePreset::IVec2 => Node::new("IVec2", TypeConstruction(NonScalarNativeType::IVec2)),
-            NodePreset::Vec3 => Node::new("Vec3", TypeConstruction(NonScalarNativeType::Vec3)),
-            NodePreset::IVec3 => Node::new("IVec3", TypeConstruction(NonScalarNativeType::IVec3)),
-            NodePreset::Vec4 => Node::new("Vec4", TypeConstruction(NonScalarNativeType::Vec4)),
-            NodePreset::IVec4 => Node::new("IVec4", TypeConstruction(NonScalarNativeType::IVec4)),
-            NodePreset::FloatAdd => Node::new("Add floats", NativeOperation(Add(GlslType::Float))),
-            NodePreset::FloatMul => {
-                Node::new("Multiply floats", NativeOperation(Mul(GlslType::Float)))
-            }
-            NodePreset::FloatDiv => {
-                Node::new("Divide floats", NativeOperation(Div(GlslType::Float)))
-            }
-            NodePreset::IntAdd => Node::new("Add integers", NativeOperation(Add(GlslType::Int))),
-            NodePreset::IntMul => {
-                Node::new("Multiply integers", NativeOperation(Mul(GlslType::Int)))
-            }
-            NodePreset::IntDiv => Node::new("Divide integers", NativeOperation(Div(GlslType::Int))),
-            NodePreset::FloatSelection => {
-                Node::new("Select float", NativeOperation(Selection(GlslType::Float)))
-            }
+            Self::Vec2 => Node::new(name, TypeConstruction(NonScalarNativeType::Vec2)),
+            Self::IVec2 => Node::new(name, TypeConstruction(NonScalarNativeType::IVec2)),
+            Self::Vec3 => Node::new(name, TypeConstruction(NonScalarNativeType::Vec3)),
+            Self::IVec3 => Node::new(name, TypeConstruction(NonScalarNativeType::IVec3)),
+            Self::Vec4 => Node::new(name, TypeConstruction(NonScalarNativeType::Vec4)),
+            Self::IVec4 => Node::new(name, TypeConstruction(NonScalarNativeType::IVec4)),
+            Self::FloatAdd => Node::new(name, NativeOperation(Add(GlslType::Float))),
+            Self::FloatMul => Node::new(name, NativeOperation(Mul(GlslType::Float))),
+            Self::FloatDiv => Node::new(name, NativeOperation(Div(GlslType::Float))),
+            Self::IntAdd => Node::new(name, NativeOperation(Add(GlslType::Int))),
+            Self::IntMul => Node::new(name, NativeOperation(Mul(GlslType::Int))),
+            Self::IntDiv => Node::new(name, NativeOperation(Div(GlslType::Int))),
+            Self::FloatSelection => Node::new(name, NativeOperation(Selection(GlslType::Float))),
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::Vec2 => "Vec2",
+            Self::IVec2 => "IVec2",
+            Self::Vec3 => "Vec3",
+            Self::IVec3 => "IVec3",
+            Self::Vec4 => "Vec4",
+            Self::IVec4 => "IVec4",
+            Self::FloatAdd => "Add floats",
+            Self::FloatMul => "Multiply floats",
+            Self::FloatDiv => "Divide floats",
+            Self::IntAdd => "Add integers",
+            Self::IntMul => "Multiply integers",
+            Self::IntDiv => "Divide integers",
+            Self::FloatSelection => "Select float",
         }
     }
 }

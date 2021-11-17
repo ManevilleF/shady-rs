@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: build lib
         run: cargo build --verbose -p shady_generator
-      - name: build bin
-        run: cargo build --verbose -p shady-rs
+     # - name: build bin
+     #   run: cargo build --verbose -p shady-rs
 
 
   test:
@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: test
-        run: cargo test --tests --all --all-features
+        run: cargo test --all
 
   fmt:
     runs-on: ubuntu-latest

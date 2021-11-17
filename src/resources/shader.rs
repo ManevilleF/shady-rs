@@ -1,12 +1,21 @@
-use shady_generator::Shader;
+use shady_generator::{NodePreset, Shader};
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug)]
 pub struct CurrentShader(pub Shader);
 
+#[derive(Debug, Clone)]
+pub struct SelectedNodePreset(pub Option<NodePreset>);
+
 impl Default for CurrentShader {
     fn default() -> Self {
         Self(Shader::default())
+    }
+}
+
+impl Default for SelectedNodePreset {
+    fn default() -> Self {
+        Self(None)
     }
 }
 

@@ -23,7 +23,6 @@ const EXPORT_HEADER: &str =
 const SAVE_HEADER: &str =
     "Save file for shady-rs -- https://github.com/ManevilleF/shady-rs made by @ManevilleF";
 
-// TODO: protection levels
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Shader {
     pub name: String,
@@ -83,7 +82,7 @@ impl Shader {
         }
     }
 
-    fn node(&self, id: &str) -> Option<&Node> {
+    pub fn node(&self, id: &str) -> Option<&Node> {
         self.nodes.get(id)
     }
 
