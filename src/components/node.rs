@@ -15,6 +15,23 @@ pub struct ShadyNode {
 }
 
 impl ShadyNode {
+    fn title_text(value: &str, assets: &ShadyAssets) -> Text {
+        Text {
+            sections: vec![TextSection {
+                value: value.to_string(),
+                style: TextStyle {
+                    font: assets.font.clone(),
+                    color: Color::BLACK,
+                    ..Default::default()
+                },
+            }],
+            alignment: TextAlignment {
+                vertical: VerticalAlign::Center,
+                horizontal: HorizontalAlign::Center,
+            },
+        }
+    }
+
     pub fn spawn(commands: &mut Commands, assets: &ShadyAssets, pos: Vec2, node: &Node) -> Entity {
         let node_name = node.name();
         let header_size = Vec2::new(NODE_SIZE_X, NODE_HEADER_SIZE_Y);
@@ -35,13 +52,8 @@ impl ShadyNode {
             .insert(InteractionBox::new(header_size, BoxInteraction::Drag))
             .with_children(|b| {
                 b.spawn_bundle(Text2dBundle {
-                    text: Text {
-                        sections: vec![TextSection {
-                            value: node_name.to_string(),
-                            ..Default::default()
-                        }],
-                        ..Default::default()
-                    },
+                    text: Self::title_text(node_name, assets),
+                    transform: Transform::from_xyz(0., 0., 1.),
                     ..Default::default()
                 });
                 b.spawn_bundle(SpriteBundle {
