@@ -11,13 +11,21 @@ mod graphic_library;
 mod node;
 mod shader;
 
-use uuid::Uuid;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
+
+const UNIQUE_ID_LENGTH: usize = 10;
 
 #[macro_use]
 extern crate indoc;
 
+// TODO: Check entropy of this and look for a better solution
 pub(crate) fn generate_uuid() -> String {
-    Uuid::new_v4().to_string()
+    thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(UNIQUE_ID_LENGTH)
+        .map(char::from)
+        .collect()
 }
 
 pub(crate) fn ordered_map<S, T>(

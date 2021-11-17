@@ -2427,10 +2427,10 @@ dependencies = [
  "indoc",
  "lazy_static",
  "log",
+ "rand",
  "serde",
  "serde_yaml",
  "thiserror",
- "uuid",
 ]
 
 [[package]]
