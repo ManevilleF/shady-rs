@@ -1,9 +1,7 @@
-use crate::common::Bounds;
 use crate::components::{BoxInteraction, InteractionBox, NodeInput, NodeOutput};
 use crate::resources::ShadyAssets;
 use bevy::prelude::*;
-use bevy::text::Text2dSize;
-use shady_generator::Node;
+use shady_generator::{Connection, ConnectionTo, Node};
 use std::cmp::max;
 
 const NODE_SIZE_X: f32 = 120.;
@@ -11,9 +9,8 @@ const NODE_HEADER_SIZE_Y: f32 = 30.;
 const SLOT_SIZE: f32 = 15.;
 const SLOT_STEP: f32 = 40.;
 
-pub struct ShadyNode {
-    node_id: String,
-}
+#[derive(Debug)]
+pub struct ShadyNode;
 
 impl ShadyNode {
     fn title_text(value: &str, assets: &ShadyAssets) -> Text2dBundle {
@@ -39,6 +36,7 @@ impl ShadyNode {
 
     pub fn spawn(commands: &mut Commands, assets: &ShadyAssets, pos: Vec2, node: &Node) -> Entity {
         let node_name = node.name();
+        let node_id = node.unique_id();
         let header_size = Vec2::new(NODE_SIZE_X, NODE_HEADER_SIZE_Y);
         let close_node_size = Vec2::splat(NODE_HEADER_SIZE_Y / 2.);
         let slot_size = Vec2::splat(SLOT_SIZE);
@@ -79,7 +77,7 @@ impl ShadyNode {
                 .insert(Name::new(format!("{}_node_close_button", node_name)))
                 .insert(InteractionBox::new(
                     close_node_size,
-                    BoxInteraction::DeleteNode(node.unique_id().clone()),
+                    BoxInteraction::DeleteNode(node_id.clone()),
                 ));
                 for (i, (field_name, field)) in input_fields.into_iter().enumerate() {
                     b.spawn_bundle(SpriteBundle {
@@ -94,12 +92,12 @@ impl ShadyNode {
                     })
                     .insert(InteractionBox::new(
                         slot_size,
-                        BoxInteraction::ConnectionEnd,
+                        BoxInteraction::ConnectionEnd(ConnectionTo::ToNode {
+                            id: node_id.clone(),
+                            field: field_name.clone(),
+                        }),
                     ))
-                    .insert(NodeInput {
-                        connected_to: None,
-                        field_name,
-                    });
+                    .insert(NodeInput { connected_to: None });
                 }
                 for (i, (field_name, field)) in output_fields.into_iter().enumerate() {
                     b.spawn_bundle(SpriteBundle {
@@ -114,9 +112,12 @@ impl ShadyNode {
                     })
                     .insert(InteractionBox::new(
                         slot_size,
-                        BoxInteraction::ConnectionStart,
+                        BoxInteraction::ConnectionStart(Connection::NodeConnection {
+                            node_id: node_id.clone(),
+                            field_name,
+                        }),
                     ))
-                    .insert(NodeOutput { field_name });
+                    .insert(NodeOutput);
                 }
             })
             .id()

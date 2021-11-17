@@ -4,8 +4,6 @@ pub mod nodes;
 pub mod setup;
 pub mod ui;
 
-use bevy::log;
-
 #[macro_export]
 macro_rules! get_cursor_position {
     ($res:expr) => {
@@ -22,7 +20,7 @@ macro_rules! get_or_return {
         match $res {
             Ok(c) => c,
             Err(e) => {
-                log::error!("Failed to retrieve component: {}", e);
+                bevy::log::error!("Failed to retrieve component: {}", e);
                 return;
             }
         }
@@ -35,7 +33,7 @@ macro_rules! get_or_continue {
         match $res {
             Ok(c) => c,
             Err(e) => {
-                log::error!("Failed to retrieve component: {}", e);
+                bevy::log::error!("Failed to retrieve component: {}", e);
                 continue;
             }
         }

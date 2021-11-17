@@ -1,7 +1,7 @@
 use crate::GlslType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
 pub enum ConnectionTo {
     ToNode { id: String, field: String },
     OutputProperty { id: String },
@@ -21,7 +21,7 @@ pub struct ConnectionMessage {
 
 pub type ConnectionResponse = Option<Connection>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Connection {
     PropertyConnection { property_id: String },
     NodeConnection { node_id: String, field_name: String },

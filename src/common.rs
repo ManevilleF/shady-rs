@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use bevy::prelude::Vec2;
 
 #[derive(Debug, Clone)]
@@ -7,13 +8,6 @@ pub struct Bounds {
 }
 
 impl Bounds {
-    pub fn new(min: Vec2, size: Vec2) -> Self {
-        Self {
-            min,
-            max: min + size,
-        }
-    }
-
     pub fn centered(center: Vec2, extents: Vec2) -> Self {
         Self {
             min: center - extents,
@@ -36,12 +30,12 @@ mod tests {
     use bevy::math::Vec2;
 
     #[test]
-    fn bounds_center() {
-        let bounds = Bounds::new(Vec2::ZERO, Vec2::new(2., 2.));
+    fn bounds() {
+        let bounds = Bounds::centered(Vec2::new(1., 1.), Vec2::new(1., 1.));
         assert_eq!(bounds.min, Vec2::ZERO);
         assert_eq!(bounds.max, Vec2::new(2., 2.));
         assert_eq!(bounds.center(), Vec2::new(1., 1.));
-        let bounds = Bounds::new(Vec2::new(3., 1.), Vec2::new(2., 2.));
+        let bounds = Bounds::centered(Vec2::new(4., 2.), Vec2::new(1., 1.));
         assert_eq!(bounds.min, Vec2::new(3., 1.));
         assert_eq!(bounds.max, Vec2::new(5., 3.));
         assert_eq!(bounds.center(), Vec2::new(4., 2.));

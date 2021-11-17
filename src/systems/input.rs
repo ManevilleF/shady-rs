@@ -1,15 +1,14 @@
-use crate::components::{BoxInteraction, InteractionBox, NodeConnector};
-use crate::events::NodeEvent;
-use crate::resources::{DraggedEntities, NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
+use crate::components::{BoxInteraction, InteractionBox};
+use crate::events::ShaderEvent;
+use crate::resources::{DraggedEntities, NodeConnectorCandidate, WorldCursorPosition};
 use crate::{get_cursor_position, get_or_continue, SelectedNodePreset};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
-use bevy::ui::node::NODE;
-use shady_generator::NodePreset;
+use shady_generator::ConnectionAttempt;
 
 pub fn handle_mouse_position(mut commands: Commands, windows: Res<Windows>) {
-    match WorldCursorPosition::world_cursor_position(&windows) {
+    match WorldCursorPosition::new(&windows) {
         None => commands.remove_resource::<WorldCursorPosition>(),
         Some(p) => commands.insert_resource(p),
     }
@@ -32,16 +31,17 @@ fn get_interaction(
             }
         })
         .collect();
-    interactions.sort_by_key(|(e, b)| b.clone());
+    interactions.sort_by_key(|(_e, b)| b.clone());
     interactions.first().cloned()
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn handle_mouse_input(
     mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
     dragged_entities: Option<ResMut<DraggedEntities>>,
-    mut node_evw: EventWriter<NodeEvent>,
+    mut node_evw: EventWriter<ShaderEvent>,
     mouse_input: Res<Input<MouseButton>>,
     box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
     mut current_preset: ResMut<SelectedNodePreset>,
@@ -67,7 +67,7 @@ pub fn handle_mouse_input(
         match get_interaction(&box_query, position.0) {
             None => {
                 if let Some(preset) = current_preset.0 {
-                    node_evw.send(NodeEvent::CreateNode {
+                    node_evw.send(ShaderEvent::CreateNode {
                         target_position: position.0,
                         node_preset: preset,
                     });
@@ -76,19 +76,23 @@ pub fn handle_mouse_input(
                 commands.remove_resource::<NodeConnectorCandidate>();
             }
             Some((entity, interaction)) => match interaction {
-                BoxInteraction::ConnectionStart => {
+                BoxInteraction::ConnectionStart(connection) => {
                     let candidate = NodeConnectorCandidate {
                         output_from: entity,
+                        connection,
                     };
                     commands.insert_resource(candidate);
                 }
-                BoxInteraction::ConnectionEnd => {
+                BoxInteraction::ConnectionEnd(connection_to) => {
                     if let Some(candidate) = connector_candidate {
-                        if candidate.output_from != entity {
-                            let connector = candidate.to_connector(entity);
-                            commands.spawn().insert(connector);
-                        }
-                        commands.remove_resource::<NodeConnectorCandidate>();
+                        node_evw.send(ShaderEvent::Connect {
+                            attempt: ConnectionAttempt {
+                                connection_from: candidate.connection.clone(),
+                                connection_to,
+                            },
+                            from: candidate.output_from,
+                            to: entity,
+                        });
                     }
                 }
                 BoxInteraction::Drag => commands.insert_resource(DraggedEntities {
@@ -98,7 +102,7 @@ pub fn handle_mouse_input(
                 BoxInteraction::Ignore => {
                     commands.remove_resource::<NodeConnectorCandidate>();
                 }
-                BoxInteraction::DeleteNode(id) => node_evw.send(NodeEvent::DeleteNode { id }),
+                BoxInteraction::DeleteNode(id) => node_evw.send(ShaderEvent::DeleteNode { id }),
             },
         }
     }

@@ -5,7 +5,7 @@ use std::ops::Deref;
 pub struct WorldCursorPosition(pub Vec2);
 
 impl WorldCursorPosition {
-    pub fn world_cursor_position(windows: &Windows) -> Option<Self> {
+    pub fn new(windows: &Windows) -> Option<Self> {
         let window = windows.get_primary()?;
         let pos = window.cursor_position()?;
         let mouse_position = Vec2::new(pos.x - window.width() / 2., pos.y - window.height() / 2.);

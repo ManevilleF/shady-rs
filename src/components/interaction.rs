@@ -1,10 +1,11 @@
 use crate::common::Bounds;
 use bevy::prelude::*;
+use shady_generator::{Connection, ConnectionTo};
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq)]
 pub enum BoxInteraction {
-    ConnectionStart,
-    ConnectionEnd,
+    ConnectionStart(Connection),
+    ConnectionEnd(ConnectionTo),
     DeleteNode(String),
     Drag,
     Ignore,

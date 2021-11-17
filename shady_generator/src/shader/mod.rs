@@ -1,8 +1,7 @@
-pub use {property::*, shader_operations::*, shader_type::*, to_glsl::*};
+pub use {property::*, shader_type::*, to_glsl::*};
 
 mod precision;
 mod property;
-mod shader_operations;
 mod shader_type;
 mod to_glsl;
 

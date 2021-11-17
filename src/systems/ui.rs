@@ -1,6 +1,6 @@
 use crate::{CurrentShader, SelectedNodePreset};
 use bevy::prelude::*;
-use bevy_egui::{egui, egui::Button, EguiContext};
+use bevy_egui::{egui, EguiContext};
 use shady_generator::NodePreset;
 
 pub fn setup(egui_ctx: ResMut<EguiContext>) {
@@ -30,7 +30,7 @@ pub fn menu(
             ui.label("Node presets:");
             for preset in NodePreset::VARIANTS.iter() {
                 if ui.button(preset.name()).clicked() {
-                    selected_preset.0 = Some(preset.clone());
+                    selected_preset.0 = Some(*preset);
                 }
             }
         });

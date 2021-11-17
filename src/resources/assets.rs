@@ -62,8 +62,7 @@ impl ShadyAssets {
                 ivec4_material: assets.add(Self::slot_material(texture.clone(), Color::ORANGE_RED)),
                 sampler_2d_material: assets
                     .add(Self::slot_material(texture.clone(), Color::PURPLE)),
-                sampler_cube_material: assets
-                    .add(Self::slot_material(texture.clone(), Color::PINK)),
+                sampler_cube_material: assets.add(Self::slot_material(texture, Color::PINK)),
             },
         }
     }

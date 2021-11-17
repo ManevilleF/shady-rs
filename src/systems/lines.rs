@@ -1,7 +1,6 @@
-use crate::components::{InteractionBox, NodeConnector, NodeInput, NodeOutput};
+use crate::components::{NodeConnector, NodeInput, NodeOutput};
 use crate::get_cursor_position;
 use crate::resources::{NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
-use bevy::ecs::query::QueryEntityError;
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -61,6 +60,7 @@ macro_rules! get_vec2_transform {
     };
 }
 
+#[allow(clippy::type_complexity)]
 pub fn handle_connector_lines(
     mut commands: Commands,
     connector_query: Query<(Entity, &NodeConnector)>,

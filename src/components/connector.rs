@@ -1,4 +1,3 @@
-use crate::common::Bounds;
 use bevy::prelude::*;
 
 #[derive(Debug)]
