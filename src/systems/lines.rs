@@ -14,25 +14,27 @@ fn draw_bezier_line((start, end): (Vec2, Vec2), lines: &mut DebugLines, color: C
 }
 
 pub fn handle_candidate_line(
+    mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
     assets: Res<ShadyAssets>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
     connector_query: Query<&GlobalTransform, With<NodeOutput>>,
     mut lines: ResMut<DebugLines>,
 ) {
-    let connector_candidate = match connector_candidate {
+    let candidate = match connector_candidate {
         None => return,
         Some(c) => c,
     };
     let position = get_cursor_position!(cursor_position);
-    let start_pos = match connector_query.get(connector_candidate.output_from) {
+    let start_pos = match connector_query.get(candidate.output_from) {
         Ok(transform) => transform.translation.xy(),
         Err(e) => {
-            log::error!(
-                "Failed to retrieve connector candidate entity {:?}: {}",
-                connector_candidate.output_from,
+            log::warn!(
+                "Failed to retrieve connector candidate entity {:?}, deleting it: {}",
+                candidate.output_from,
                 e
             );
+            commands.remove_resource::<NodeConnectorCandidate>();
             return;
         }
     };
@@ -62,7 +64,7 @@ macro_rules! get_vec2_transform {
 pub fn handle_connector_lines(
     mut commands: Commands,
     connector_query: Query<(Entity, &NodeConnector)>,
-    connector_box_query: Query<&GlobalTransform>, // , Or<(NodeInput, NodeOutput)>>,
+    connector_box_query: Query<&GlobalTransform, Or<(With<NodeInput>, With<NodeOutput>)>>,
     mut lines: ResMut<DebugLines>,
     assets: Res<ShadyAssets>,
 ) {
