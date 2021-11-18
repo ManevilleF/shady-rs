@@ -38,7 +38,7 @@ impl ShadyNode {
     }
 
     pub fn spawn(commands: &mut Commands, assets: &ShadyAssets, pos: Vec2, node: &Node) -> Entity {
-        let node_name = node.name().to_ascii_lowercase().replace(" ", "_");
+        let node_name = node.name();
         let node_id = node.unique_id();
         let header_size = Vec2::new(NODE_SIZE_X, NODE_HEADER_SIZE_Y);
         let close_node_size = Vec2::splat(NODE_HEADER_SIZE_Y / 2.);
@@ -55,18 +55,19 @@ impl ShadyNode {
                 transform: Transform::from_xyz(pos.x, pos.y, 0.),
                 ..Default::default()
             })
-            .insert(Name::new(format!("{}_node", node_name)))
+            .insert(Name::new(format!("{} node: {}", node_name, node_id)))
             .insert(ShadyNode)
             .insert(InteractionBox::new(header_size, BoxInteraction::Drag))
             .with_children(|b| {
-                b.spawn_bundle(Self::title_text(&node_name, assets));
+                b.spawn_bundle(Self::title_text(node_name, assets))
+                    .insert(Name::new(format!("{} node title", node_name)));
                 b.spawn_bundle(SpriteBundle {
                     sprite: Sprite::new(body_size),
                     material: assets.node_body_material.clone(),
                     transform: Transform::from_xyz(0., -header_size.y / 2. - body_size.y / 2., 0.),
                     ..Default::default()
                 })
-                .insert(Name::new(format!("{}_node_body", node_name)))
+                .insert(Name::new(format!("{} node body", node_name)))
                 .insert(InteractionBox::new(body_size, BoxInteraction::Ignore));
                 b.spawn_bundle(SpriteBundle {
                     sprite: Sprite::new(close_node_size),
@@ -78,7 +79,7 @@ impl ShadyNode {
                     ),
                     ..Default::default()
                 })
-                .insert(Name::new(format!("{}_node_close_button", node_name)))
+                .insert(Name::new(format!("{} node close button", node_name)))
                 .insert(InteractionBox::new(
                     close_node_size,
                     BoxInteraction::DeleteNode(node_id.clone()),
@@ -94,6 +95,7 @@ impl ShadyNode {
                         ),
                         ..Default::default()
                     })
+                    .insert(Name::new(format!("{} input", field_name)))
                     .insert(InteractionBox::new(
                         slot_size,
                         BoxInteraction::ConnectionEnd(ConnectionTo::ToNode {
@@ -114,6 +116,7 @@ impl ShadyNode {
                         ),
                         ..Default::default()
                     })
+                    .insert(Name::new(format!("{} output", field_name)))
                     .insert(InteractionBox::new(
                         slot_size,
                         BoxInteraction::ConnectionStart(Connection::NodeConnection {

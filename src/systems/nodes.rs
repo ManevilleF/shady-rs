@@ -47,14 +47,15 @@ pub fn handle_node_spawn(
                                 None => log::error!("Failed to remove connection {:?}", c),
                             }
                         }
+                        let id = unique_id(&attempt.connection_to, &attempt.connection_from);
                         let connector_id = commands
                             .spawn()
                             .insert(NodeConnector {
                                 output_from: *from,
                                 input_to: *to,
                             })
+                            .insert(Name::new(format!("{} connector", id)))
                             .id();
-                        let id = unique_id(&attempt.connection_to, &attempt.connection_from);
                         current_shader.connection_entities.insert(id, connector_id);
                         commands.remove_resource::<NodeConnectorCandidate>();
                     }
