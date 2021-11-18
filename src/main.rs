@@ -8,11 +8,13 @@ use crate::events::*;
 use crate::resources::{CurrentShader, SelectedEntities, SelectedNodePreset};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
+#[cfg(feature = "debug")]
+use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 
 fn main() {
-    App::build()
-        .insert_resource(ClearColor(Color::DARK_GRAY))
+    let mut app = App::build();
+    app.insert_resource(ClearColor(Color::DARK_GRAY))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
@@ -47,6 +49,9 @@ fn main() {
         .add_system_set(SystemSet::new().with_system(systems::ui::menu.system()))
         .add_event::<ShaderEvent>()
         .insert_resource(CurrentShader::default())
-        .insert_resource(SelectedNodePreset::default())
-        .run()
+        .insert_resource(SelectedNodePreset::default());
+    // Debug hierarchy inspector
+    #[cfg(feature = "debug")]
+    app.add_plugin(WorldInspectorPlugin::new());
+    app.run()
 }

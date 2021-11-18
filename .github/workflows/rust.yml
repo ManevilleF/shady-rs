@@ -20,6 +20,8 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev
       - name: build bin
         run: cargo build --verbose -p shady-rs
+      - name: build bin with all features
+        run: cargo build --all-features --verbose -p shady-rs
 
   test:
     runs-on: ubuntu-latest

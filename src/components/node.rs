@@ -1,6 +1,8 @@
 use crate::components::{BoxInteraction, InteractionBox, NodeInput, NodeOutput};
 use crate::resources::ShadyAssets;
 use bevy::prelude::*;
+#[cfg(feature = "debug")]
+use bevy_inspector_egui::Inspectable;
 use shady_generator::{Connection, ConnectionTo, Node};
 use std::cmp::max;
 
@@ -9,6 +11,7 @@ const NODE_HEADER_SIZE_Y: f32 = 30.;
 const SLOT_SIZE: f32 = 15.;
 const SLOT_STEP: f32 = 40.;
 
+#[cfg_attr(feature = "debug", derive(Inspectable))]
 #[derive(Debug)]
 pub struct ShadyNode;
 
@@ -35,7 +38,7 @@ impl ShadyNode {
     }
 
     pub fn spawn(commands: &mut Commands, assets: &ShadyAssets, pos: Vec2, node: &Node) -> Entity {
-        let node_name = node.name();
+        let node_name = node.name().to_ascii_lowercase().replace(" ", "_");
         let node_id = node.unique_id();
         let header_size = Vec2::new(NODE_SIZE_X, NODE_HEADER_SIZE_Y);
         let close_node_size = Vec2::splat(NODE_HEADER_SIZE_Y / 2.);
@@ -52,10 +55,11 @@ impl ShadyNode {
                 transform: Transform::from_xyz(pos.x, pos.y, 0.),
                 ..Default::default()
             })
-            .insert(Name::new(format!("{}_node_title", node_name)))
+            .insert(Name::new(format!("{}_node", node_name)))
+            .insert(ShadyNode)
             .insert(InteractionBox::new(header_size, BoxInteraction::Drag))
             .with_children(|b| {
-                b.spawn_bundle(Self::title_text(node_name, assets));
+                b.spawn_bundle(Self::title_text(&node_name, assets));
                 b.spawn_bundle(SpriteBundle {
                     sprite: Sprite::new(body_size),
                     material: assets.node_body_material.clone(),
