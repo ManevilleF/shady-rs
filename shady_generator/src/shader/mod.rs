@@ -58,7 +58,7 @@ impl Shader {
         let id = node.unique_id().clone();
         if let Some(n) = self.nodes.insert(id.clone(), node) {
             log::error!(
-                "FATAL: Overwrote node {}_{} because of identical ids",
+                "FATAL: Overwrote node `{}` ({}) because of identical ids",
                 n.name(),
                 n.unique_id()
             );
@@ -71,18 +71,14 @@ impl Shader {
         self.create_node(node)
     }
 
-    pub fn remove_node(&mut self, node_uuid: &str) -> Option<Node> {
-        match self.nodes.remove(node_uuid) {
+    pub fn remove_node(&mut self, id: &str) -> Option<Node> {
+        match self.nodes.remove(id) {
             None => {
-                log::error!("Could not find node with uuid {} to remove", node_uuid);
+                log::error!("Could not find node with id {} to remove", id);
                 None
             }
             Some(n) => Some(n),
         }
-    }
-
-    pub fn node(&self, id: &str) -> Option<&Node> {
-        self.nodes.get(id)
     }
 
     fn get_node(&self, id: &str) -> Result<&Node, ShadyError> {
@@ -91,20 +87,66 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
+    fn get_input_property(&self, id: &str) -> Result<&InputProperty, ShadyError> {
+        self.input_properties
+            .get(id)
+            .ok_or_else(|| ShadyError::MissingInputProperty(id.to_string()))
+    }
+
+    fn get_output_property(&self, id: &str) -> Result<&OutputProperty, ShadyError> {
+        self.output_properties
+            .get(id)
+            .ok_or_else(|| ShadyError::MissingOutputProperty(id.to_string()))
+    }
+
     fn get_node_mut(&mut self, id: &str) -> Result<&mut Node, ShadyError> {
         self.nodes
             .get_mut(id)
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
-    pub fn add_input_property(&mut self, property: InputProperty) -> Option<InputProperty> {
-        self.input_properties
-            .insert(property.reference.clone(), property)
+    pub fn add_input_property(&mut self, property: InputProperty) -> &InputProperty {
+        let id = property.reference.clone();
+        if let Some(p) = self.input_properties.insert(id.clone(), property) {
+            log::error!(
+                "FATAL: Overwrote input property `{}` ({}) because of identical ids",
+                p.name,
+                p.reference
+            );
+        }
+        self.get_input_property(&id).unwrap()
     }
 
-    pub fn add_output_property(&mut self, property: OutputProperty) -> Option<OutputProperty> {
-        self.output_properties
-            .insert(property.reference.clone(), property)
+    pub fn add_output_property(&mut self, property: OutputProperty) -> &OutputProperty {
+        let id = property.reference.clone();
+        if let Some(p) = self.output_properties.insert(id.clone(), property) {
+            log::error!(
+                "FATAL: Overwrote output property `{}` ({}) because of identical ids",
+                p.name,
+                p.reference
+            );
+        }
+        self.get_output_property(&id).unwrap()
+    }
+
+    pub fn remove_input_property(&mut self, id: &str) -> Option<InputProperty> {
+        match self.input_properties.remove(id) {
+            None => {
+                log::error!("Could not find input property with id {} to remove", id);
+                None
+            }
+            Some(n) => Some(n),
+        }
+    }
+
+    pub fn remove_output_property(&mut self, id: &str) -> Option<OutputProperty> {
+        match self.output_properties.remove(id) {
+            None => {
+                log::error!("Could not find output property with id {} to remove", id);
+                None
+            }
+            Some(n) => Some(n),
+        }
     }
 
     pub fn connect(
@@ -112,13 +154,13 @@ impl Shader {
         connection_attempt: ConnectionAttempt,
     ) -> Result<ConnectionResponse, ShadyError> {
         let glsl_type = match &connection_attempt.connection_from {
-            Connection::PropertyConnection { property_id } => {
+            Connection::InputProperty { property_id } => {
                 self.input_properties
                     .get(property_id)
                     .ok_or_else(|| ShadyError::MissingInputProperty(property_id.clone()))?
                     .glsl_type
             }
-            Connection::NodeConnection {
+            Connection::Node {
                 node_id,
                 field_name,
             } => {
@@ -136,7 +178,10 @@ impl Shader {
             glsl_type,
         };
         match connection_attempt.connection_to {
-            ConnectionTo::ToNode { id, field } => {
+            ConnectionTo::Node {
+                node_id: id,
+                field_name: field,
+            } => {
                 let to_node = self.get_node_mut(&id)?;
                 to_node.connect_input(&field, connection_message)
             }
@@ -155,7 +200,10 @@ impl Shader {
         connection_to: ConnectionTo,
     ) -> Result<Option<Connection>, ShadyError> {
         match connection_to {
-            ConnectionTo::ToNode { id, field } => {
+            ConnectionTo::Node {
+                node_id: id,
+                field_name: field,
+            } => {
                 let to_node = self.get_node_mut(&id)?;
                 to_node.disconnect_field(&field)
             }

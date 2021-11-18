@@ -1,7 +1,8 @@
-pub use {connector::*, interaction::*, node::*, node_input::*, node_output::*};
+pub use {connector::*, input_slot::*, interaction::*, node::*, output_slot::*, property::*};
 
 mod connector;
+mod input_slot;
 mod interaction;
 mod node;
-mod node_input;
-mod node_output;
+mod output_slot;
+mod property;

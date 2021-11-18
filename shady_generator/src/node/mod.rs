@@ -108,7 +108,15 @@ impl Node {
         self.input_param.fields.clone()
     }
 
-    pub fn output_fields(&self) -> Vec<(String, GlslType)> {
+    pub fn input_field_types(&self) -> Vec<(String, GlslType)> {
+        self.input_param
+            .fields
+            .iter()
+            .map(|(k, i)| (k.clone(), i.glsl_type))
+            .collect()
+    }
+
+    pub fn output_field_types(&self) -> Vec<(String, GlslType)> {
         self.output_param.fields()
     }
 
@@ -117,8 +125,8 @@ impl Node {
             .fields
             .iter()
             .filter_map(|(_, f)| match f.connection.as_ref()? {
-                Connection::PropertyConnection { .. } => None,
-                Connection::NodeConnection { node_id, .. } => Some(node_id.clone()),
+                Connection::InputProperty { .. } => None,
+                Connection::Node { node_id, .. } => Some(node_id.clone()),
             })
             .collect()
     }
@@ -137,7 +145,7 @@ impl Node {
         connect_message: ConnectionMessage,
     ) -> Result<ConnectionResponse, ShadyError> {
         // Same connection check
-        if let Connection::NodeConnection { node_id, .. } = &connect_message.connection {
+        if let Connection::Node { node_id, .. } = &connect_message.connection {
             if node_id == &self.uuid {
                 return Err(ShadyError::SameNodeConnection(node_id.clone()));
             }
@@ -190,7 +198,7 @@ mod tests {
         node.connect_input(
             "x",
             ConnectionMessage {
-                connection: Connection::NodeConnection {
+                connection: Connection::Node {
                     node_id: "some_var".to_string(),
                     field_name: "a".to_string(),
                 },
@@ -201,7 +209,7 @@ mod tests {
         node.connect_input(
             "y",
             ConnectionMessage {
-                connection: Connection::NodeConnection {
+                connection: Connection::Node {
                     node_id: "other_var".to_string(),
                     field_name: "z".to_string(),
                 },

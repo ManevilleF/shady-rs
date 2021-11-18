@@ -16,7 +16,7 @@ output_properties:
     reference: o_1
     glsl_type: Float
     connection:
-      NodeConnection:
+      Node:
         node_id: a
         field_name: v
   o_2:
@@ -24,7 +24,7 @@ output_properties:
     reference: o_2
     glsl_type: Float
     connection:
-      NodeConnection:
+      Node:
         node_id: c
         field_name: v
   o_3:
@@ -32,7 +32,7 @@ output_properties:
     reference: o_3
     glsl_type: Float
     connection:
-      NodeConnection:
+      Node:
         node_id: d
         field_name: v
 nodes:
@@ -44,7 +44,7 @@ nodes:
         - - x
           - glsl_type: Float
             connection:
-              PropertyConnection:
+              InputProperty:
                 property_id: i
         - - y
           - glsl_type: Float
@@ -62,13 +62,13 @@ nodes:
         - - x
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: e
                 field_name: v
         - - y
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: a
                 field_name: v
     output_param:
@@ -85,13 +85,13 @@ nodes:
         - - x
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: a
                 field_name: v
         - - y
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: b
                 field_name: v
     output_param:
@@ -108,13 +108,13 @@ nodes:
         - - x
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: b
                 field_name: v
         - - y
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: c
                 field_name: v
     output_param:
@@ -131,7 +131,7 @@ nodes:
         - - x
           - glsl_type: Float
             connection:
-              NodeConnection:
+              Node:
                 node_id: c
                 field_name: v
         - - y

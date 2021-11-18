@@ -16,7 +16,7 @@ output_properties:
     reference: Out_Pos456
     glsl_type: Vec2
     connection:
-      NodeConnection:
+      Node:
         node_id: node_azerty
         field_name: out
 nodes:
@@ -28,7 +28,7 @@ nodes:
         - - pos
           - glsl_type: Vec3
             connection:
-              PropertyConnection:
+              InputProperty:
                 property_id: Gl_Pos123
     output_param:
       GlslType:

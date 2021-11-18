@@ -18,7 +18,7 @@ pub struct OutputProperty {
     pub name: String,
     pub reference: String,
     pub glsl_type: GlslType,
-    pub connection: Option<Connection>,
+    pub(crate) connection: Option<Connection>,
 }
 
 impl InputProperty {
@@ -41,7 +41,6 @@ impl InputProperty {
             self.name
         )
     }
-
     // TODO Add default OpenGL/ES properties (must match version)
 }
 

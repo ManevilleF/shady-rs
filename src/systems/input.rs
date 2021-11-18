@@ -103,6 +103,12 @@ pub fn handle_mouse_input(
                     commands.remove_resource::<NodeConnectorCandidate>();
                 }
                 BoxInteraction::DeleteNode(id) => node_evw.send(ShaderEvent::DeleteNode { id }),
+                BoxInteraction::DeleteOutput(id) => {
+                    node_evw.send(ShaderEvent::DeleteOutputProperty { id })
+                }
+                BoxInteraction::DeleteInput(id) => {
+                    node_evw.send(ShaderEvent::DeleteInputProperty { id })
+                }
             },
         }
     }

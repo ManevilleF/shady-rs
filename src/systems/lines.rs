@@ -1,4 +1,4 @@
-use crate::components::{NodeConnector, NodeInput, NodeOutput};
+use crate::components::{NodeConnector, ShadyInputSlot, ShadyOutputSlot};
 use crate::get_cursor_position;
 use crate::resources::{NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
 use bevy::log;
@@ -17,7 +17,7 @@ pub fn handle_candidate_line(
     cursor_position: Option<Res<WorldCursorPosition>>,
     assets: Res<ShadyAssets>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
-    connector_query: Query<&GlobalTransform, With<NodeOutput>>,
+    connector_query: Query<&GlobalTransform, With<ShadyOutputSlot>>,
     mut lines: ResMut<DebugLines>,
 ) {
     let candidate = match connector_candidate {
@@ -64,7 +64,7 @@ macro_rules! get_vec2_transform {
 pub fn handle_connector_lines(
     mut commands: Commands,
     connector_query: Query<(Entity, &NodeConnector)>,
-    connector_box_query: Query<&GlobalTransform, Or<(With<NodeInput>, With<NodeOutput>)>>,
+    connector_box_query: Query<&GlobalTransform, Or<(With<ShadyInputSlot>, With<ShadyOutputSlot>)>>,
     mut lines: ResMut<DebugLines>,
     assets: Res<ShadyAssets>,
 ) {
