@@ -1,19 +1,12 @@
+use crate::resources::CreationCandidate;
 use bevy::prelude::{Entity, Vec2};
-use shady_generator::{ConnectionAttempt, InputProperty, NodePreset, OutputProperty};
+use shady_generator::ConnectionAttempt;
 
 #[derive(Debug, Clone)]
 pub enum ShaderEvent {
-    CreateNode {
+    CreateElement {
         target_position: Vec2,
-        node_preset: NodePreset,
-    },
-    CreateInputProperty {
-        target_position: Vec2,
-        property: InputProperty,
-    },
-    CreateOutputProperty {
-        target_position: Vec2,
-        property: OutputProperty,
+        candidate: CreationCandidate,
     },
     DeleteNode {
         id: String,

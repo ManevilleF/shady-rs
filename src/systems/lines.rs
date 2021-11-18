@@ -50,7 +50,8 @@ macro_rules! get_vec2_transform {
             Ok(t) => t.translation.xy(),
             Err(e) => {
                 log::warn!(
-                    "Failed to retrieve node connector entity: {}, deleting line.",
+                    "Failed to retrieve node connector entity {:?}, deleting it : {}",
+                    $entity,
                     e
                 );
                 $cmd.entity($entity).despawn_recursive();

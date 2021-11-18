@@ -1,6 +1,6 @@
 use crate::components::{NodeConnector, ShadyInputSlot, ShadyNode, ShadyOutputSlot};
 use crate::events::ShaderEvent;
-use crate::resources::{NodeConnectorCandidate, ShadyAssets};
+use crate::resources::{CreationCandidate, NodeConnectorCandidate, ShadyAssets};
 use crate::CurrentShader;
 use bevy::log;
 use bevy::prelude::*;
@@ -13,73 +13,51 @@ pub fn handle_node_spawn(
 ) {
     for event in spawn_evr.iter() {
         match event {
-            ShaderEvent::CreateNode {
+            ShaderEvent::CreateElement {
                 target_position,
-                node_preset,
-            } => {
-                log::info!(
-                    "Creating Node from `{}` preset at {}, {}",
-                    node_preset.name(),
-                    target_position.x,
-                    target_position.y
-                );
-                let node = current_shader.create_node_from_preset(*node_preset);
-                let id = node.unique_id().clone();
-                let entity = ShadyNode::spawn(&mut commands, &assets, *target_position, node);
-                current_shader.node_entities.insert(id, entity);
-            }
-            ShaderEvent::CreateInputProperty {
-                target_position,
-                property,
-            } => {
-                log::info!(
-                    "Creating Input Node {} at {}, {}",
-                    property.name,
-                    target_position.x,
-                    target_position.y
-                );
-                let property = current_shader.add_input_property(property.clone());
-                let id = property.reference.clone();
-                let entity =
-                    ShadyInputSlot::spawn(&mut commands, &assets, *target_position, property);
-                current_shader.input_property_entities.insert(id, entity);
-            }
-            ShaderEvent::CreateOutputProperty {
-                target_position,
-                property,
-            } => {
-                log::info!(
-                    "Creating Output Node {} at {}, {}",
-                    property.name,
-                    target_position.x,
-                    target_position.y
-                );
-                let property = current_shader.add_output_property(property.clone());
-                let id = property.reference.clone();
-                let entity =
-                    ShadyOutputSlot::spawn(&mut commands, &assets, *target_position, property);
-                current_shader.output_property_entities.insert(id, entity);
-            }
+                candidate,
+            } => match candidate {
+                CreationCandidate::Node(preset) => {
+                    let node = current_shader.create_node_from_preset(*preset);
+                    let id = node.unique_id().clone();
+                    let entity = ShadyNode::spawn(&mut commands, &assets, *target_position, node);
+                    current_shader.node_entities.insert(id, entity);
+                }
+                CreationCandidate::InputProperty(property) => {
+                    let property = current_shader.add_input_property(property.clone());
+                    let id = property.reference.clone();
+                    let entity =
+                        ShadyInputSlot::spawn(&mut commands, &assets, *target_position, property);
+                    current_shader.input_property_entities.insert(id, entity);
+                }
+                CreationCandidate::OutputProperty(property) => {
+                    let property = current_shader.add_output_property(property.clone());
+                    let id = property.reference.clone();
+                    let entity =
+                        ShadyOutputSlot::spawn(&mut commands, &assets, *target_position, property);
+                    current_shader.output_property_entities.insert(id, entity);
+                }
+            },
             ShaderEvent::DeleteNode { id } => {
                 log::info!("Deleting node {}", id);
-                if current_shader.remove_node(&id).is_none() {
+                if current_shader.remove_node(id).is_none() {
                     log::error!("Shader did not have a Node with id {}", id);
                 }
                 current_shader.delete_node_entity(id, &mut commands);
             }
             ShaderEvent::DeleteInputProperty { id } => {
                 log::info!("Deleting input property {}", id);
-                if current_shader.remove_input_property(&id).is_none() {
+                if current_shader.remove_input_property(id).is_none() {
                     log::error!("Shader did not have an input with id {}", id);
                 }
-                current_shader.delete_input_property_entity(&id, &mut commands);
+                current_shader.delete_input_property_entity(id, &mut commands);
             }
             ShaderEvent::DeleteOutputProperty { id } => {
                 log::info!("Deleting output property {}", id);
-                if current_shader.remove_output_property(&id).is_none() {
+                if current_shader.remove_output_property(id).is_none() {
                     log::error!("Shader did not have an output property with id {}", id);
                 }
-                current_shader.delete_output_property_entity(&id, &mut commands);
+                current_shader.delete_output_property_entity(id, &mut commands);
             }
             ShaderEvent::Connect { from, to, attempt } => {
                 match current_shader.connect(attempt.clone()) {

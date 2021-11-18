@@ -1,7 +1,9 @@
 use crate::components::{BoxInteraction, InteractionBox};
 use crate::events::ShaderEvent;
-use crate::resources::{DraggedEntities, NodeConnectorCandidate, WorldCursorPosition};
-use crate::{get_cursor_position, get_or_continue, SelectedNodePreset};
+use crate::resources::{
+    CreationCandidate, DraggedEntities, NodeConnectorCandidate, WorldCursorPosition,
+};
+use crate::{get_cursor_position, get_or_continue};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -44,7 +46,7 @@ pub fn handle_mouse_input(
     mut node_evw: EventWriter<ShaderEvent>,
     mouse_input: Res<Input<MouseButton>>,
     box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
-    mut current_preset: ResMut<SelectedNodePreset>,
+    creation_candidate: Option<Res<CreationCandidate>>,
     mut transform_query: Query<&mut Transform, With<InteractionBox>>,
 ) {
     let position = get_cursor_position!(cursor_position);
@@ -66,12 +68,13 @@ pub fn handle_mouse_input(
     if mouse_input.just_pressed(MouseButton::Left) {
         match get_interaction(&box_query, position.0) {
             None => {
-                if let Some(preset) = current_preset.0 {
-                    node_evw.send(ShaderEvent::CreateNode {
+                if let Some(candidate) = creation_candidate {
+                    node_evw.send(ShaderEvent::CreateElement {
                         target_position: position.0,
-                        node_preset: preset,
+                        candidate: candidate.clone(),
                     });
-                    current_preset.0 = None;
+                    log::debug!("Creating {:?}", *candidate);
+                    commands.remove_resource::<CreationCandidate>();
                 }
                 commands.remove_resource::<NodeConnectorCandidate>();
             }

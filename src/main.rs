@@ -5,7 +5,7 @@ mod resources;
 mod systems;
 
 use crate::events::*;
-use crate::resources::{CurrentShader, SelectedEntities, SelectedNodePreset};
+use crate::resources::{CurrentShader, SelectedEntities};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 #[cfg(feature = "debug")]
@@ -48,8 +48,7 @@ fn main() {
         .add_startup_system(systems::ui::setup.system())
         .add_system_set(SystemSet::new().with_system(systems::ui::menu.system()))
         .add_event::<ShaderEvent>()
-        .insert_resource(CurrentShader::default())
-        .insert_resource(SelectedNodePreset::default());
+        .insert_resource(CurrentShader::default());
     // Debug hierarchy inspector
     #[cfg(feature = "debug")]
     app.add_plugin(WorldInspectorPlugin::new());
