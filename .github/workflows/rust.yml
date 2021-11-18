@@ -16,15 +16,17 @@ jobs:
       - uses: actions/checkout@v2
       - name: build lib
         run: cargo build --verbose -p shady_generator
-     # TODO: enable this
-     # - name: build bin
-     #   run: cargo build --verbose -p shady-rs
-
+      - name: Install dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev
+      - name: build bin
+        run: cargo build --verbose -p shady-rs
 
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev
       - name: test
         run: cargo test --all
 
