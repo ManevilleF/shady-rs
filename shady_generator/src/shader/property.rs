@@ -1,14 +1,14 @@
 use crate::error::ShadyError;
 use crate::generate_uuid;
 use crate::node::{Connection, ConnectionMessage, ConnectionResponse};
-use crate::GlslType;
+use crate::NativeType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct InputProperty {
     pub name: String,
     pub reference: String,
-    pub glsl_type: GlslType,
+    pub glsl_type: NativeType,
     // TODO: handle constants
     pub uniform: bool,
 }
@@ -17,12 +17,12 @@ pub struct InputProperty {
 pub struct OutputProperty {
     pub name: String,
     pub reference: String,
-    pub glsl_type: GlslType,
+    pub glsl_type: NativeType,
     pub(crate) connection: Option<Connection>,
 }
 
 impl InputProperty {
-    pub fn new(glsl_type: GlslType, uniform: bool) -> Self {
+    pub fn new(glsl_type: NativeType, uniform: bool) -> Self {
         let name = glsl_type.get_glsl_type().to_string();
         Self {
             reference: format!("{}_{}", name, generate_uuid()),
@@ -45,7 +45,7 @@ impl InputProperty {
 }
 
 impl OutputProperty {
-    pub fn new(glsl_type: GlslType) -> Self {
+    pub fn new(glsl_type: NativeType) -> Self {
         let name = glsl_type.get_glsl_type().to_string();
         Self {
             reference: format!("{}_{}", name, generate_uuid()),
@@ -115,7 +115,7 @@ mod tests {
             let property = InputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: GlslType::Bool,
+                glsl_type: NativeType::Bool,
                 uniform: false,
             };
             let res = property.glsl_declaration();
@@ -127,7 +127,7 @@ mod tests {
             let property = InputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: GlslType::Bool,
+                glsl_type: NativeType::Bool,
                 uniform: true,
             };
             let res = property.glsl_declaration();
@@ -143,7 +143,7 @@ mod tests {
             let property = OutputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: GlslType::Bool,
+                glsl_type: NativeType::Bool,
                 connection: None,
             };
             let res = property.glsl_declaration();

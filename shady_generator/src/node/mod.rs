@@ -1,7 +1,7 @@
 pub use {connection::*, input::*, operation::*, output::*, presets::*};
 
 use crate::error::ShadyError;
-use crate::{generate_uuid, GlslType};
+use crate::{generate_uuid, NativeType};
 use serde::{Deserialize, Serialize};
 
 mod connection;
@@ -91,13 +91,13 @@ impl Node {
         fields
     }
 
-    pub fn get_input_field(&self, field: &str) -> Option<GlslType> {
+    pub fn get_input_field(&self, field: &str) -> Option<NativeType> {
         let pos = self.find_input_field_pos(field).ok()?;
         let (_k, f) = self.input_param.fields.get(pos)?;
         Some(f.glsl_type())
     }
 
-    pub fn get_output_field(&self, field: &str) -> Option<GlslType> {
+    pub fn get_output_field(&self, field: &str) -> Option<NativeType> {
         let pos = self.find_output_field_pos(field).ok()?;
         let fields = self.output_param.fields();
         let (_k, f) = fields.get(pos)?;
@@ -108,7 +108,7 @@ impl Node {
         self.input_param.fields.clone()
     }
 
-    pub fn input_field_types(&self) -> Vec<(String, GlslType)> {
+    pub fn input_field_types(&self) -> Vec<(String, NativeType)> {
         self.input_param
             .fields
             .iter()
@@ -116,7 +116,7 @@ impl Node {
             .collect()
     }
 
-    pub fn output_field_types(&self) -> Vec<(String, GlslType)> {
+    pub fn output_field_types(&self) -> Vec<(String, NativeType)> {
         self.output_param.fields()
     }
 

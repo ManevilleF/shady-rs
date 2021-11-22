@@ -1,4 +1,4 @@
-use crate::GlslType;
+use crate::NativeType;
 use thiserror::Error;
 
 /// Shady Generator Error types
@@ -7,8 +7,8 @@ pub enum ShadyError {
     /// Glsl type mismatch
     #[error("Wrong input value type, got {input_type} expected {expected_type}")]
     WrongGlslType {
-        input_type: GlslType,
-        expected_type: GlslType,
+        input_type: NativeType,
+        expected_type: NativeType,
     },
     /// Wrong Node field
     #[error("Could not find a field with key `{0}`")]

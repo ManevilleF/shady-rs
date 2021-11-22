@@ -63,14 +63,14 @@ impl NodePreset {
             Self::And => Node::new(name, NativeOperation(And)),
             Self::Or => Node::new(name, NativeOperation(Or)),
             Self::Xor => Node::new(name, NativeOperation(Xor)),
-            Self::FLoatInc => Node::new(name, NativeOperation(Inc(GlslType::Float))),
-            Self::FloatDec => Node::new(name, NativeOperation(Dec(GlslType::Float))),
-            Self::FloatMinus => Node::new(name, NativeOperation(Minus(GlslType::Float))),
-            Self::FloatAdd => Node::new(name, NativeOperation(Add(GlslType::Float))),
-            Self::FloatMul => Node::new(name, NativeOperation(Mul(GlslType::Float))),
-            Self::FloatDiv => Node::new(name, NativeOperation(Div(GlslType::Float))),
-            Self::FloatSelection => Node::new(name, NativeOperation(Selection(GlslType::Float))),
-            Self::FloatEquals => Node::new(name, NativeOperation(Equals(GlslType::Float))),
+            Self::FLoatInc => Node::new(name, NativeOperation(Inc(NativeType::Float))),
+            Self::FloatDec => Node::new(name, NativeOperation(Dec(NativeType::Float))),
+            Self::FloatMinus => Node::new(name, NativeOperation(Minus(NativeType::Float))),
+            Self::FloatAdd => Node::new(name, NativeOperation(Add(NativeType::Float))),
+            Self::FloatMul => Node::new(name, NativeOperation(Mul(NativeType::Float))),
+            Self::FloatDiv => Node::new(name, NativeOperation(Div(NativeType::Float))),
+            Self::FloatSelection => Node::new(name, NativeOperation(Selection(NativeType::Float))),
+            Self::FloatEquals => Node::new(name, NativeOperation(Equals(NativeType::Float))),
             Self::FloatGreaterThan => {
                 Node::new(name, NativeOperation(GreaterThan(ScalarNativeType::Float)))
             }
@@ -79,22 +79,22 @@ impl NodePreset {
                 NativeOperation(GreaterThanEqual(ScalarNativeType::Float)),
             ),
             Self::Vec2 => Node::new(name, TypeConstruction(NonScalarNativeType::Vec2)),
-            Self::Vec2Inc => Node::new(name, NativeOperation(Inc(GlslType::Vec2))),
-            Self::Vec2Dec => Node::new(name, NativeOperation(Dec(GlslType::Vec2))),
-            Self::Vec2Minus => Node::new(name, NativeOperation(Minus(GlslType::Vec2))),
-            Self::Vec2Add => Node::new(name, NativeOperation(Add(GlslType::Vec2))),
-            Self::Vec2Mul => Node::new(name, NativeOperation(Mul(GlslType::Vec2))),
-            Self::Vec2Div => Node::new(name, NativeOperation(Div(GlslType::Vec2))),
-            Self::Vec2Selection => Node::new(name, NativeOperation(Selection(GlslType::Vec2))),
-            Self::Vec2Equals => Node::new(name, NativeOperation(Equals(GlslType::Vec2))),
+            Self::Vec2Inc => Node::new(name, NativeOperation(Inc(NativeType::Vec2))),
+            Self::Vec2Dec => Node::new(name, NativeOperation(Dec(NativeType::Vec2))),
+            Self::Vec2Minus => Node::new(name, NativeOperation(Minus(NativeType::Vec2))),
+            Self::Vec2Add => Node::new(name, NativeOperation(Add(NativeType::Vec2))),
+            Self::Vec2Mul => Node::new(name, NativeOperation(Mul(NativeType::Vec2))),
+            Self::Vec2Div => Node::new(name, NativeOperation(Div(NativeType::Vec2))),
+            Self::Vec2Selection => Node::new(name, NativeOperation(Selection(NativeType::Vec2))),
+            Self::Vec2Equals => Node::new(name, NativeOperation(Equals(NativeType::Vec2))),
             Self::IVec2 => Node::new(name, TypeConstruction(NonScalarNativeType::IVec2)),
             Self::Vec3 => Node::new(name, TypeConstruction(NonScalarNativeType::Vec3)),
             Self::IVec3 => Node::new(name, TypeConstruction(NonScalarNativeType::IVec3)),
             Self::Vec4 => Node::new(name, TypeConstruction(NonScalarNativeType::Vec4)),
             Self::IVec4 => Node::new(name, TypeConstruction(NonScalarNativeType::IVec4)),
-            Self::IntAdd => Node::new(name, NativeOperation(Add(GlslType::Int))),
-            Self::IntMul => Node::new(name, NativeOperation(Mul(GlslType::Int))),
-            Self::IntDiv => Node::new(name, NativeOperation(Div(GlslType::Int))),
+            Self::IntAdd => Node::new(name, NativeOperation(Add(NativeType::Int))),
+            Self::IntMul => Node::new(name, NativeOperation(Mul(NativeType::Int))),
+            Self::IntDiv => Node::new(name, NativeOperation(Div(NativeType::Int))),
         }
     }
 
@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(
             res,
             format!(
-                "float {} = false ? 0.0 : 0.0; // Select float Node",
+                "float {} = false ? 0.0 : 0.0; // Float Selection Node",
                 node.uuid
             )
         );

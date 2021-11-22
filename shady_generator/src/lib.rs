@@ -3,11 +3,11 @@
 // #![forbid(missing_docs)]
 // #![forbid(unsafe_code)]
 
-pub use {error::*, glsl_type::*, graphic_library::GraphicLibrary, node::*, shader::*};
+pub use {error::*, graphic_library::*, native_type::*, node::*, shader::*};
 
 mod error;
-mod glsl_type;
 mod graphic_library;
+mod native_type;
 mod node;
 mod shader;
 

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use shady_generator::GlslType;
+use shady_generator::NativeType;
 
 #[derive(Debug)]
 pub struct GlslTypeMaterials {
@@ -74,21 +74,21 @@ impl ShadyAssets {
         }
     }
 
-    pub fn glsl_type_material(&self, glsl_type: GlslType) -> Handle<ColorMaterial> {
+    pub fn glsl_type_material(&self, glsl_type: NativeType) -> Handle<ColorMaterial> {
         match glsl_type {
-            GlslType::Bool => self.glsl_type_materials.bool_material.clone(),
-            GlslType::Int => self.glsl_type_materials.int_material.clone(),
-            GlslType::UInt => self.glsl_type_materials.uint_material.clone(),
-            GlslType::Float => self.glsl_type_materials.float_material.clone(),
-            GlslType::Double => self.glsl_type_materials.double_material.clone(),
-            GlslType::Vec2 => self.glsl_type_materials.vec2_material.clone(),
-            GlslType::IVec2 => self.glsl_type_materials.ivec2_material.clone(),
-            GlslType::Vec3 => self.glsl_type_materials.vec3_material.clone(),
-            GlslType::IVec3 => self.glsl_type_materials.ivec3_material.clone(),
-            GlslType::Vec4 => self.glsl_type_materials.vec4_material.clone(),
-            GlslType::IVec4 => self.glsl_type_materials.ivec4_material.clone(),
-            GlslType::Sampler2d => self.glsl_type_materials.sampler_2d_material.clone(),
-            GlslType::SamplerCube => self.glsl_type_materials.sampler_cube_material.clone(),
+            NativeType::Bool => self.glsl_type_materials.bool_material.clone(),
+            NativeType::Int => self.glsl_type_materials.int_material.clone(),
+            NativeType::UInt => self.glsl_type_materials.uint_material.clone(),
+            NativeType::Float => self.glsl_type_materials.float_material.clone(),
+            NativeType::Double => self.glsl_type_materials.double_material.clone(),
+            NativeType::Vec2 => self.glsl_type_materials.vec2_material.clone(),
+            NativeType::IVec2 => self.glsl_type_materials.ivec2_material.clone(),
+            NativeType::Vec3 => self.glsl_type_materials.vec3_material.clone(),
+            NativeType::IVec3 => self.glsl_type_materials.ivec3_material.clone(),
+            NativeType::Vec4 => self.glsl_type_materials.vec4_material.clone(),
+            NativeType::IVec4 => self.glsl_type_materials.ivec4_material.clone(),
+            NativeType::Sampler2d => self.glsl_type_materials.sampler_2d_material.clone(),
+            NativeType::SamplerCube => self.glsl_type_materials.sampler_cube_material.clone(),
         }
     }
 }

@@ -1,26 +1,26 @@
-use crate::{GlslType, Input, InputField, Output, ScalarNativeType};
+use crate::{Input, InputField, NativeType, Output, ScalarNativeType};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum NativeOperation {
     /// Increment operation: `a++`
-    Inc(GlslType),
+    Inc(NativeType),
     /// Decrement operation: `a--`
-    Dec(GlslType),
+    Dec(NativeType),
     /// Minus operation: `-a`
-    Minus(GlslType),
+    Minus(NativeType),
     /// Add operation: `a + b`
-    Add(GlslType),
+    Add(NativeType),
     /// Sub operation: `a - b`
-    Sub(GlslType),
+    Sub(NativeType),
     /// Mul operation: `a * b`
-    Mul(GlslType),
+    Mul(NativeType),
     /// Div operation: `a / b`
-    Div(GlslType),
+    Div(NativeType),
     /// Selection operation: ` c ? a : b`, `c` is a boolean
-    Selection(GlslType),
+    Selection(NativeType),
     /// Equals operation: `a == b`, returns a boolean
-    Equals(GlslType),
+    Equals(NativeType),
     /// Greater than operation: `a > b`, returns a boolean
     GreaterThan(ScalarNativeType),
     /// Greater or equal operation: `a >= b`, returns a boolean
@@ -56,7 +56,7 @@ impl NativeOperation {
             | NativeOperation::Equals(_)
             | NativeOperation::GreaterThan(_)
             | NativeOperation::GreaterThanEqual(_) => Output::GlslType {
-                glsl_type: GlslType::Bool,
+                glsl_type: NativeType::Bool,
                 field_name: "o".to_string(),
             },
         }
@@ -86,17 +86,17 @@ impl NativeOperation {
                 ],
             },
             NativeOperation::No => Input {
-                fields: vec![("i".to_string(), InputField::new(GlslType::Bool))],
+                fields: vec![("i".to_string(), InputField::new(NativeType::Bool))],
             },
             NativeOperation::And | NativeOperation::Or | NativeOperation::Xor => Input {
                 fields: vec![
-                    ("a".to_string(), InputField::new(GlslType::Bool)),
-                    ("b".to_string(), InputField::new(GlslType::Bool)),
+                    ("a".to_string(), InputField::new(NativeType::Bool)),
+                    ("b".to_string(), InputField::new(NativeType::Bool)),
                 ],
             },
             NativeOperation::Selection(t) => Input {
                 fields: vec![
-                    ("c".to_string(), InputField::new(GlslType::Bool)),
+                    ("c".to_string(), InputField::new(NativeType::Bool)),
                     ("a".to_string(), InputField::new(*t)),
                     ("b".to_string(), InputField::new(*t)),
                 ],
@@ -124,6 +124,26 @@ impl NativeOperation {
             NativeOperation::Equals(_) => field_values.join(" == "),
             NativeOperation::GreaterThan(_) => field_values.join(" > "),
             NativeOperation::GreaterThanEqual(_) => field_values.join(" >= "),
+        }
+    }
+
+    pub fn name(&self) -> String {
+        match self {
+            NativeOperation::Inc(t) => format!("{}++", t),
+            NativeOperation::Dec(t) => format!("{}--", t),
+            NativeOperation::Minus(t) => format!("-{}", t),
+            NativeOperation::Add(t) => format!("{0} +  {0}", t),
+            NativeOperation::Sub(t) => format!("{0} -  {0}", t),
+            NativeOperation::Mul(t) => format!("{0} *  {0}", t),
+            NativeOperation::Div(t) => format!("{0} /  {0}", t),
+            NativeOperation::No => "NO".to_string(),
+            NativeOperation::And => "AND".to_string(),
+            NativeOperation::Or => "OR".to_string(),
+            NativeOperation::Xor => "XOR".to_string(),
+            NativeOperation::Selection(t) => format!("Select {}", t),
+            NativeOperation::Equals(t) => format!("{0} == {0}", t),
+            NativeOperation::GreaterThan(t) => format!("{0} > {0}", t),
+            NativeOperation::GreaterThanEqual(t) => format!("{0} >= {0}", t),
         }
     }
 }

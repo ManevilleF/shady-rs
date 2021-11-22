@@ -1,11 +1,11 @@
-use crate::GlslType;
+use crate::NativeType;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Output {
     GlslType {
-        glsl_type: GlslType,
+        glsl_type: NativeType,
         field_name: String,
     },
     CustomType(CustomOutput),
@@ -15,7 +15,7 @@ pub enum Output {
 pub struct CustomOutput {
     pub struct_name: String,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub fields: Vec<(String, GlslType)>,
+    pub fields: Vec<(String, NativeType)>,
 }
 
 impl Output {
@@ -26,7 +26,7 @@ impl Output {
         }
     }
 
-    pub fn fields(&self) -> Vec<(String, GlslType)> {
+    pub fn fields(&self) -> Vec<(String, NativeType)> {
         match self {
             Output::GlslType {
                 glsl_type,
@@ -56,7 +56,7 @@ impl CustomOutput {
 }
 
 impl Deref for CustomOutput {
-    type Target = Vec<(String, GlslType)>;
+    type Target = Vec<(String, NativeType)>;
 
     fn deref(&self) -> &Self::Target {
         &self.fields

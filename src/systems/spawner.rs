@@ -1,7 +1,7 @@
 use crate::components::{BoxInteraction, InteractionBox, ShadyInputSlot, ShadyOutputSlot};
 use crate::resources::ShadyAssets;
 use bevy::prelude::*;
-use shady_generator::{Connection, ConnectionTo, GlslType};
+use shady_generator::{Connection, ConnectionTo, NativeType};
 use std::cmp::max;
 
 const NODE_SIZE_X: f32 = 120.;
@@ -12,14 +12,14 @@ const SLOT_STEP: f32 = 40.;
 #[derive(Debug, Clone)]
 pub enum SpawnType {
     Node {
-        input_fields: Vec<(String, GlslType)>,
-        output_fields: Vec<(String, GlslType)>,
+        input_fields: Vec<(String, NativeType)>,
+        output_fields: Vec<(String, NativeType)>,
     },
     InputProperty {
-        output_fields: Vec<(String, GlslType)>,
+        output_fields: Vec<(String, NativeType)>,
     },
     OutputProperty {
-        input_fields: Vec<(String, GlslType)>,
+        input_fields: Vec<(String, NativeType)>,
     },
 }
 
@@ -59,7 +59,7 @@ fn title_text_bundle(value: &str, assets: &ShadyAssets) -> Text2dBundle {
 
 fn spawn_input_slot(
     cmd: &mut ChildBuilder,
-    fields: Vec<(String, GlslType)>,
+    fields: Vec<(String, NativeType)>,
     (size, pos_x): (Vec2, f32),
     id: &str,
     assets: &ShadyAssets,
@@ -94,7 +94,7 @@ fn spawn_input_slot(
 
 fn spawn_output_slot(
     cmd: &mut ChildBuilder,
-    fields: Vec<(String, GlslType)>,
+    fields: Vec<(String, NativeType)>,
     (size, pos_x): (Vec2, f32),
     id: &str,
     assets: &ShadyAssets,

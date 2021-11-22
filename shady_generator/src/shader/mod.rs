@@ -8,7 +8,7 @@ mod to_glsl;
 use crate::shader::precision::ShaderPrecision;
 use crate::{
     ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
-    ConnectionTo, GlslType, GraphicLibrary, Node, NodePreset, ShadyError,
+    ConnectionTo, GraphicLibrary, NativeType, Node, NodePreset, ShadyError,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -34,7 +34,7 @@ pub struct Shader {
     //     skip_serializing_if = "HashMap::is_empty",
     //     serialize_with = "ordered_map"
     // )]
-    pub default_precisions: HashMap<GlslType, ShaderPrecision>,
+    pub default_precisions: HashMap<NativeType, ShaderPrecision>,
     #[serde(
         skip_serializing_if = "HashMap::is_empty",
         serialize_with = "ordered_map"

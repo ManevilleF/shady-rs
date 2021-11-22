@@ -1,4 +1,4 @@
-use crate::GlslType;
+use crate::NativeType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
@@ -16,7 +16,7 @@ pub struct ConnectionAttempt {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConnectionMessage {
     pub connection: Connection,
-    pub glsl_type: GlslType,
+    pub glsl_type: NativeType,
 }
 
 pub type ConnectionResponse = Option<Connection>;
@@ -28,7 +28,7 @@ pub enum Connection {
 }
 
 impl ConnectionMessage {
-    pub fn new(connection: Connection, glsl_type: GlslType) -> Self {
+    pub fn new(connection: Connection, glsl_type: NativeType) -> Self {
         Self {
             connection,
             glsl_type,

@@ -1,9 +1,10 @@
+mod builder;
 mod native_function;
 mod native_operation;
 
 pub use {native_function::*, native_operation::*};
 
-use crate::{GlslType, Input, NonScalarNativeType, Output, ShadyError};
+use crate::{Input, NonScalarNativeType, Output, ShadyError};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 
@@ -73,7 +74,7 @@ impl InternalNodeOperation {
                 format!("{}({})", function_name, input_fields.join(", "))
             }
             Self::TypeConstruction(t) => {
-                format!("{}({})", GlslType::from(*t), input_fields.join(", "))
+                format!("{}({})", t, input_fields.join(", "))
             }
             Self::NativeOperation(o) => o.glsl_operation(input_fields),
             Self::NativeFunction(f) => {
