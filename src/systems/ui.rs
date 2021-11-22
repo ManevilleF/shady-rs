@@ -1,7 +1,7 @@
 use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
 use crate::{CurrentShader, UiState};
 use bevy::prelude::*;
-use bevy_egui::egui::Ui;
+use bevy_egui::egui::{Button, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::{
     FloatingNativeType, NativeFunction, NativeOperation, NativeType, NonScalarNativeType,
@@ -43,7 +43,12 @@ pub fn menu(
         .min_width(150.)
         .max_width(300.)
         .show(egui_ctx.ctx(), |ui| {
-            ui.heading("Shady");
+            ui.label(
+                Label::new("Shady-rs")
+                    .text_color(Rgba::from_rgb(1., 1., 1.))
+                    .strong()
+                    .heading(),
+            );
             ui.separator();
 
             ui.label("Shader name:");
@@ -79,6 +84,13 @@ pub fn menu(
                     )),
                 ));
             }
+            ui.separator();
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
+                ui.add(
+                    egui::Hyperlink::new("https://github.com/ManevilleF/shady-rs")
+                        .text("Shady-rs by ManevilleF"),
+                );
+            });
         });
     let mut close = false;
     let mut new_candidate = None;
@@ -89,8 +101,9 @@ pub fn menu(
                 match candidate {
                     Candidate::OperationSelection(selection) => {
                         let mut picked = false;
-                        ui.label("Select an operation");
-                        match selection {
+                        ui.heading("Select an operation");
+                        ui.separator();
+                        ui.horizontal_wrapped(|ui| match selection {
                             OperationSelection::NativeOperation(operation) => {
                                 for available_operation in NativeOperation::VARIANTS {
                                     if ui.button(available_operation.descriptive_name()).clicked() {
@@ -107,7 +120,7 @@ pub fn menu(
                                     }
                                 }
                             }
-                        }
+                        });
                         if picked {
                             new_candidate = Some(Candidate::TypeSelection(
                                 selection.type_selection_candidate(),
@@ -116,7 +129,8 @@ pub fn menu(
                     }
                     Candidate::TypeSelection(intermediate_candidate) => {
                         let mut picked = false;
-                        ui.label("Select a type");
+                        ui.heading("Select a type");
+                        ui.separator();
                         match intermediate_candidate {
                             TypeSelection::InputProperty(t) | TypeSelection::OutputProperty(t) => {
                                 type_selection(ui, NativeType::VARIANTS, t, &mut picked);
@@ -206,6 +220,7 @@ pub fn menu(
                         }
                     }
                     Candidate::Creation(creation_candidate) => {
+                        ui.heading("Options");
                         match creation_candidate {
                             CreationCandidate::Node { name, .. } => {
                                 ui.horizontal(|ui| {
@@ -236,13 +251,19 @@ pub fn menu(
                             }
                         }
                         ui.separator();
-                        if ui.button("Create").clicked() {
+                        if Button::new("Create")
+                            .fill(Rgba::from_rgb(0.2, 0.6, 0.2))
+                            .text_color(Rgba::from_rgb(1., 1., 1.).into())
+                            .ui(ui)
+                            .clicked()
+                        {
                             commands.insert_resource(creation_candidate.clone());
                             close = true;
                         }
                     }
                 }
-                if ui.small_button("Cancel").clicked() {
+                ui.add_space(10.);
+                if ui.button("Cancel").clicked() {
                     close = true;
                 }
             });
