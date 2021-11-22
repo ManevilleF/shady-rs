@@ -100,6 +100,22 @@ impl NativeType {
             NativeType::SamplerCube => "T4",
         }
     }
+
+    pub const VARIANTS: &'static [Self] = &[
+        Self::Bool,
+        Self::Int,
+        Self::UInt,
+        Self::Float,
+        Self::Double,
+        Self::Vec2,
+        Self::IVec2,
+        Self::Vec3,
+        Self::IVec3,
+        Self::Vec4,
+        Self::IVec4,
+        Self::Sampler2d,
+        Self::SamplerCube,
+    ];
 }
 
 impl Default for NativeType {

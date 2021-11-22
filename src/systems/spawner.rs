@@ -141,7 +141,11 @@ pub fn spawn_element(
     commands
         .spawn_bundle(SpriteBundle {
             sprite: Sprite::new(header_size),
-            material: assets.node_title_material.clone(),
+            material: match spawn_type {
+                SpawnType::Node { .. } => assets.node_title_material.clone(),
+                SpawnType::InputProperty { .. } => assets.input_property_title_material.clone(),
+                SpawnType::OutputProperty { .. } => assets.output_property_title_material.clone(),
+            },
             transform: Transform::from_xyz(pos.x, pos.y, 0.),
             ..Default::default()
         })
@@ -164,7 +168,7 @@ pub fn spawn_element(
             close_button
                 .insert_bundle(SpriteBundle {
                     sprite: Sprite::new(close_button_size),
-                    material: assets.close_node_material.clone(),
+                    material: assets.delete_icon_material.clone(),
                     transform: Transform::from_xyz(
                         NODE_SIZE_X / 2. + close_button_size.x / 2.,
                         close_button_size.y / 2.,

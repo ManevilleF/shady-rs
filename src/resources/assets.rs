@@ -22,7 +22,9 @@ pub struct GlslTypeMaterials {
 pub struct ShadyAssets {
     pub font: Handle<Font>,
     pub node_title_material: Handle<ColorMaterial>,
-    pub close_node_material: Handle<ColorMaterial>,
+    pub input_property_title_material: Handle<ColorMaterial>,
+    pub output_property_title_material: Handle<ColorMaterial>,
+    pub delete_icon_material: Handle<ColorMaterial>,
     pub node_body_material: Handle<ColorMaterial>,
     pub connector_color: Color,
     pub selected_connector_color: Color,
@@ -39,10 +41,16 @@ impl ShadyAssets {
 
     pub fn load(assets: &mut Assets<ColorMaterial>, asset_server: &AssetServer) -> Self {
         let dot_texture = asset_server.load("sprites/2x/outline_circle_white_48dp.png");
+        let close_texture = asset_server.load("sprites/2x/outline_close_white_48dp.png");
         Self {
             font: asset_server.load("fonts/AvenirNext-Regular.ttf"),
             node_title_material: assets.add(Color::CYAN.into()),
-            close_node_material: assets.add(Color::RED.into()),
+            input_property_title_material: assets.add(Color::OLIVE.into()),
+            output_property_title_material: assets.add(Color::TURQUOISE.into()),
+            delete_icon_material: assets.add(ColorMaterial {
+                color: Color::RED,
+                texture: Some(close_texture),
+            }),
             node_body_material: assets.add(Color::GRAY.into()),
             connector_color: Color::WHITE,
             selected_connector_color: Color::GOLD,

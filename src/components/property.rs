@@ -3,4 +3,4 @@ use bevy_inspector_egui::Inspectable;
 
 #[cfg_attr(feature = "debug", derive(Inspectable))]
 #[derive(Debug)]
-pub enum ShadyProperty {}
+pub struct ShadyProperty;

@@ -1,6 +1,6 @@
 pub use {
     assets::*, connector_candidate::*, creation_candidate::*, cursor_position::*,
-    dragged_entities::*, selected_entities::*, shader::*,
+    dragged_entities::*, selected_entities::*, shader::*, ui_state::*,
 };
 
 mod assets;
@@ -10,3 +10,4 @@ mod cursor_position;
 mod dragged_entities;
 mod selected_entities;
 mod shader;
+mod ui_state;
