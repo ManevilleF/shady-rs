@@ -1,11 +1,12 @@
-use crate::components::{NodeConnector, ShadyInputSlot, ShadyNode, ShadyOutputSlot};
+use crate::components::NodeConnector;
 use crate::events::ShaderEvent;
 use crate::resources::{CreationCandidate, NodeConnectorCandidate, ShadyAssets};
+use crate::systems::spawner::{spawn_element, SpawnType};
 use crate::CurrentShader;
 use bevy::log;
 use bevy::prelude::*;
 
-pub fn handle_node_spawn(
+pub fn handle_shader_event(
     mut commands: Commands,
     mut spawn_evr: EventReader<ShaderEvent>,
     mut current_shader: ResMut<CurrentShader>,
@@ -20,21 +21,44 @@ pub fn handle_node_spawn(
                 CreationCandidate::Node(preset) => {
                     let node = current_shader.create_node_from_preset(*preset);
                     let id = node.unique_id().clone();
-                    let entity = ShadyNode::spawn(&mut commands, &assets, *target_position, node);
+                    let entity = spawn_element(
+                        &mut commands,
+                        &assets,
+                        *target_position,
+                        (node.unique_id(), node.name()),
+                        SpawnType::Node {
+                            input_fields: node.input_field_types(),
+                            output_fields: node.output_field_types(),
+                        },
+                    );
                     current_shader.node_entities.insert(id, entity);
                 }
                 CreationCandidate::InputProperty(property) => {
                     let property = current_shader.add_input_property(property.clone());
                     let id = property.reference.clone();
-                    let entity =
-                        ShadyInputSlot::spawn(&mut commands, &assets, *target_position, property);
+                    let entity = spawn_element(
+                        &mut commands,
+                        &assets,
+                        *target_position,
+                        (&property.reference, &property.name),
+                        SpawnType::InputProperty {
+                            output_fields: vec![(property.reference.clone(), property.glsl_type)],
+                        },
+                    );
                     current_shader.input_property_entities.insert(id, entity);
                 }
                 CreationCandidate::OutputProperty(property) => {
                     let property = current_shader.add_output_property(property.clone());
                     let id = property.reference.clone();
-                    let entity =
-                        ShadyOutputSlot::spawn(&mut commands, &assets, *target_position, property);
+                    let entity = spawn_element(
+                        &mut commands,
+                        &assets,
+                        *target_position,
+                        (&property.reference, &property.name),
+                        SpawnType::OutputProperty {
+                            input_fields: vec![(property.reference.clone(), property.glsl_type)],
+                        },
+                    );
                     current_shader.output_property_entities.insert(id, entity);
                 }
             },

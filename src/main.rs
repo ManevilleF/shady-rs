@@ -33,7 +33,7 @@ fn main() {
                 .with_system(systems::input::handle_mouse_input.system().after("cursor")),
         )
         // Nodes
-        .add_system(systems::nodes::handle_node_spawn.system())
+        .add_system(systems::shader::handle_shader_event.system())
         // Lines
         .add_system_set(
             SystemSet::new()

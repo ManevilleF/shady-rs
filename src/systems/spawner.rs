@@ -1,11 +1,12 @@
 use crate::components::{BoxInteraction, InteractionBox, ShadyInputSlot, ShadyOutputSlot};
 use crate::resources::ShadyAssets;
+use bevy::ecs::component::Component;
 use bevy::prelude::*;
 use shady_generator::{Connection, ConnectionTo, NativeType};
 use std::cmp::max;
 
-const NODE_SIZE_X: f32 = 120.;
-const NODE_HEADER_SIZE_Y: f32 = 30.;
+const NODE_SIZE_X: f32 = 140.;
+const NODE_HEADER_SIZE_Y: f32 = 40.;
 const SLOT_SIZE: f32 = 15.;
 const SLOT_STEP: f32 = 40.;
 
@@ -48,6 +49,48 @@ fn title_text_bundle(value: &str, assets: &ShadyAssets) -> Text2dBundle {
                 },
             }],
             alignment: TextAlignment {
+                vertical: VerticalAlign::Top,
+                horizontal: HorizontalAlign::Center,
+            },
+        },
+        transform: Transform::from_xyz(0., 0., 1.),
+        ..Default::default()
+    }
+}
+
+fn secondary_text_bundle(value: &str, assets: &ShadyAssets) -> Text2dBundle {
+    Text2dBundle {
+        text: Text {
+            sections: vec![TextSection {
+                value: value.to_string(),
+                style: TextStyle {
+                    font: assets.font.clone(),
+                    color: Color::GRAY,
+                    font_size: 15.,
+                },
+            }],
+            alignment: TextAlignment {
+                vertical: VerticalAlign::Bottom,
+                horizontal: HorizontalAlign::Center,
+            },
+        },
+        transform: Transform::from_xyz(0., 0., 1.),
+        ..Default::default()
+    }
+}
+
+fn slot_text_bundle(value: String, assets: &ShadyAssets) -> Text2dBundle {
+    Text2dBundle {
+        text: Text {
+            sections: vec![TextSection {
+                value,
+                style: TextStyle {
+                    font: assets.font.clone(),
+                    color: Color::WHITE,
+                    font_size: 15.,
+                },
+            }],
+            alignment: TextAlignment {
                 vertical: VerticalAlign::Center,
                 horizontal: HorizontalAlign::Center,
             },
@@ -57,49 +100,18 @@ fn title_text_bundle(value: &str, assets: &ShadyAssets) -> Text2dBundle {
     }
 }
 
-fn spawn_input_slot(
+fn spawn_slots<F, C>(
     cmd: &mut ChildBuilder,
     fields: Vec<(String, NativeType)>,
     (size, pos_x): (Vec2, f32),
-    id: &str,
     assets: &ShadyAssets,
-    property: bool,
-) {
-    for (i, (field_name, field)) in fields.into_iter().enumerate() {
-        cmd.spawn_bundle(SpriteBundle {
-            sprite: Sprite::new(size),
-            material: assets.glsl_type_material(field),
-            transform: Transform::from_xyz(
-                -pos_x,
-                -NODE_HEADER_SIZE_Y - (SLOT_STEP * i as f32),
-                0.,
-            ),
-            ..Default::default()
-        })
-        .insert(Name::new(format!("{} input", field_name)))
-        .insert(InteractionBox::new(
-            size,
-            BoxInteraction::ConnectionEnd(if property {
-                ConnectionTo::OutputProperty { id: id.to_string() }
-            } else {
-                ConnectionTo::Node {
-                    node_id: id.to_string(),
-                    field_name,
-                }
-            }),
-        ))
-        .insert(ShadyInputSlot { connected_to: None });
-    }
-}
-
-fn spawn_output_slot(
-    cmd: &mut ChildBuilder,
-    fields: Vec<(String, NativeType)>,
-    (size, pos_x): (Vec2, f32),
-    id: &str,
-    assets: &ShadyAssets,
-    property: bool,
-) {
+    box_interaction: F,
+    component: C,
+    use_field_name: bool,
+) where
+    F: Fn(&str) -> BoxInteraction,
+    C: Component + Clone,
+{
     for (i, (field_name, field)) in fields.into_iter().enumerate() {
         cmd.spawn_bundle(SpriteBundle {
             sprite: Sprite::new(size),
@@ -107,21 +119,22 @@ fn spawn_output_slot(
             transform: Transform::from_xyz(pos_x, -NODE_HEADER_SIZE_Y - (SLOT_STEP * i as f32), 0.),
             ..Default::default()
         })
-        .insert(Name::new(format!("{} output", field_name)))
-        .insert(InteractionBox::new(
-            size,
-            BoxInteraction::ConnectionStart(if property {
-                Connection::InputProperty {
-                    property_id: id.to_string(),
-                }
-            } else {
-                Connection::Node {
-                    node_id: id.to_string(),
-                    field_name,
-                }
-            }),
-        ))
-        .insert(ShadyOutputSlot);
+        .insert(Name::new(format!("{} input", field_name)))
+        .insert(InteractionBox::new(size, box_interaction(&field_name)))
+        .insert(component.clone())
+        .with_children(|builder| {
+            builder.spawn_bundle(Text2dBundle {
+                transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 1.5, 0., 1.),
+                ..slot_text_bundle(
+                    if use_field_name {
+                        format!("{} ({})", field_name, field.type_complexity())
+                    } else {
+                        format!("({})", field.type_complexity())
+                    },
+                    assets,
+                )
+            });
+        });
     }
 }
 
@@ -156,6 +169,9 @@ pub fn spawn_element(
                 .spawn_bundle(title_text_bundle(name, assets))
                 .insert(Name::new(format!("{} title", name)));
             builder
+                .spawn_bundle(secondary_text_bundle(id, assets))
+                .insert(Name::new(format!("{} ref", id)));
+            builder
                 .spawn_bundle(SpriteBundle {
                     sprite: Sprite::new(body_size),
                     material: assets.node_body_material.clone(),
@@ -186,21 +202,33 @@ pub fn spawn_element(
                         close_button_size,
                         BoxInteraction::DeleteNode(id.to_string()),
                     ));
-                    spawn_input_slot(
+                    spawn_slots(
                         &mut builder,
                         input_fields,
-                        (slot_size, slot_x_pos),
-                        id,
+                        (slot_size, -slot_x_pos),
                         assets,
-                        false,
+                        |f| {
+                            BoxInteraction::ConnectionEnd(ConnectionTo::Node {
+                                node_id: id.to_string(),
+                                field_name: f.to_string(),
+                            })
+                        },
+                        ShadyInputSlot::default(),
+                        true,
                     );
-                    spawn_output_slot(
+                    spawn_slots(
                         &mut builder,
                         output_fields,
                         (slot_size, slot_x_pos),
-                        id,
                         assets,
-                        false,
+                        |f| {
+                            BoxInteraction::ConnectionStart(Connection::Node {
+                                node_id: id.to_string(),
+                                field_name: f.to_string(),
+                            })
+                        },
+                        ShadyOutputSlot,
+                        true,
                     );
                 }
                 SpawnType::InputProperty { output_fields } => {
@@ -208,13 +236,18 @@ pub fn spawn_element(
                         close_button_size,
                         BoxInteraction::DeleteInput(id.to_string()),
                     ));
-                    spawn_output_slot(
+                    spawn_slots(
                         &mut builder,
                         output_fields,
                         (slot_size, slot_x_pos),
-                        id,
                         assets,
-                        true,
+                        |_f| {
+                            BoxInteraction::ConnectionStart(Connection::InputProperty {
+                                property_id: id.to_string(),
+                            })
+                        },
+                        ShadyOutputSlot,
+                        false,
                     );
                 }
                 SpawnType::OutputProperty { input_fields } => {
@@ -222,13 +255,18 @@ pub fn spawn_element(
                         close_button_size,
                         BoxInteraction::DeleteOutput(id.to_string()),
                     ));
-                    spawn_input_slot(
+                    spawn_slots(
                         &mut builder,
                         input_fields,
-                        (slot_size, slot_x_pos),
-                        id,
+                        (slot_size, -slot_x_pos),
                         assets,
-                        true,
+                        |_f| {
+                            BoxInteraction::ConnectionEnd(ConnectionTo::OutputProperty {
+                                id: id.to_string(),
+                            })
+                        },
+                        ShadyInputSlot::default(),
+                        false,
                     );
                 }
             }
