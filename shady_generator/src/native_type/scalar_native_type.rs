@@ -2,7 +2,7 @@ use crate::NativeType;
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 
-/// Scalar native types
+/// Scalar shader native types
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ScalarNativeType {
     /// Boolean type
@@ -18,6 +18,7 @@ pub enum ScalarNativeType {
 }
 
 impl ScalarNativeType {
+    /// All enum variants
     pub const VARIANTS: &'static [Self] =
         &[Self::Bool, Self::Int, Self::UInt, Self::Float, Self::Double];
 }

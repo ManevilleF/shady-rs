@@ -88,6 +88,11 @@ pub fn menu(
                     TypeSelection::TypeConstruction(NonScalarNativeType::Vec2),
                 ));
             }
+            if ui.button("Type Split").clicked() {
+                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::TypeSplit(
+                    NonScalarNativeType::Vec2,
+                )));
+            }
             if ui.button("Native Operation").clicked() {
                 ui_state.candidate = Some(Candidate::OperationSelection(
                     OperationSelection::NativeOperation(NativeOperation::Inc(NativeType::Float)),
@@ -151,7 +156,7 @@ pub fn menu(
                             TypeSelection::InputProperty(t) | TypeSelection::OutputProperty(t) => {
                                 type_selection(ui, NativeType::VARIANTS, t, &mut picked);
                             }
-                            TypeSelection::TypeConstruction(t) => {
+                            TypeSelection::TypeConstruction(t) | TypeSelection::TypeSplit(t) => {
                                 type_selection(ui, NonScalarNativeType::VARIANTS, t, &mut picked);
                             }
                             TypeSelection::NativeOperation(o) => match o {

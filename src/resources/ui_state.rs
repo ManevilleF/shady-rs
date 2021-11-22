@@ -9,6 +9,7 @@ pub enum TypeSelection {
     InputProperty(NativeType),
     OutputProperty(NativeType),
     TypeConstruction(NonScalarNativeType),
+    TypeSplit(NonScalarNativeType),
     NativeOperation(NativeOperation),
     NativeFunction(NativeFunction),
 }
@@ -56,6 +57,10 @@ impl TypeSelection {
             Self::TypeConstruction(t) => CreationCandidate::Node {
                 name: t.to_string(),
                 operation: NodeOperation::TypeConstruction(*t),
+            },
+            Self::TypeSplit(t) => CreationCandidate::Node {
+                name: format!("{} Split", t),
+                operation: NodeOperation::TypeSplit(*t),
             },
             Self::NativeOperation(o) => CreationCandidate::Node {
                 name: o.name(),

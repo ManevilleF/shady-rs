@@ -2,6 +2,7 @@ use crate::NativeType;
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 
+/// Shader native floating point types
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum FloatingNativeType {
     /// Floating number type
@@ -15,6 +16,7 @@ pub enum FloatingNativeType {
 }
 
 impl FloatingNativeType {
+    /// All enum variants
     pub const VARIANTS: &'static [Self] = &[Self::Float, Self::Vec2, Self::Vec3, Self::Vec4];
 }
 

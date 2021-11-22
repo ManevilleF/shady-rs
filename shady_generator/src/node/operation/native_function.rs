@@ -1,6 +1,7 @@
 use crate::{FloatingNativeType, Input, InputField, NativeType, Output};
 use serde::{Deserialize, Serialize};
 
+/// Shader native functions
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum NativeFunction {
     /// The `radians` function converts degrees to radians.
@@ -139,6 +140,7 @@ pub enum NativeFunction {
 }
 
 impl NativeFunction {
+    /// Retrieves the name of the native function
     pub fn function_name(&self) -> &'static str {
         match self {
             NativeFunction::Radians(_) => "radians",
@@ -181,6 +183,7 @@ impl NativeFunction {
         }
     }
 
+    /// Retrieves a unique descriptive name for the native function
     pub fn descriptive_name(&self) -> &'static str {
         match self {
             NativeFunction::Radians(_) => "radians",
@@ -233,6 +236,7 @@ impl NativeFunction {
         }
     }
 
+    /// Retrieves the input data for the native function
     pub fn input(&self) -> Input {
         match self {
             NativeFunction::Radians(t)
@@ -394,6 +398,7 @@ impl NativeFunction {
         }
     }
 
+    /// Retrieves the output data for the native function
     pub fn output(&self) -> Output {
         match self {
             NativeFunction::Radians(t)
@@ -458,6 +463,7 @@ impl NativeFunction {
         }
     }
 
+    /// All enum variants with default values
     pub const VARIANTS: &'static [Self] = &[
         Self::Radians(FloatingNativeType::Float),
         Self::Degrees(FloatingNativeType::Float),

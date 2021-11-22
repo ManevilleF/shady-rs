@@ -1,4 +1,4 @@
-use crate::NativeType;
+use crate::{NativeType, NonScalarNativeType};
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
@@ -9,6 +9,7 @@ pub enum Output {
         field_name: String,
     },
     CustomType(CustomOutput),
+    Split(NonScalarNativeType),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,6 +24,7 @@ impl Output {
         match self {
             Output::GlslType { glsl_type, .. } => glsl_type.get_glsl_type().to_string(),
             Output::CustomType(c) => c.struct_name.clone(),
+            Output::Split(t) => NativeType::from(*t).get_glsl_type().to_string(),
         }
     }
 
@@ -33,6 +35,7 @@ impl Output {
                 field_name,
             } => vec![(field_name.clone(), *glsl_type)],
             Output::CustomType(c) => c.fields.clone(),
+            Output::Split(t) => t.fields(),
         }
     }
 

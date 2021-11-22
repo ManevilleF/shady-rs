@@ -4,10 +4,12 @@ use thiserror::Error;
 /// Shady Generator Error types
 #[derive(Debug, Error)]
 pub enum ShadyError {
-    /// Glsl type mismatch
+    /// Shader Native type mismatch
     #[error("Wrong input value type, got {input_type} expected {expected_type}")]
-    WrongGlslType {
+    WrongNativeType {
+        /// Received native type
         input_type: NativeType,
+        /// Expected native type
         expected_type: NativeType,
     },
     /// Wrong Node field
@@ -41,7 +43,9 @@ pub enum ShadyError {
     /// File not found from `std::io::Error`
     #[error("File `{file}` not found")]
     FileNotFound {
+        /// File path
         file: String,
+        /// Source error
         #[source]
         source: std::io::Error,
     },

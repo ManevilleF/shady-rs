@@ -7,7 +7,6 @@ pub use {floating_native_type::*, non_scalar_native_type::*, scalar_native_type:
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 
-// TODO: Rename to `NativeType`
 /// Available native types for input and output properties and nodes.
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum NativeType {
@@ -86,6 +85,7 @@ impl NativeType {
         }
     }
 
+    /// All enum variants
     pub const VARIANTS: &'static [Self] = &[
         Self::Bool,
         Self::Int,

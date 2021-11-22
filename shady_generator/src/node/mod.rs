@@ -9,6 +9,8 @@ mod input;
 mod operation;
 mod output;
 
+/// A Shader node, representing an operation and input/output data
+/// A Node also has a name, a unique id
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Node {
     name: String,
@@ -19,6 +21,7 @@ pub struct Node {
 }
 
 impl Node {
+    /// Instantiates a shader node with the given `name` and `operation`
     pub fn new(name: &str, operation: NodeOperation) -> Self {
         Self {
             name: name.to_string(),
@@ -29,6 +32,8 @@ impl Node {
         }
     }
 
+    /// Instantiates a shader node with the given `name` and `operation` and with a custom unique id
+    /// as `custom_id`
     pub fn new_with_custom_id(name: &str, custom_id: &str, operation: NodeOperation) -> Self {
         Self {
             name: name.to_string(),
@@ -39,14 +44,17 @@ impl Node {
         }
     }
 
+    /// Retrieves the node name
     pub fn name(&self) -> &String {
         &self.name
     }
 
+    /// Retrieves the node unique id
     pub fn unique_id(&self) -> &String {
         &self.uuid
     }
 
+    /// Retrieves the name and unique id of the Node formatted together
     pub fn unique_name(&self) -> String {
         format!("{}_{}", self.name, self.uuid)
     }
@@ -90,12 +98,14 @@ impl Node {
         fields
     }
 
+    /// Retrieves an input field of the Shader Node
     pub fn get_input_field(&self, field: &str) -> Option<NativeType> {
         let pos = self.find_input_field_pos(field).ok()?;
         let (_k, f) = self.input_param.fields.get(pos)?;
         Some(f.glsl_type())
     }
 
+    /// Retrieves an output field of the Shader Node
     pub fn get_output_field(&self, field: &str) -> Option<NativeType> {
         let pos = self.find_output_field_pos(field).ok()?;
         let fields = self.output_param.fields();
@@ -103,10 +113,12 @@ impl Node {
         Some(*f)
     }
 
+    /// Retrieves all input fields
     pub fn input_fields(&self) -> Vec<(String, InputField)> {
         self.input_param.fields.clone()
     }
 
+    /// Retrieves all input fields as `NativeType`
     pub fn input_field_types(&self) -> Vec<(String, NativeType)> {
         self.input_param
             .fields
@@ -115,10 +127,12 @@ impl Node {
             .collect()
     }
 
+    /// Retrieves all output fields
     pub fn output_field_types(&self) -> Vec<(String, NativeType)> {
         self.output_param.fields()
     }
 
+    /// Retrieves all the connections to other shader nodes
     pub fn node_connections(&self) -> Vec<String> {
         self.input_param
             .fields
@@ -130,14 +144,17 @@ impl Node {
             .collect()
     }
 
+    /// Retrieves the optional `struct` declaration for the shader code
     pub fn struct_declaration(&self) -> Option<String> {
         self.output_param.custom_declaration()
     }
 
+    /// Retrieves the optional function declaration for the shader code
     pub fn function_declaration(&self) -> Result<Option<String>, ShadyError> {
         self.operation.function_declaration()
     }
 
+    /// Connects an output field (from a node or a property) to an input field of this Node.
     pub fn connect_input(
         &mut self,
         target_field: &str,
@@ -157,7 +174,7 @@ impl Node {
             .ok_or_else(|| ShadyError::WrongFieldKey(target_field.to_string()))?;
         let expected_type = field.glsl_type();
         if connect_message.glsl_type != expected_type {
-            return Err(ShadyError::WrongGlslType {
+            return Err(ShadyError::WrongNativeType {
                 input_type: connect_message.glsl_type,
                 expected_type,
             });
@@ -165,6 +182,9 @@ impl Node {
         Ok(field.connection.replace(connect_message.connection))
     }
 
+    /// Removes connection data as stored in the input field with `field_name`.
+    ///
+    /// If found, the removed connection is returned
     pub fn disconnect_field(&mut self, field_name: &str) -> Result<Option<Connection>, ShadyError> {
         let field_pos = self.find_input_field_pos(field_name)?;
         let (_key, field) = self
@@ -175,6 +195,7 @@ impl Node {
         Ok(field.connection.take())
     }
 
+    /// Produces the associated shader code
     pub fn to_glsl(&self) -> String {
         format!(
             "{} {} = {}; // {} Node",

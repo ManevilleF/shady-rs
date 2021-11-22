@@ -1,4 +1,4 @@
-use crate::{Input, InputField, NativeType, ScalarNativeType};
+use crate::{Input, InputField, NativeType, Output, ScalarNativeType};
 use serde::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
 
@@ -20,107 +20,56 @@ pub enum NonScalarNativeType {
 }
 
 impl NonScalarNativeType {
-    pub fn input(&self) -> Input {
+    pub(crate) fn fields(&self) -> Vec<(String, NativeType)> {
         match self {
-            Self::Vec2 => Input {
-                fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                ],
-            },
-            Self::IVec2 => Input {
-                fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                ],
-            },
-            Self::Vec3 => Input {
-                fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "z".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                ],
-            },
-            Self::IVec3 => Input {
-                fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                    (
-                        "z".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                ],
-            },
-            Self::Vec4 => Input {
-                fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "z".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                    (
-                        "w".to_string(),
-                        InputField::new(ScalarNativeType::Float.into()),
-                    ),
-                ],
-            },
-            Self::IVec4 => Input {
-                fields: vec![
-                    (
-                        "x".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                    (
-                        "y".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                    (
-                        "z".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                    (
-                        "w".to_string(),
-                        InputField::new(ScalarNativeType::Int.into()),
-                    ),
-                ],
-            },
+            Self::Vec2 => vec![
+                ("x".to_string(), ScalarNativeType::Float.into()),
+                ("y".to_string(), ScalarNativeType::Float.into()),
+            ],
+            Self::IVec2 => vec![
+                ("x".to_string(), ScalarNativeType::Int.into()),
+                ("y".to_string(), ScalarNativeType::Int.into()),
+            ],
+            Self::Vec3 => vec![
+                ("x".to_string(), ScalarNativeType::Float.into()),
+                ("y".to_string(), ScalarNativeType::Float.into()),
+                ("z".to_string(), ScalarNativeType::Float.into()),
+            ],
+            Self::IVec3 => vec![
+                ("x".to_string(), ScalarNativeType::Int.into()),
+                ("y".to_string(), ScalarNativeType::Int.into()),
+                ("z".to_string(), ScalarNativeType::Int.into()),
+            ],
+            Self::Vec4 => vec![
+                ("x".to_string(), ScalarNativeType::Float.into()),
+                ("y".to_string(), ScalarNativeType::Float.into()),
+                ("z".to_string(), ScalarNativeType::Float.into()),
+                ("w".to_string(), ScalarNativeType::Float.into()),
+            ],
+            Self::IVec4 => vec![
+                ("x".to_string(), ScalarNativeType::Int.into()),
+                ("y".to_string(), ScalarNativeType::Int.into()),
+                ("z".to_string(), ScalarNativeType::Int.into()),
+                ("w".to_string(), ScalarNativeType::Int.into()),
+            ],
         }
     }
 
+    pub(crate) fn output(&self) -> Output {
+        Output::Split(*self)
+    }
+
+    pub(crate) fn input(&self) -> Input {
+        Input {
+            fields: self
+                .fields()
+                .into_iter()
+                .map(|(f, t)| (f, InputField::new(t)))
+                .collect(),
+        }
+    }
+
+    /// All enum variants
     pub const VARIANTS: &'static [Self] = &[
         Self::Vec2,
         Self::IVec2,

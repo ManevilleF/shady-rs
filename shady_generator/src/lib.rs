@@ -1,7 +1,9 @@
-// TODO: enable
-// #![deny(warnings)]
+//! # Shady Generator
+//!
+//! Shader generation lib for shady-rs
+#![deny(warnings)]
 // #![forbid(missing_docs)]
-// #![forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 
 pub use {error::*, graphic_library::*, native_type::*, node::*, shader::*};
 

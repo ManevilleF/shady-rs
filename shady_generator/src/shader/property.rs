@@ -60,7 +60,7 @@ impl OutputProperty {
         connect_message: ConnectionMessage,
     ) -> Result<ConnectionResponse, ShadyError> {
         if connect_message.glsl_type != self.glsl_type {
-            return Err(ShadyError::WrongGlslType {
+            return Err(ShadyError::WrongNativeType {
                 input_type: connect_message.glsl_type,
                 expected_type: self.glsl_type,
             });

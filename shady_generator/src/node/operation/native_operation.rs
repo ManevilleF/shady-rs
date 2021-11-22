@@ -36,6 +36,7 @@ pub enum NativeOperation {
 }
 
 impl NativeOperation {
+    /// Retrieves the output data for the operation
     pub fn output(&self) -> Output {
         match self {
             NativeOperation::Inc(t)
@@ -62,6 +63,7 @@ impl NativeOperation {
         }
     }
 
+    /// Retrieves the input data for the operation
     pub fn input(&self) -> Input {
         match self {
             NativeOperation::Inc(t) | NativeOperation::Dec(t) | NativeOperation::Minus(t) => {
@@ -104,6 +106,7 @@ impl NativeOperation {
         }
     }
 
+    /// Outputs the operation as GLSL code
     pub fn glsl_operation(&self, field_values: Vec<String>) -> String {
         match self {
             NativeOperation::Inc(_) => format!("{}++", field_values.first().unwrap()),
@@ -147,6 +150,7 @@ impl NativeOperation {
         }
     }
 
+    /// Retrieves a generic descriptive name for the operation
     pub fn descriptive_name(&self) -> &'static str {
         match self {
             NativeOperation::Inc(_) => "a++",
@@ -167,6 +171,7 @@ impl NativeOperation {
         }
     }
 
+    /// All enum variants with default values
     pub const VARIANTS: &'static [Self] = &[
         Self::Inc(NativeType::Float),
         Self::Dec(NativeType::Float),

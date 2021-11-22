@@ -8,7 +8,7 @@ use std::cmp::max;
 const NODE_SIZE_X: f32 = 140.;
 const NODE_HEADER_SIZE_Y: f32 = 40.;
 const SLOT_SIZE: f32 = 15.;
-const SLOT_STEP: f32 = 40.;
+const SLOT_STEP: f32 = 30.;
 
 #[derive(Debug, Clone)]
 pub enum SpawnType {
