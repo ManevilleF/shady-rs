@@ -1,5 +1,5 @@
-use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
-use crate::{CurrentShader, UiState};
+use crate::resources::{Candidate, CreationCandidate, IOState, OperationSelection, TypeSelection};
+use crate::{CurrentShader, IOEvent, UiState};
 use bevy::prelude::*;
 use bevy_egui::egui::{Button, ComboBox, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
@@ -7,6 +7,7 @@ use shady_generator::{
     FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
     NonScalarNativeType, ScalarNativeType, ShaderType,
 };
+use std::env::current_dir;
 use std::fmt::Display;
 
 pub fn setup(egui_ctx: ResMut<EguiContext>) {
@@ -33,7 +34,6 @@ fn type_selection<T: Copy + Display + PartialEq>(
 }
 
 pub fn menu(
-    mut commands: Commands,
     egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
     mut shader: ResMut<CurrentShader>,
@@ -105,14 +105,67 @@ pub fn menu(
                     )),
                 ));
             }
-            ui.separator();
+
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 ui.add(
                     egui::Hyperlink::new("https://github.com/ManevilleF/shady-rs")
                         .text("Shady-rs by ManevilleF"),
                 );
+                ui.separator();
+                ui.horizontal(|ui| {
+                    if ui.button("Save").clicked() {
+                        ui_state.io_state = Some(IOState::Saving)
+                    }
+                    if ui.button("Load").clicked() {
+                        ui_state.io_state = Some(IOState::Loading)
+                    }
+                    if ui.button("Export").clicked() {
+                        ui_state.io_state = Some(IOState::Exporting)
+                    }
+                });
+                ui.label("I/O");
             });
         });
+}
+
+pub fn io(
+    egui_ctx: ResMut<EguiContext>,
+    mut ui_state: ResMut<UiState>,
+    mut io_ewr: EventWriter<IOEvent>,
+) {
+    let mut open = true;
+    let mut done = false;
+    if let Some(state) = &ui_state.io_state {
+        let mut dir = current_dir()
+            .unwrap()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .to_string();
+        egui::Window::new(state.title())
+            .collapsible(false)
+            .open(&mut open)
+            .show(egui_ctx.ctx(), |ui| {
+                ui.horizontal(|ui| {
+                    ui.label("Directory");
+                    ui.text_edit_singleline(&mut dir);
+                });
+                if ui.button(state.title()).clicked() {
+                    io_ewr.send(state.event(dir));
+                    done = true;
+                }
+            });
+    }
+    if !open || done {
+        ui_state.io_state = None;
+    }
+}
+
+pub fn creation_menu(
+    mut commands: Commands,
+    egui_ctx: ResMut<EguiContext>,
+    mut ui_state: ResMut<UiState>,
+) {
     let mut close = false;
     let mut new_candidate = None;
     if let Some(candidate) = &mut ui_state.candidate {

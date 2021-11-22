@@ -1,8 +1,16 @@
 use crate::resources::CreationCandidate;
+use crate::IOEvent;
 use shady_generator::{
     InputProperty, NativeOperation, NativeType, NonScalarNativeType, OutputProperty,
 };
 use shady_generator::{NativeFunction, NodeOperation};
+
+#[derive(Debug, Clone)]
+pub enum IOState {
+    Saving,
+    Loading,
+    Exporting,
+}
 
 #[derive(Debug, Clone)]
 pub enum TypeSelection {
@@ -30,11 +38,33 @@ pub enum Candidate {
 #[derive(Debug)]
 pub struct UiState {
     pub candidate: Option<Candidate>,
+    pub io_state: Option<IOState>,
 }
 
 impl Default for UiState {
     fn default() -> Self {
-        Self { candidate: None }
+        Self {
+            candidate: None,
+            io_state: None,
+        }
+    }
+}
+
+impl IOState {
+    pub fn event(&self, path: String) -> IOEvent {
+        match self {
+            IOState::Saving => IOEvent::Save(path),
+            IOState::Loading => IOEvent::Load(path),
+            IOState::Exporting => IOEvent::Export(path),
+        }
+    }
+
+    pub fn title(&self) -> &'static str {
+        match self {
+            IOState::Saving => "Save",
+            IOState::Loading => "Load",
+            IOState::Exporting => "Export",
+        }
     }
 }
 

@@ -231,9 +231,27 @@ impl Shader {
         Ok(())
     }
 
+    pub fn safe_name(&self) -> String {
+        self.name.to_ascii_lowercase().trim().replace(" ", "_")
+    }
+
+    pub fn shader_file_name(&self) -> String {
+        format!(
+            "{}.{}",
+            self.safe_name(),
+            match self.shader_type {
+                ShaderType::Vertex => "vert",
+                ShaderType::Fragment => "frag",
+            }
+        )
+    }
+
+    pub fn save_file_name(&self) -> String {
+        format!("{}.yaml", self.safe_name(),)
+    }
+
     pub fn save(&self) -> Result<(), ShadyError> {
-        let path = self.name.to_ascii_lowercase();
-        self.save_to(path.replace(" ", "_").as_str())
+        self.save_to(self.save_file_name().as_str())
     }
 
     pub fn export_glsl_to(&self, file_path: &str) -> Result<(), ShadyError> {

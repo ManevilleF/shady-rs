@@ -46,8 +46,15 @@ fn main() {
         )
         // UI
         .add_startup_system(systems::ui::setup.system())
-        .add_system_set(SystemSet::new().with_system(systems::ui::menu.system()))
+        .add_system_set(
+            SystemSet::new()
+                .with_system(systems::ui::menu.system())
+                .with_system(systems::ui::creation_menu.system())
+                .with_system(systems::ui::io.system()),
+        )
+        .add_system(systems::io::handle_io_events.system())
         .add_event::<ShaderEvent>()
+        .add_event::<IOEvent>()
         .insert_resource(CurrentShader::default())
         .insert_resource(UiState::default());
     // Debug hierarchy inspector
