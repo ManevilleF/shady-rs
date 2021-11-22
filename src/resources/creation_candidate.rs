@@ -1,8 +1,11 @@
-use shady_generator::{InputProperty, NodePreset, OutputProperty};
+use shady_generator::{InputProperty, NodeOperation, OutputProperty};
 
 #[derive(Debug, Clone)]
 pub enum CreationCandidate {
-    Node(NodePreset),
+    Node {
+        name: String,
+        operation: NodeOperation,
+    },
     InputProperty(InputProperty),
     OutputProperty(OutputProperty),
 }

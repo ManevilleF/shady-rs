@@ -1,36 +1,70 @@
 use crate::resources::CreationCandidate;
-use shady_generator::{InputProperty, NativeType, OutputProperty};
+use shady_generator::{
+    InputProperty, NativeOperation, NativeType, NonScalarNativeType, OutputProperty,
+};
+use shady_generator::{NativeFunction, NodeOperation};
+
+#[derive(Debug, Clone)]
+pub enum TypeSelection {
+    InputProperty(NativeType),
+    OutputProperty(NativeType),
+    TypeConstruction(NonScalarNativeType),
+    NativeOperation(NativeOperation),
+    NativeFunction(NativeFunction),
+}
+
+#[derive(Debug, Clone)]
+pub enum OperationSelection {
+    NativeOperation(NativeOperation),
+    NativeFunction(NativeFunction),
+}
 
 #[derive(Debug)]
-pub enum CandidateSelection {
-    InputNativeType(NativeType),
-    OutputNativeType(NativeType),
+pub enum Candidate {
+    OperationSelection(OperationSelection),
+    TypeSelection(TypeSelection),
+    Creation(CreationCandidate),
 }
 
 #[derive(Debug)]
 pub struct UiState {
-    pub creation_candidate: Option<CreationCandidate>,
-    pub candidate_selection: Option<CandidateSelection>,
+    pub candidate: Option<Candidate>,
 }
 
 impl Default for UiState {
     fn default() -> Self {
-        Self {
-            creation_candidate: None,
-            candidate_selection: None,
+        Self { candidate: None }
+    }
+}
+
+impl OperationSelection {
+    pub fn type_selection_candidate(&self) -> TypeSelection {
+        match self {
+            OperationSelection::NativeOperation(o) => TypeSelection::NativeOperation(o.clone()),
+            OperationSelection::NativeFunction(f) => TypeSelection::NativeFunction(f.clone()),
         }
     }
 }
 
-impl CandidateSelection {
+impl TypeSelection {
     pub fn creation_candidate(&self) -> CreationCandidate {
         match self {
-            CandidateSelection::InputNativeType(t) => {
+            Self::InputProperty(t) => {
                 CreationCandidate::InputProperty(InputProperty::new(*t, false))
             }
-            CandidateSelection::OutputNativeType(t) => {
-                CreationCandidate::OutputProperty(OutputProperty::new(*t))
-            }
+            Self::OutputProperty(t) => CreationCandidate::OutputProperty(OutputProperty::new(*t)),
+            Self::TypeConstruction(t) => CreationCandidate::Node {
+                name: t.to_string(),
+                operation: NodeOperation::TypeConstruction(*t),
+            },
+            Self::NativeOperation(o) => CreationCandidate::Node {
+                name: o.name(),
+                operation: NodeOperation::NativeOperation(o.clone()),
+            },
+            Self::NativeFunction(f) => CreationCandidate::Node {
+                name: f.function_name().to_string(),
+                operation: NodeOperation::NativeFunction(f.clone()),
+            },
         }
     }
 }

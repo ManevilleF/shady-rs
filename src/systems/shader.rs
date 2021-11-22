@@ -5,6 +5,7 @@ use crate::systems::spawner::{spawn_element, SpawnType};
 use crate::CurrentShader;
 use bevy::log;
 use bevy::prelude::*;
+use shady_generator::Node;
 
 pub fn handle_shader_event(
     mut commands: Commands,
@@ -18,8 +19,8 @@ pub fn handle_shader_event(
                 target_position,
                 candidate,
             } => match candidate {
-                CreationCandidate::Node(preset) => {
-                    let node = current_shader.create_node_from_preset(*preset);
+                CreationCandidate::Node { name, operation } => {
+                    let node = current_shader.create_node(Node::new(name, operation.clone()));
                     let id = node.unique_id().clone();
                     let entity = spawn_element(
                         &mut commands,

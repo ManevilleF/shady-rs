@@ -86,21 +86,6 @@ impl NativeType {
         }
     }
 
-    pub fn type_complexity(&self) -> &'static str {
-        match self {
-            NativeType::Bool
-            | NativeType::Int
-            | NativeType::UInt
-            | NativeType::Float
-            | NativeType::Double => "1",
-            NativeType::Vec2 | NativeType::IVec2 => "2",
-            NativeType::Vec3 | NativeType::IVec3 => "3",
-            NativeType::Vec4 | NativeType::IVec4 => "4",
-            NativeType::Sampler2d => "T2",
-            NativeType::SamplerCube => "T4",
-        }
-    }
-
     pub const VARIANTS: &'static [Self] = &[
         Self::Bool,
         Self::Int,

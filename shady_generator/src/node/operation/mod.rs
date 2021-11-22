@@ -1,4 +1,3 @@
-mod builder;
 mod native_function;
 mod native_operation;
 
@@ -61,7 +60,7 @@ impl NodeOperation {
             NodeOperation::NativeFunction(f) => f.output(),
             NodeOperation::TypeConstruction(t) => Output::GlslType {
                 glsl_type: (*t).into(),
-                field_name: "v".to_string(),
+                field_name: "out".to_string(),
             },
         }
     }

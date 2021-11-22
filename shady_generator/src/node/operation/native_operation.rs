@@ -47,7 +47,7 @@ impl NativeOperation {
             | NativeOperation::Div(t)
             | NativeOperation::Selection(t) => Output::GlslType {
                 glsl_type: *t,
-                field_name: "o".to_string(),
+                field_name: "out".to_string(),
             },
             NativeOperation::And
             | NativeOperation::Or
@@ -57,7 +57,7 @@ impl NativeOperation {
             | NativeOperation::GreaterThan(_)
             | NativeOperation::GreaterThanEqual(_) => Output::GlslType {
                 glsl_type: NativeType::Bool,
-                field_name: "o".to_string(),
+                field_name: "out".to_string(),
             },
         }
     }
@@ -146,4 +146,42 @@ impl NativeOperation {
             NativeOperation::GreaterThanEqual(t) => format!("{0} >= {0}", t),
         }
     }
+
+    pub fn descriptive_name(&self) -> &'static str {
+        match self {
+            NativeOperation::Inc(_) => "a++",
+            NativeOperation::Dec(_) => "a--",
+            NativeOperation::Minus(_) => "-a",
+            NativeOperation::Add(_) => "a + b",
+            NativeOperation::Sub(_) => "a - b",
+            NativeOperation::Mul(_) => "a * b",
+            NativeOperation::Div(_) => "a / b",
+            NativeOperation::No => "NO",
+            NativeOperation::And => "AND",
+            NativeOperation::Or => "OR",
+            NativeOperation::Xor => "XOR",
+            NativeOperation::Selection(_) => "c ? a : b",
+            NativeOperation::Equals(_) => "a == b",
+            NativeOperation::GreaterThan(_) => " a > b",
+            NativeOperation::GreaterThanEqual(_) => " a >= b",
+        }
+    }
+
+    pub const VARIANTS: &'static [Self] = &[
+        Self::Inc(NativeType::Float),
+        Self::Dec(NativeType::Float),
+        Self::Minus(NativeType::Float),
+        Self::Add(NativeType::Float),
+        Self::Sub(NativeType::Float),
+        Self::Mul(NativeType::Float),
+        Self::Div(NativeType::Float),
+        Self::Selection(NativeType::Float),
+        Self::Equals(NativeType::Float),
+        Self::GreaterThan(ScalarNativeType::Float),
+        Self::GreaterThanEqual(ScalarNativeType::Float),
+        Self::No,
+        Self::And,
+        Self::Or,
+        Self::Xor,
+    ];
 }

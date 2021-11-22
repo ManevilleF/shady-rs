@@ -120,6 +120,15 @@ impl NonScalarNativeType {
             },
         }
     }
+
+    pub const VARIANTS: &'static [Self] = &[
+        Self::Vec2,
+        Self::IVec2,
+        Self::Vec3,
+        Self::IVec3,
+        Self::Vec4,
+        Self::IVec4,
+    ];
 }
 
 impl From<NonScalarNativeType> for NativeType {

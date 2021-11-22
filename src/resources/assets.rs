@@ -22,6 +22,9 @@ pub struct GlslTypeMaterials {
 pub struct ShadyAssets {
     pub font: Handle<Font>,
     pub node_title_material: Handle<ColorMaterial>,
+    pub node_title_text_color: Color,
+    pub node_id_text_color: Color,
+    pub slot_text_color: Color,
     pub input_property_title_material: Handle<ColorMaterial>,
     pub output_property_title_material: Handle<ColorMaterial>,
     pub delete_icon_material: Handle<ColorMaterial>,
@@ -44,9 +47,12 @@ impl ShadyAssets {
         let close_texture = asset_server.load("sprites/2x/outline_close_white_48dp.png");
         Self {
             font: asset_server.load("fonts/AvenirNext-Regular.ttf"),
-            node_title_material: assets.add(Color::CYAN.into()),
-            input_property_title_material: assets.add(Color::OLIVE.into()),
-            output_property_title_material: assets.add(Color::TURQUOISE.into()),
+            node_title_material: assets.add(Color::BLACK.into()),
+            node_title_text_color: Color::WHITE,
+            node_id_text_color: Color::GRAY,
+            slot_text_color: Color::WHITE,
+            input_property_title_material: assets.add(Color::LIME_GREEN.into()),
+            output_property_title_material: assets.add(Color::ORANGE.into()),
             delete_icon_material: assets.add(ColorMaterial {
                 color: Color::RED,
                 texture: Some(close_texture),

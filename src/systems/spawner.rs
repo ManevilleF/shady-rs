@@ -44,7 +44,7 @@ fn title_text_bundle(value: &str, assets: &ShadyAssets) -> Text2dBundle {
                 value: value.to_string(),
                 style: TextStyle {
                     font: assets.font.clone(),
-                    color: Color::BLACK,
+                    color: assets.node_title_text_color,
                     font_size: 20.,
                 },
             }],
@@ -65,7 +65,7 @@ fn secondary_text_bundle(value: &str, assets: &ShadyAssets) -> Text2dBundle {
                 value: value.to_string(),
                 style: TextStyle {
                     font: assets.font.clone(),
-                    color: Color::GRAY,
+                    color: assets.node_id_text_color,
                     font_size: 15.,
                 },
             }],
@@ -86,7 +86,7 @@ fn slot_text_bundle(value: String, assets: &ShadyAssets) -> Text2dBundle {
                 value,
                 style: TextStyle {
                     font: assets.font.clone(),
-                    color: Color::WHITE,
+                    color: assets.slot_text_color,
                     font_size: 15.,
                 },
             }],
@@ -124,12 +124,12 @@ fn spawn_slots<F, C>(
         .insert(component.clone())
         .with_children(|builder| {
             builder.spawn_bundle(Text2dBundle {
-                transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 1.5, 0., 1.),
+                transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 2., 0., 1.),
                 ..slot_text_bundle(
                     if use_field_name {
-                        format!("{} ({})", field_name, field.type_complexity())
+                        field_name
                     } else {
-                        format!("({})", field.type_complexity())
+                        field.to_string()
                     },
                     assets,
                 )

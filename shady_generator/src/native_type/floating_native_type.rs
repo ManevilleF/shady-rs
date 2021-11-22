@@ -14,6 +14,10 @@ pub enum FloatingNativeType {
     Vec4,
 }
 
+impl FloatingNativeType {
+    pub const VARIANTS: &'static [Self] = &[Self::Float, Self::Vec2, Self::Vec3, Self::Vec4];
+}
+
 impl From<FloatingNativeType> for NativeType {
     fn from(t: FloatingNativeType) -> Self {
         match t {

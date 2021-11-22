@@ -17,6 +17,11 @@ pub enum ScalarNativeType {
     Double,
 }
 
+impl ScalarNativeType {
+    pub const VARIANTS: &'static [Self] =
+        &[Self::Bool, Self::Int, Self::UInt, Self::Float, Self::Double];
+}
+
 impl From<ScalarNativeType> for NativeType {
     fn from(t: ScalarNativeType) -> Self {
         match t {

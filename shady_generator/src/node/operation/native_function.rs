@@ -181,6 +181,58 @@ impl NativeFunction {
         }
     }
 
+    pub fn descriptive_name(&self) -> &'static str {
+        match self {
+            NativeFunction::Radians(_) => "radians",
+            NativeFunction::Degrees(_) => "degrees",
+            NativeFunction::Sine(_) => "sin",
+            NativeFunction::Cosine(_) => "cos",
+            NativeFunction::Tangent(_) => "tan",
+            NativeFunction::ArcSine(_) => "asin",
+            NativeFunction::ArcCosine(_) => "acos",
+            NativeFunction::ArcTangent(_) => "atan",
+            NativeFunction::ArcTangent2(_) => "atan2",
+            NativeFunction::Power(_) => "pow",
+            NativeFunction::Exponential(_) => "exp",
+            NativeFunction::Exponential2(_) => "exp2",
+            NativeFunction::Logarithm(_) => "log",
+            NativeFunction::Logarithm2(_) => "log2",
+            NativeFunction::SquareRoot(_) => "sqrt",
+            NativeFunction::InverseSquareRoot(_) => "inversesqrt",
+            NativeFunction::Absolute(_) => "abs",
+            NativeFunction::Sign(_) => "sign",
+            NativeFunction::Floor(_) => "floor",
+            NativeFunction::Ceiling(_) => "ceil",
+            NativeFunction::FractionalPart(_) => "fract",
+            NativeFunction::Modulo(_) => "mod",
+            NativeFunction::FloatModulo(_) => "mod_float",
+            NativeFunction::Minimum(_) => "min",
+            NativeFunction::FloatMinimum(_) => "min_float",
+            NativeFunction::Maximum(_) => "max",
+            NativeFunction::FloatMaximum(_) => "max_float",
+            NativeFunction::Clamp(_) => "clamp",
+            NativeFunction::FloatClamp(_) => "clamp_float",
+            NativeFunction::Mix(_) => "mix",
+            NativeFunction::FloatMix(_) => "mix_float",
+            NativeFunction::Step(_) => "step",
+            NativeFunction::FloatStep(_) => "step_float",
+            NativeFunction::SmoothStep(_) => "smoothstep",
+            NativeFunction::FloatSmoothStep(_) => "smoothstep_float",
+            NativeFunction::Distance(_) => "distance",
+            NativeFunction::Length(_) => "length",
+            NativeFunction::DotProduct(_) => "dot",
+            NativeFunction::CrossProduct => "cross",
+            NativeFunction::Normalize(_) => "normalize",
+            NativeFunction::FaceForward(_) => "faceforward",
+            NativeFunction::Reflect(_) => "reflect",
+            NativeFunction::Refract(_) => "refract",
+            NativeFunction::Texture2d => "texture2d",
+            NativeFunction::Texture2dBias => "texture2d_bias",
+            NativeFunction::TextureCube => "textureCube",
+            NativeFunction::TextureCubeBias => "textureCube_bias",
+        }
+    }
+
     pub fn input(&self) -> Input {
         match self {
             NativeFunction::Radians(t)
@@ -383,26 +435,76 @@ impl NativeFunction {
             | NativeFunction::FaceForward(t)
             | NativeFunction::Reflect(t)
             | NativeFunction::Refract(t) => Output::GlslType {
-                field_name: "o".to_string(),
+                field_name: "out".to_string(),
                 glsl_type: NativeType::from(*t),
             },
             NativeFunction::Distance(_)
             | NativeFunction::Length(_)
             | NativeFunction::DotProduct(_) => Output::GlslType {
-                field_name: "o".to_string(),
+                field_name: "out".to_string(),
                 glsl_type: NativeType::Float,
             },
             NativeFunction::CrossProduct => Output::GlslType {
-                field_name: "o".to_string(),
+                field_name: "out".to_string(),
                 glsl_type: NativeType::Vec3,
             },
             NativeFunction::Texture2d
             | NativeFunction::Texture2dBias
             | NativeFunction::TextureCube
             | NativeFunction::TextureCubeBias => Output::GlslType {
-                field_name: "o".to_string(),
+                field_name: "out".to_string(),
                 glsl_type: NativeType::Vec4,
             },
         }
     }
+
+    pub const VARIANTS: &'static [Self] = &[
+        Self::Radians(FloatingNativeType::Float),
+        Self::Degrees(FloatingNativeType::Float),
+        Self::Sine(FloatingNativeType::Float),
+        Self::Cosine(FloatingNativeType::Float),
+        Self::Tangent(FloatingNativeType::Float),
+        Self::ArcSine(FloatingNativeType::Float),
+        Self::ArcCosine(FloatingNativeType::Float),
+        Self::ArcTangent(FloatingNativeType::Float),
+        Self::ArcTangent2(FloatingNativeType::Float),
+        Self::Power(FloatingNativeType::Float),
+        Self::Exponential(FloatingNativeType::Float),
+        Self::Exponential2(FloatingNativeType::Float),
+        Self::Logarithm(FloatingNativeType::Float),
+        Self::Logarithm2(FloatingNativeType::Float),
+        Self::SquareRoot(FloatingNativeType::Float),
+        Self::InverseSquareRoot(FloatingNativeType::Float),
+        Self::Absolute(FloatingNativeType::Float),
+        Self::Sign(FloatingNativeType::Float),
+        Self::Floor(FloatingNativeType::Float),
+        Self::Ceiling(FloatingNativeType::Float),
+        Self::FractionalPart(FloatingNativeType::Float),
+        Self::Modulo(FloatingNativeType::Float),
+        Self::FloatModulo(FloatingNativeType::Float),
+        Self::Minimum(FloatingNativeType::Float),
+        Self::FloatMinimum(FloatingNativeType::Float),
+        Self::Maximum(FloatingNativeType::Float),
+        Self::FloatMaximum(FloatingNativeType::Float),
+        Self::Clamp(FloatingNativeType::Float),
+        Self::FloatClamp(FloatingNativeType::Float),
+        Self::Mix(FloatingNativeType::Float),
+        Self::FloatMix(FloatingNativeType::Float),
+        Self::Step(FloatingNativeType::Float),
+        Self::FloatStep(FloatingNativeType::Float),
+        Self::SmoothStep(FloatingNativeType::Float),
+        Self::FloatSmoothStep(FloatingNativeType::Float),
+        Self::Distance(FloatingNativeType::Float),
+        Self::Length(FloatingNativeType::Float),
+        Self::DotProduct(FloatingNativeType::Float),
+        Self::CrossProduct,
+        Self::Normalize(FloatingNativeType::Float),
+        Self::FaceForward(FloatingNativeType::Float),
+        Self::Reflect(FloatingNativeType::Float),
+        Self::Refract(FloatingNativeType::Float),
+        Self::Texture2d,
+        Self::Texture2dBias,
+        Self::TextureCube,
+        Self::TextureCubeBias,
+    ];
 }
