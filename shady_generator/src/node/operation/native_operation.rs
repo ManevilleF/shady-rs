@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub enum NativeOperation {
     /// Increment operation: `a++`
     Inc(GlslType),
+    /// Decrement operation: `a--`
+    Dec(GlslType),
     /// Minus operation: `-a`
     Minus(GlslType),
     /// Add operation: `a + b`
@@ -37,6 +39,7 @@ impl NativeOperation {
     pub fn output(&self) -> Output {
         match self {
             NativeOperation::Inc(t)
+            | NativeOperation::Dec(t)
             | NativeOperation::Minus(t)
             | NativeOperation::Add(t)
             | NativeOperation::Sub(t)
@@ -61,11 +64,12 @@ impl NativeOperation {
 
     pub fn input(&self) -> Input {
         match self {
-            NativeOperation::Inc(t) => Input {
-                fields: vec![("i".to_string(), InputField::new(*t))],
-            },
-            NativeOperation::Minus(t)
-            | NativeOperation::Add(t)
+            NativeOperation::Inc(t) | NativeOperation::Dec(t) | NativeOperation::Minus(t) => {
+                Input {
+                    fields: vec![("i".to_string(), InputField::new(*t))],
+                }
+            }
+            NativeOperation::Add(t)
             | NativeOperation::Sub(t)
             | NativeOperation::Mul(t)
             | NativeOperation::Div(t)
@@ -103,6 +107,7 @@ impl NativeOperation {
     pub fn glsl_operation(&self, field_values: Vec<String>) -> String {
         match self {
             NativeOperation::Inc(_) => format!("{}++", field_values.first().unwrap()),
+            NativeOperation::Dec(_) => format!("{}--", field_values.first().unwrap()),
             NativeOperation::Minus(_) => format!("-{}", field_values.first().unwrap()),
             NativeOperation::No => format!("!{}", field_values.first().unwrap()),
             NativeOperation::Add(_) => field_values.join(" + "),

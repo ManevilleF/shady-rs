@@ -38,7 +38,7 @@ impl ShadyAssets {
     }
 
     pub fn load(assets: &mut Assets<ColorMaterial>, asset_server: &AssetServer) -> Self {
-        let texture = asset_server.load("sprites/circle.png");
+        let dot_texture = asset_server.load("sprites/2x/outline_circle_white_48dp.png");
         Self {
             font: asset_server.load("fonts/AvenirNext-Regular.ttf"),
             node_title_material: assets.add(Color::CYAN.into()),
@@ -47,22 +47,29 @@ impl ShadyAssets {
             connector_color: Color::WHITE,
             selected_connector_color: Color::GOLD,
             glsl_type_materials: GlslTypeMaterials {
-                bool_material: assets.add(Self::slot_material(texture.clone(), Color::CYAN)),
-                int_material: assets.add(Self::slot_material(texture.clone(), Color::DARK_GREEN)),
-                uint_material: assets
-                    .add(Self::slot_material(texture.clone(), Color::YELLOW_GREEN)),
-                float_material: assets.add(Self::slot_material(texture.clone(), Color::LIME_GREEN)),
-                double_material: assets.add(Self::slot_material(texture.clone(), Color::GREEN)),
-                vec2_material: assets.add(Self::slot_material(texture.clone(), Color::BLUE)),
-                ivec2_material: assets
-                    .add(Self::slot_material(texture.clone(), Color::MIDNIGHT_BLUE)),
-                vec3_material: assets.add(Self::slot_material(texture.clone(), Color::YELLOW)),
-                ivec3_material: assets.add(Self::slot_material(texture.clone(), Color::GOLD)),
-                vec4_material: assets.add(Self::slot_material(texture.clone(), Color::ORANGE)),
-                ivec4_material: assets.add(Self::slot_material(texture.clone(), Color::ORANGE_RED)),
+                bool_material: assets.add(Self::slot_material(dot_texture.clone(), Color::CYAN)),
+                int_material: assets
+                    .add(Self::slot_material(dot_texture.clone(), Color::DARK_GREEN)),
+                uint_material: assets.add(Self::slot_material(
+                    dot_texture.clone(),
+                    Color::YELLOW_GREEN,
+                )),
+                float_material: assets
+                    .add(Self::slot_material(dot_texture.clone(), Color::LIME_GREEN)),
+                double_material: assets.add(Self::slot_material(dot_texture.clone(), Color::GREEN)),
+                vec2_material: assets.add(Self::slot_material(dot_texture.clone(), Color::BLUE)),
+                ivec2_material: assets.add(Self::slot_material(
+                    dot_texture.clone(),
+                    Color::MIDNIGHT_BLUE,
+                )),
+                vec3_material: assets.add(Self::slot_material(dot_texture.clone(), Color::YELLOW)),
+                ivec3_material: assets.add(Self::slot_material(dot_texture.clone(), Color::GOLD)),
+                vec4_material: assets.add(Self::slot_material(dot_texture.clone(), Color::ORANGE)),
+                ivec4_material: assets
+                    .add(Self::slot_material(dot_texture.clone(), Color::ORANGE_RED)),
                 sampler_2d_material: assets
-                    .add(Self::slot_material(texture.clone(), Color::PURPLE)),
-                sampler_cube_material: assets.add(Self::slot_material(texture, Color::PINK)),
+                    .add(Self::slot_material(dot_texture.clone(), Color::PURPLE)),
+                sampler_cube_material: assets.add(Self::slot_material(dot_texture, Color::PINK)),
             },
         }
     }
