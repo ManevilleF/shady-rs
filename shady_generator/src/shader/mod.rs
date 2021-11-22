@@ -8,7 +8,7 @@ mod to_glsl;
 use crate::shader::precision::ShaderPrecision;
 use crate::{
     ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
-    ConnectionTo, GraphicLibrary, NativeType, Node, NodePreset, ShadyError,
+    ConnectionTo, GraphicLibrary, NativeType, Node, ShadyError,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -64,11 +64,6 @@ impl Shader {
             );
         }
         self.get_node(&id).unwrap()
-    }
-
-    pub fn create_node_from_preset(&mut self, node: NodePreset) -> &Node {
-        let node = node.get_node();
-        self.create_node(node)
     }
 
     pub fn remove_node(&mut self, id: &str) -> Option<Node> {

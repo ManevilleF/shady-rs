@@ -1,4 +1,4 @@
-pub use {connection::*, input::*, operation::*, output::*, presets::*};
+pub use {connection::*, input::*, operation::*, output::*};
 
 use crate::error::ShadyError;
 use crate::{generate_uuid, NativeType};
@@ -8,7 +8,6 @@ mod connection;
 mod input;
 mod operation;
 mod output;
-mod presets;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Node {
@@ -190,11 +189,14 @@ impl Node {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ScalarNativeType;
+    use crate::{NonScalarNativeType, ScalarNativeType};
 
     #[test]
     fn custom_vec2_node() {
-        let mut node = NodePreset::Vec2.get_node();
+        let mut node = Node::new(
+            "test",
+            NodeOperation::TypeConstruction(NonScalarNativeType::Vec2),
+        );
         node.connect_input(
             "x",
             ConnectionMessage {
@@ -221,9 +223,64 @@ mod tests {
         assert_eq!(
             res,
             format!(
-                "vec2 {} = vec2(some_var.a, other_var.z); // Vec2 Node",
+                "vec2 {} = vec2(some_var.a, other_var.z); // test Node",
                 node.uuid
             )
+        );
+    }
+
+    #[test]
+    fn default_vec2_node() {
+        let node = Node::new(
+            "test",
+            NodeOperation::TypeConstruction(NonScalarNativeType::Vec2),
+        );
+        let res = node.to_glsl();
+        assert_eq!(
+            res,
+            format!("vec2 {} = vec2(0.0, 0.0); // test Node", node.uuid)
+        );
+    }
+
+    #[test]
+    fn default_vec3_node() {
+        let node = Node::new(
+            "test",
+            NodeOperation::TypeConstruction(NonScalarNativeType::Vec3),
+        );
+        let res = node.to_glsl();
+        assert_eq!(
+            res,
+            format!("vec3 {} = vec3(0.0, 0.0, 0.0); // test Node", node.uuid)
+        );
+    }
+
+    #[test]
+    fn default_vec4_node() {
+        let node = Node::new(
+            "test",
+            NodeOperation::TypeConstruction(NonScalarNativeType::Vec4),
+        );
+        let res = node.to_glsl();
+        assert_eq!(
+            res,
+            format!(
+                "vec4 {} = vec4(0.0, 0.0, 0.0, 0.0); // test Node",
+                node.uuid
+            )
+        );
+    }
+
+    #[test]
+    fn default_float_selection_node() {
+        let node = Node::new(
+            "test",
+            NodeOperation::NativeOperation(NativeOperation::Selection(NativeType::Float)),
+        );
+        let res = node.to_glsl();
+        assert_eq!(
+            res,
+            format!("float {} = false ? 0.0 : 0.0; // test Node", node.uuid)
         );
     }
 }
