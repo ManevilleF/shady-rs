@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 /// Supported graphics libraries
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum GraphicLibrary {
     /// OpenGL (GLSL code)
     OpenGl,
@@ -15,5 +16,19 @@ pub enum GraphicLibrary {
 impl Default for GraphicLibrary {
     fn default() -> Self {
         Self::OpenGl
+    }
+}
+
+impl Display for GraphicLibrary {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                GraphicLibrary::OpenGl => "OpenGl",
+                GraphicLibrary::OpenGlEs => "OpenGlEs",
+                GraphicLibrary::WebGPU => "WebGPU",
+            }
+        )
     }
 }

@@ -1,11 +1,11 @@
 use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
 use crate::{CurrentShader, UiState};
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, Label, Rgba, Ui, Widget};
+use bevy_egui::egui::{Button, ComboBox, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::{
-    FloatingNativeType, NativeFunction, NativeOperation, NativeType, NonScalarNativeType,
-    ScalarNativeType,
+    FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
+    NonScalarNativeType, ScalarNativeType, ShaderType,
 };
 use std::fmt::Display;
 
@@ -53,6 +53,22 @@ pub fn menu(
 
             ui.label("Shader name:");
             ui.text_edit_singleline(&mut shader.name);
+
+            ComboBox::from_label("Type")
+                .selected_text(shader.shader_type.to_string())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut shader.shader_type, ShaderType::Vertex, "Vertex");
+                    ui.selectable_value(&mut shader.shader_type, ShaderType::Fragment, "Fragment");
+                });
+
+            ComboBox::from_label("Target Lib")
+                .selected_text(shader.library.to_string())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut shader.library, GraphicLibrary::OpenGl, "OpenGl");
+                    ui.selectable_value(&mut shader.library, GraphicLibrary::OpenGlEs, "OpenGlEs");
+                    ui.selectable_value(&mut shader.library, GraphicLibrary::WebGPU, "WebGPU");
+                });
+
             ui.separator();
             ui.label("Create Property:");
             if ui.button("Input Property").clicked() {
