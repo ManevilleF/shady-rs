@@ -29,26 +29,12 @@ pub struct Shader {
     pub library: GraphicLibrary,
     #[serde(default)]
     pub shader_type: ShaderType,
-    // TODO: enable
-    // #[serde(
-    //     skip_serializing_if = "HashMap::is_empty",
-    //     serialize_with = "ordered_map"
-    // )]
     pub default_precisions: HashMap<NativeType, ShaderPrecision>,
-    #[serde(
-        skip_serializing_if = "HashMap::is_empty",
-        serialize_with = "ordered_map"
-    )]
+    #[serde(serialize_with = "ordered_map")]
     input_properties: HashMap<String, InputProperty>,
-    #[serde(
-        skip_serializing_if = "HashMap::is_empty",
-        serialize_with = "ordered_map"
-    )]
+    #[serde(serialize_with = "ordered_map")]
     output_properties: HashMap<String, OutputProperty>,
-    #[serde(
-        skip_serializing_if = "HashMap::is_empty",
-        serialize_with = "ordered_map"
-    )]
+    #[serde(serialize_with = "ordered_map")]
     nodes: HashMap<String, Node>,
     pub max_processing_depth: usize,
 }

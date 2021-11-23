@@ -52,6 +52,24 @@ impl CurrentShader {
         }
     }
 
+    pub fn delete_connection_entity(
+        &mut self,
+        to: &ConnectionTo,
+        from: &Connection,
+        commands: &mut Commands,
+    ) {
+        let id = Self::unique_connector_id(to, from);
+        match self.connection_entities.remove(&id) {
+            None => {
+                LogElement::new(LogLevel::Error, format!("No entity for connection {}", id))
+                    .spawn(commands);
+            }
+            Some(e) => {
+                commands.entity(e).despawn_recursive();
+            }
+        }
+    }
+
     pub fn unique_connector_id(to: &ConnectionTo, from: &Connection) -> String {
         format!(
             "{}_{}",
