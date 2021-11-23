@@ -15,6 +15,11 @@ pub enum ShadyError {
     /// Wrong Node field
     #[error("Could not find a field with key `{0}`")]
     WrongFieldKey(String),
+
+    #[error("Node {0} doesn't have complex output fields")]
+    SingleOutput(String),
+    #[error("Node {0} has complex output fields")]
+    ComplexOutput(String),
     /// Missing Node
     #[error("Could not find node with uuid `{0}`")]
     MissingNode(String),

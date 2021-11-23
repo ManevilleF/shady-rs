@@ -24,14 +24,14 @@ const UNIQUE_ID_LENGTH: usize = 10;
 extern crate indoc;
 
 // TODO: Check entropy of this and look for a better solution
-pub(crate) fn generate_uuid() -> String {
+pub(crate) fn generate_unique_id() -> String {
     format!(
         "v{}",
         thread_rng()
             .sample_iter(&Alphanumeric)
             .take(UNIQUE_ID_LENGTH)
             .map(char::from)
-            .collect()
+            .collect::<String>()
     )
 }
 

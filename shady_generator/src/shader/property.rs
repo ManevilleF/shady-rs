@@ -1,5 +1,5 @@
 use crate::error::ShadyError;
-use crate::generate_uuid;
+use crate::generate_unique_id;
 use crate::node::{Connection, ConnectionMessage, ConnectionResponse};
 use crate::NativeType;
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ impl InputProperty {
     pub fn new(glsl_type: NativeType, uniform: bool) -> Self {
         let name = glsl_type.get_glsl_type().to_string();
         Self {
-            reference: format!("{}_{}", name, generate_uuid()),
+            reference: format!("{}_{}", name, generate_unique_id()),
             name,
             glsl_type,
             uniform,
@@ -49,7 +49,7 @@ impl OutputProperty {
     pub fn new(glsl_type: NativeType) -> Self {
         let name = glsl_type.get_glsl_type().to_string();
         Self {
-            reference: format!("{}_{}", name, generate_uuid()),
+            reference: format!("{}_{}", name, generate_unique_id()),
             name,
             glsl_type,
             connection: None,

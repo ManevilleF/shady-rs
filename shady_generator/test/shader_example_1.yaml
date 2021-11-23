@@ -16,110 +16,95 @@ output_properties:
     reference: o_1
     glsl_type: Float
     connection:
-      Node:
-        node_id: a
-        field_name: v
+      SingleOutputNode:
+        id: a
   o_2:
     name: O_2
     reference: o_2
     glsl_type: Float
     connection:
-      Node:
-        node_id: c
-        field_name: v
+      SingleOutputNode:
+        id: c
   o_3:
     name: O_3
     reference: o_3
     glsl_type: Float
     connection:
-      Node:
-        node_id: d
-        field_name: v
+      SingleOutputNode:
+        id: d
 nodes:
   a:
     name: A
-    uuid: a
-    input_param:
+    id: a
+    input:
       fields:
         - - x
           - glsl_type: Float
             connection:
               InputProperty:
-                property_id: i
+                id: i
         - - y
           - glsl_type: Float
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
+            connection: ~
+    output:
+      GlslType: Float
     operation:
       CustomOperation: test_func
   b:
     name: B
-    uuid: b
-    input_param:
+    id: b
+    input:
       fields:
         - - x
           - glsl_type: Float
             connection:
               InputProperty:
-                property_id: i
+                id: i
         - - y
           - glsl_type: Float
             connection:
-              Node:
-                node_id: a
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
+              SingleOutputNode:
+                id: a
+    output:
+      GlslType: Float
     operation:
       CustomOperation: test_func
   c:
     name: C
-    uuid: c
-    input_param:
+    id: c
+    input:
       fields:
         - - x
           - glsl_type: Float
             connection:
-              Node:
-                node_id: a
-                field_name: v
+              SingleOutputNode:
+                id: a
         - - y
           - glsl_type: Float
             connection:
-              Node:
-                node_id: b
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
+              SingleOutputNode:
+                id: b
+    output:
+      GlslType: Float
     operation:
       CustomOperation: test_func
   d:
     name: D
-    uuid: d
-    input_param:
+    id: d
+    input:
       fields:
         - - x
           - glsl_type: Float
             connection:
-              Node:
-                node_id: b
-                field_name: v
+              SingleOutputNode:
+                id: b
         - - y
           - glsl_type: Float
             connection:
-              Node:
-                node_id: c
-                field_name: v
-    output_param:
-      GlslType:
-        glsl_type: Float
-        field_name: v
+              SingleOutputNode:
+                id: c
+    output:
+      GlslType: Float
     operation:
       CustomOperation: test_func
 max_processing_depth: 256

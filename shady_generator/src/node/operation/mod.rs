@@ -67,10 +67,7 @@ impl NodeOperation {
             NodeOperation::CustomOperation { output, .. } => output.clone(),
             NodeOperation::NativeOperation(o) => o.output(),
             NodeOperation::NativeFunction(f) => f.output(),
-            NodeOperation::TypeConstruction(t) => Output::GlslType {
-                glsl_type: (*t).into(),
-                field_name: "out".to_string(),
-            },
+            NodeOperation::TypeConstruction(t) => Output::GlslType((*t).into()),
             NodeOperation::TypeSplit(t) => t.output(),
         }
     }

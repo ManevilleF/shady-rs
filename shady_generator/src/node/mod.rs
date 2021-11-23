@@ -1,7 +1,7 @@
 pub use {connection::*, input::*, operation::*, output::*};
 
 use crate::error::ShadyError;
-use crate::{generate_uuid, NativeType};
+use crate::{generate_unique_id, NativeType};
 use serde::{Deserialize, Serialize};
 
 mod connection;
@@ -14,9 +14,9 @@ mod output;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Node {
     name: String,
-    uuid: String,
-    input_param: Input,
-    output_param: Output,
+    id: String,
+    input: Input,
+    output: Output,
     operation: InternalNodeOperation,
 }
 
@@ -25,9 +25,9 @@ impl Node {
     pub fn new(name: &str, operation: NodeOperation) -> Self {
         Self {
             name: name.to_string(),
-            uuid: generate_uuid(),
-            input_param: operation.input(),
-            output_param: operation.output(),
+            id: generate_unique_id(),
+            input: operation.input(),
+            output: operation.output(),
             operation: operation.into(),
         }
     }
@@ -37,9 +37,9 @@ impl Node {
     pub fn new_with_custom_id(name: &str, custom_id: &str, operation: NodeOperation) -> Self {
         Self {
             name: name.to_string(),
-            uuid: custom_id.to_string(),
-            input_param: operation.input(),
-            output_param: operation.output(),
+            id: custom_id.to_string(),
+            input: operation.input(),
+            output: operation.output(),
             operation: operation.into(),
         }
     }
@@ -51,17 +51,17 @@ impl Node {
 
     /// Retrieves the node unique id
     pub fn unique_id(&self) -> &String {
-        &self.uuid
+        &self.id
     }
 
     /// Retrieves the name and unique id of the Node formatted together
     pub fn unique_name(&self) -> String {
-        format!("{}_{}", self.name, self.uuid)
+        format!("{}_{}", self.name, self.id)
     }
 
     fn find_input_field_pos(&self, field: &str) -> Result<usize, ShadyError> {
         let field_pos = self
-            .input_param
+            .input
             .fields
             .iter()
             .position(|(key, _f)| key == field)
@@ -70,12 +70,13 @@ impl Node {
     }
 
     fn find_output_field_pos(&self, field: &str) -> Result<usize, ShadyError> {
-        let field_pos = self
-            .output_param
-            .fields()
-            .iter()
-            .position(|(key, _f)| key == field)
-            .ok_or_else(|| ShadyError::WrongFieldKey(field.to_string()))?;
+        let field_pos = match self.output.fields() {
+            OutputFields::SingleOutput(_) => return Err(ShadyError::SingleOutput(self.id.clone())),
+            OutputFields::Fields(f) => f,
+        }
+        .iter()
+        .position(|(key, _f)| key == field)
+        .ok_or_else(|| ShadyError::WrongFieldKey(field.to_string()))?;
         Ok(field_pos)
     }
 
@@ -101,26 +102,26 @@ impl Node {
     /// Retrieves an input field of the Shader Node
     pub fn get_input_field(&self, field: &str) -> Option<NativeType> {
         let pos = self.find_input_field_pos(field).ok()?;
-        let (_k, f) = self.input_param.fields.get(pos)?;
+        let (_k, f) = self.input.fields.get(pos)?;
         Some(f.glsl_type())
     }
 
     /// Retrieves an output field of the Shader Node
-    pub fn get_output_field(&self, field: &str) -> Option<NativeType> {
-        let pos = self.find_output_field_pos(field).ok()?;
-        let fields = self.output_param.fields();
-        let (_k, f) = fields.get(pos)?;
-        Some(*f)
+    pub fn get_output_field(&self, field: &str) -> Result<NativeType, ShadyError> {
+        let pos = self.find_output_field_pos(field)?;
+        let fields = self.output.fields().field_names();
+        let (_k, f) = fields.get(pos).unwrap();
+        Ok(*f)
     }
 
     /// Retrieves all input fields
     pub fn input_fields(&self) -> Vec<(String, InputField)> {
-        self.input_param.fields.clone()
+        self.input.fields.clone()
     }
 
     /// Retrieves all input fields as `NativeType`
     pub fn input_field_types(&self) -> Vec<(String, NativeType)> {
-        self.input_param
+        self.input
             .fields
             .iter()
             .map(|(k, i)| (k.clone(), i.glsl_type))
@@ -128,25 +129,27 @@ impl Node {
     }
 
     /// Retrieves all output fields
-    pub fn output_field_types(&self) -> Vec<(String, NativeType)> {
-        self.output_param.fields()
+    pub fn output_fields(&self) -> OutputFields {
+        self.output.fields()
     }
 
     /// Retrieves all the connections to other shader nodes
     pub fn node_connections(&self) -> Vec<String> {
-        self.input_param
+        self.input
             .fields
             .iter()
             .filter_map(|(_, f)| match f.connection.as_ref()? {
                 Connection::InputProperty { .. } => None,
-                Connection::Node { node_id, .. } => Some(node_id.clone()),
+                Connection::ComplexOutputNode { id, .. } | Connection::SingleOutputNode { id } => {
+                    Some(id.clone())
+                }
             })
             .collect()
     }
 
     /// Retrieves all the connections to other shader nodes
     pub fn connections(&self) -> Vec<(&String, &Connection)> {
-        self.input_param
+        self.input
             .fields
             .iter()
             .filter_map(|(k, f)| f.connection.as_ref().map(|c| (k, c)))
@@ -155,7 +158,7 @@ impl Node {
 
     /// Retrieves the optional `struct` declaration for the shader code
     pub fn struct_declaration(&self) -> Option<String> {
-        self.output_param.custom_declaration()
+        self.output.custom_declaration()
     }
 
     /// Retrieves the optional function declaration for the shader code
@@ -170,14 +173,16 @@ impl Node {
         connect_message: ConnectionMessage,
     ) -> Result<ConnectionResponse, ShadyError> {
         // Same connection check
-        if let Connection::Node { node_id, .. } = &connect_message.connection {
-            if node_id == &self.uuid {
-                return Err(ShadyError::SameNodeConnection(node_id.clone()));
+        if let Connection::ComplexOutputNode { id, .. } | Connection::SingleOutputNode { id } =
+            &connect_message.connection
+        {
+            if id == &self.id {
+                return Err(ShadyError::SameNodeConnection(id.clone()));
             }
         }
         let field_pos = self.find_input_field_pos(target_field)?;
         let (_key, field) = self
-            .input_param
+            .input
             .fields
             .get_mut(field_pos)
             .ok_or_else(|| ShadyError::WrongFieldKey(target_field.to_string()))?;
@@ -197,7 +202,7 @@ impl Node {
     pub fn disconnect_field(&mut self, field_name: &str) -> Result<Option<Connection>, ShadyError> {
         let field_pos = self.find_input_field_pos(field_name)?;
         let (_key, field) = self
-            .input_param
+            .input
             .fields
             .get_mut(field_pos)
             .ok_or_else(|| ShadyError::WrongFieldKey(field_name.to_string()))?;
@@ -208,8 +213,8 @@ impl Node {
     pub fn to_glsl(&self) -> String {
         format!(
             "{} {} = {}; // {} Node",
-            self.output_param.glsl_type(),
-            self.uuid,
+            self.output.glsl_type(),
+            self.id,
             self.operation.to_glsl(self.input_field_glsl_values()),
             self.name
         )
@@ -230,8 +235,8 @@ mod tests {
         node.connect_input(
             "x",
             ConnectionMessage {
-                connection: Connection::Node {
-                    node_id: "some_var".to_string(),
+                connection: Connection::ComplexOutputNode {
+                    id: "some_var".to_string(),
                     field_name: "a".to_string(),
                 },
                 glsl_type: ScalarNativeType::Float.into(),
@@ -241,8 +246,8 @@ mod tests {
         node.connect_input(
             "y",
             ConnectionMessage {
-                connection: Connection::Node {
-                    node_id: "other_var".to_string(),
+                connection: Connection::ComplexOutputNode {
+                    id: "other_var".to_string(),
                     field_name: "z".to_string(),
                 },
                 glsl_type: ScalarNativeType::Float.into(),
@@ -254,7 +259,7 @@ mod tests {
             res,
             format!(
                 "vec2 {} = vec2(some_var.a, other_var.z); // test Node",
-                node.uuid
+                node.id
             )
         );
     }
@@ -268,7 +273,7 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!("vec2 {} = vec2(0.0, 0.0); // test Node", node.uuid)
+            format!("vec2 {} = vec2(0.0, 0.0); // test Node", node.id)
         );
     }
 
@@ -281,7 +286,7 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!("vec3 {} = vec3(0.0, 0.0, 0.0); // test Node", node.uuid)
+            format!("vec3 {} = vec3(0.0, 0.0, 0.0); // test Node", node.id)
         );
     }
 
@@ -294,10 +299,7 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!(
-                "vec4 {} = vec4(0.0, 0.0, 0.0, 0.0); // test Node",
-                node.uuid
-            )
+            format!("vec4 {} = vec4(0.0, 0.0, 0.0, 0.0); // test Node", node.id)
         );
     }
 
@@ -310,7 +312,7 @@ mod tests {
         let res = node.to_glsl();
         assert_eq!(
             res,
-            format!("float {} = false ? 0.0 : 0.0; // test Node", node.uuid)
+            format!("float {} = false ? 0.0 : 0.0; // test Node", node.id)
         );
     }
 }

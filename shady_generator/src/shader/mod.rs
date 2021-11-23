@@ -8,7 +8,7 @@ mod to_glsl;
 use crate::shader::precision::ShaderPrecision;
 use crate::{
     ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
-    ConnectionTo, GraphicLibrary, NativeType, Node, ShadyError,
+    ConnectionTo, GraphicLibrary, NativeType, Node, OutputFields, ShadyError,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -147,23 +147,28 @@ impl Shader {
         connection_attempt: ConnectionAttempt,
     ) -> Result<ConnectionResponse, ShadyError> {
         let glsl_type = match &connection_attempt.connection_from {
-            Connection::InputProperty { property_id } => {
+            Connection::InputProperty { id: property_id } => {
                 self.input_properties
                     .get(property_id)
                     .ok_or_else(|| ShadyError::MissingInputProperty(property_id.clone()))?
                     .glsl_type
             }
-            Connection::Node {
-                node_id,
-                field_name,
-            } => {
+            Connection::ComplexOutputNode { id, field_name } => {
                 let from_node = self
                     .nodes
-                    .get(node_id)
-                    .ok_or_else(|| ShadyError::MissingNode(node_id.clone()))?;
-                from_node
-                    .get_output_field(field_name)
-                    .ok_or_else(|| ShadyError::WrongFieldKey(field_name.clone()))?
+                    .get(id)
+                    .ok_or_else(|| ShadyError::MissingNode(id.clone()))?;
+                from_node.get_output_field(field_name)?
+            }
+            Connection::SingleOutputNode { id } => {
+                let from_node = self
+                    .nodes
+                    .get(id)
+                    .ok_or_else(|| ShadyError::MissingNode(id.clone()))?;
+                match from_node.output_fields() {
+                    OutputFields::SingleOutput(t) => t,
+                    OutputFields::Fields(_) => return Err(ShadyError::ComplexOutput(id.clone())),
+                }
             }
         };
         let connection_message = ConnectionMessage {
@@ -172,7 +177,7 @@ impl Shader {
         };
         match connection_attempt.connection_to {
             ConnectionTo::Node {
-                node_id: id,
+                id,
                 field_name: field,
             } => {
                 let to_node = self.get_node_mut(&id)?;
@@ -194,7 +199,7 @@ impl Shader {
     ) -> Result<Option<Connection>, ShadyError> {
         match connection_to {
             ConnectionTo::Node {
-                node_id: id,
+                id,
                 field_name: field,
             } => {
                 let to_node = self.get_node_mut(&id)?;

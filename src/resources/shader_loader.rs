@@ -110,7 +110,7 @@ impl ShaderLoader {
                 (&key, node.name()),
                 SpawnType::Node {
                     input_fields: node.input_field_types(),
-                    output_fields: node.output_field_types(),
+                    output_fields: node.output_fields(),
                 },
             );
             self.node_entities.insert(key.clone(), response.entity);
@@ -120,16 +120,15 @@ impl ShaderLoader {
         for (key, node) in self.shader.nodes() {
             for (field, connection) in node.connections() {
                 let connection_to = ConnectionTo::Node {
-                    node_id: key.to_string(),
+                    id: key.to_string(),
                     field_name: field.to_string(),
                 };
                 let connector_id = CurrentShader::unique_connector_id(&connection_to, connection);
                 let from_id = match connection {
-                    Connection::InputProperty { property_id } => {
-                        Self::unique_slot_id(property_id, property_id, false)
-                    }
-                    Connection::Node {
-                        node_id,
+                    Connection::InputProperty { id } => Self::unique_slot_id(id, id, false),
+                    Connection::SingleOutputNode { id } => Self::unique_slot_id(id, id, true),
+                    Connection::ComplexOutputNode {
+                        id: node_id,
                         field_name,
                     } => Self::unique_slot_id(node_id, field_name, true),
                 };
@@ -166,11 +165,10 @@ impl ShaderLoader {
                 let connection_to = ConnectionTo::OutputProperty { id: key.clone() };
                 let connector_id = CurrentShader::unique_connector_id(&connection_to, connection);
                 let from_id = match connection {
-                    Connection::InputProperty { property_id } => {
-                        Self::unique_slot_id(property_id, property_id, false)
-                    }
-                    Connection::Node {
-                        node_id,
+                    Connection::InputProperty { id } => Self::unique_slot_id(id, id, false),
+                    Connection::SingleOutputNode { id } => Self::unique_slot_id(id, id, true),
+                    Connection::ComplexOutputNode {
+                        id: node_id,
                         field_name,
                     } => Self::unique_slot_id(node_id, field_name, true),
                 };

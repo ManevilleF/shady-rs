@@ -3,7 +3,7 @@ use crate::resources::{GlslTypeMaterials, ShadyAssets};
 use bevy::ecs::component::Component;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use shady_generator::{Connection, ConnectionTo, NativeType};
+use shady_generator::{Connection, ConnectionTo, NativeType, OutputFields};
 use std::cmp::max;
 
 const NODE_SIZE_X: f32 = 140.;
@@ -22,7 +22,7 @@ pub struct SpawnResponse {
 pub enum SpawnType {
     Node {
         input_fields: Vec<(String, NativeType)>,
-        output_fields: Vec<(String, NativeType)>,
+        output_fields: OutputFields,
     },
     InputProperty {
         output_fields: Vec<(String, NativeType)>,
@@ -230,7 +230,7 @@ pub fn spawn_element(
                         assets,
                         |f| {
                             BoxInteraction::ConnectionEnd(ConnectionTo::Node {
-                                node_id: id.to_string(),
+                                id: id.to_string(),
                                 field_name: f.to_string(),
                             })
                         },
@@ -239,13 +239,18 @@ pub fn spawn_element(
                     );
                     output_field_entities = spawn_slots(
                         &mut builder,
-                        output_fields,
+                        output_fields.field_names(),
                         (slot_size, slot_x_pos),
                         assets,
                         |f| {
-                            BoxInteraction::ConnectionStart(Connection::Node {
-                                node_id: id.to_string(),
-                                field_name: f.to_string(),
+                            BoxInteraction::ConnectionStart(match output_fields {
+                                OutputFields::SingleOutput(_) => {
+                                    Connection::SingleOutputNode { id: id.to_string() }
+                                }
+                                OutputFields::Fields(_) => Connection::ComplexOutputNode {
+                                    id: id.to_string(),
+                                    field_name: f.to_string(),
+                                },
                             })
                         },
                         ShadyOutputSlot::new,
@@ -264,7 +269,7 @@ pub fn spawn_element(
                         assets,
                         |_f| {
                             BoxInteraction::ConnectionStart(Connection::InputProperty {
-                                property_id: id.to_string(),
+                                id: id.to_string(),
                             })
                         },
                         ShadyOutputSlot::new,

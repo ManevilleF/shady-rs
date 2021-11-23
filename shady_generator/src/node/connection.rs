@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
 pub enum ConnectionTo {
-    Node { node_id: String, field_name: String },
+    Node { id: String, field_name: String },
     OutputProperty { id: String },
 }
 
@@ -23,8 +23,9 @@ pub type ConnectionResponse = Option<Connection>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, PartialOrd, Ord)]
 pub enum Connection {
-    InputProperty { property_id: String },
-    Node { node_id: String, field_name: String },
+    InputProperty { id: String },
+    ComplexOutputNode { id: String, field_name: String },
+    SingleOutputNode { id: String },
 }
 
 impl ConnectionMessage {
@@ -39,9 +40,9 @@ impl ConnectionMessage {
 impl Connection {
     pub fn glsl_call(&self) -> String {
         match self {
-            Connection::InputProperty { property_id } => property_id.clone(),
-            Connection::Node {
-                node_id,
+            Connection::InputProperty { id } | Connection::SingleOutputNode { id } => id.clone(),
+            Connection::ComplexOutputNode {
+                id: node_id,
                 field_name,
             } => format!("{}.{}", node_id, field_name),
         }

@@ -29,7 +29,7 @@ pub fn handle_shader_event(
                         (node.unique_id(), node.name()),
                         SpawnType::Node {
                             input_fields: node.input_field_types(),
-                            output_fields: node.output_field_types(),
+                            output_fields: node.output_fields(),
                         },
                     );
                     current_shader.node_entities.insert(id, response.entity);
@@ -158,18 +158,15 @@ pub fn handle_shader_event(
                             format!(
                                 "Removed connnection from {} to {}",
                                 match connection_from {
-                                    Connection::Node {
-                                        node_id,
-                                        field_name,
-                                    } => format!("Node {} field {}", node_id, field_name),
-                                    Connection::InputProperty { property_id } =>
+                                    Connection::ComplexOutputNode { id, field_name } =>
+                                        format!("Node {} field {}", id, field_name),
+                                    Connection::SingleOutputNode { id } => format!("Node {}", id),
+                                    Connection::InputProperty { id: property_id } =>
                                         format!("Input Property {}", property_id),
                                 },
                                 match &connection_to {
-                                    ConnectionTo::Node {
-                                        node_id,
-                                        field_name,
-                                    } => format!("Node {} field {}", node_id, field_name),
+                                    ConnectionTo::Node { id, field_name } =>
+                                        format!("Node {} field {}", id, field_name),
                                     ConnectionTo::OutputProperty { id } =>
                                         format!("Output Property {}", id),
                                 }

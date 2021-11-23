@@ -74,15 +74,16 @@ impl CurrentShader {
         format!(
             "{}_{}",
             match from {
-                Connection::InputProperty { property_id } => property_id.clone(),
-                Connection::Node {
-                    node_id,
+                Connection::InputProperty { id } | Connection::SingleOutputNode { id } =>
+                    id.clone(),
+                Connection::ComplexOutputNode {
+                    id: node_id,
                     field_name,
                 } => format!("{}::{}", node_id, field_name),
             },
             match to {
                 ConnectionTo::Node {
-                    node_id: id,
+                    id,
                     field_name: field,
                 } => format!("{}::{}", id, field),
                 ConnectionTo::OutputProperty { id } => id.clone(),

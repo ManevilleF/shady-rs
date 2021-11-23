@@ -46,20 +46,14 @@ impl NativeOperation {
             | NativeOperation::Sub(t)
             | NativeOperation::Mul(t)
             | NativeOperation::Div(t)
-            | NativeOperation::Selection(t) => Output::GlslType {
-                glsl_type: *t,
-                field_name: "out".to_string(),
-            },
+            | NativeOperation::Selection(t) => Output::GlslType(*t),
             NativeOperation::And
             | NativeOperation::Or
             | NativeOperation::Xor
             | NativeOperation::No
             | NativeOperation::Equals(_)
             | NativeOperation::GreaterThan(_)
-            | NativeOperation::GreaterThanEqual(_) => Output::GlslType {
-                glsl_type: NativeType::Bool,
-                field_name: "out".to_string(),
-            },
+            | NativeOperation::GreaterThanEqual(_) => Output::GlslType(NativeType::Bool),
         }
     }
 
