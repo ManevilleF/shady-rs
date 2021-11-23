@@ -1,8 +1,9 @@
 use crate::common::get_current_dir;
+use crate::components::{LogElement, LogLevel};
 use crate::resources::{Candidate, CreationCandidate, IOState, OperationSelection, TypeSelection};
 use crate::{CurrentShader, IOEvent, UiState, VERSION};
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, ComboBox, Frame, Label, Rgba, Ui, Widget};
+use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::{
     FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
@@ -142,6 +143,36 @@ pub fn menu(
         });
 }
 
+pub fn handle_log_elements(
+    egui_ctx: ResMut<EguiContext>,
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut LogElement)>,
+    time: Res<Time>,
+) {
+    let delta_time = time.delta_seconds();
+    egui::SidePanel::right("Logger")
+        .min_width(200.)
+        .frame(Frame::none())
+        .resizable(false)
+        .show(egui_ctx.ctx(), |ui| {
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
+                for (entity, mut log) in query.iter_mut() {
+                    let mut label = Label::new(&log.message).small();
+                    match log.log_level {
+                        LogLevel::Info => label = label.text_color(Color32::GREEN),
+                        LogLevel::Warn => label = label.strong().text_color(Color32::RED),
+                        LogLevel::Error => label = label.strong().text_color(Color32::RED),
+                    };
+                    ui.label(label);
+                    log.alive_time -= delta_time;
+                    if log.alive_time <= 0.0 {
+                        commands.entity(entity).despawn();
+                    }
+                }
+            });
+        });
+}
+
 pub fn io(
     egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
@@ -151,12 +182,16 @@ pub fn io(
     let mut done = false;
     if let Some(state) = &mut ui_state.io_state {
         egui::Window::new(state.title())
-            .collapsible(false)
+            .default_size((500., 200.))
             .open(&mut open)
             .show(egui_ctx.ctx(), |ui| {
+                ui.label(state.message());
+                ui.separator();
                 ui.horizontal(|ui| {
                     ui.label("Directory");
-                    ui.text_edit_singleline(state.path_mut());
+                    egui::TextEdit::singleline(state.path_mut())
+                        .desired_width(500.)
+                        .ui(ui)
                 });
                 if ui.button(state.title()).clicked() {
                     io_ewr.send(state.event());

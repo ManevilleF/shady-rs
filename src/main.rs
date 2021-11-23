@@ -55,10 +55,15 @@ fn main() {
         .add_system_set(
             SystemSet::new()
                 .with_system(systems::ui::menu.system().label("ui_setup"))
-                .with_system(systems::ui::creation_menu.system().after("ui_setup"))
-                .with_system(systems::ui::io.system()),
+                .with_system(
+                    systems::ui::creation_menu
+                        .system()
+                        .after("ui_setup")
+                        .label("ui_menu"),
+                )
+                .with_system(systems::ui::io.system().after("ui_menu").label("ui_io"))
+                .with_system(systems::ui::handle_log_elements.system().after("ui_io")),
         )
-        .add_system_set(SystemSet::new().with_system(systems::log::handle_log_elements.system()))
         .add_system(systems::io::handle_io_events.system())
         .add_event::<ShaderEvent>()
         .add_event::<IOEvent>()

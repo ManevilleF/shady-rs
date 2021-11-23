@@ -73,6 +73,14 @@ impl IOState {
             IOState::Exporting(p) => p,
         }
     }
+
+    pub fn message(&self) -> &'static str {
+        match self {
+            IOState::Saving(_) => "Save the current shader graph in a custom directory",
+            IOState::Loading(_) => "Loads a shader graph from a save located in a custom directory",
+            IOState::Exporting(_) => "Exports the shader as GLSL code in a custom directory",
+        }
+    }
 }
 
 impl OperationSelection {
