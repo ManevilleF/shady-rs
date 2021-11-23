@@ -24,7 +24,7 @@ impl LogElement {
         Self {
             log_level,
             message,
-            alive_time: 5.0,
+            alive_time: 10.0,
         }
     }
 
