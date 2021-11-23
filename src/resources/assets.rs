@@ -29,21 +29,13 @@ pub struct ShadyAssets {
     pub output_property_title_material: Handle<ColorMaterial>,
     pub delete_icon_material: Handle<ColorMaterial>,
     pub node_body_material: Handle<ColorMaterial>,
-    pub connector_color: Color,
     pub selected_connector_color: Color,
     pub glsl_type_materials: GlslTypeMaterials,
 }
 
 impl ShadyAssets {
-    fn slot_material(texture: Handle<Texture>, color: Color) -> ColorMaterial {
-        ColorMaterial {
-            color,
-            texture: Some(texture),
-        }
-    }
-
     pub fn load(assets: &mut Assets<ColorMaterial>, asset_server: &AssetServer) -> Self {
-        let dot_texture = asset_server.load("sprites/2x/outline_circle_white_48dp.png");
+        let dot_texture = Some(asset_server.load("sprites/2x/outline_circle_white_48dp.png"));
         let close_texture = asset_server.load("sprites/2x/outline_close_white_48dp.png");
         Self {
             font: asset_server.load("fonts/AvenirNext-Regular.ttf"),
@@ -58,32 +50,60 @@ impl ShadyAssets {
                 texture: Some(close_texture),
             }),
             node_body_material: assets.add(Color::GRAY.into()),
-            connector_color: Color::WHITE,
             selected_connector_color: Color::GOLD,
             glsl_type_materials: GlslTypeMaterials {
-                bool_material: assets.add(Self::slot_material(dot_texture.clone(), Color::CYAN)),
-                int_material: assets
-                    .add(Self::slot_material(dot_texture.clone(), Color::DARK_GREEN)),
-                uint_material: assets.add(Self::slot_material(
+                bool_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Bool,
                     dot_texture.clone(),
-                    Color::YELLOW_GREEN,
                 )),
-                float_material: assets
-                    .add(Self::slot_material(dot_texture.clone(), Color::LIME_GREEN)),
-                double_material: assets.add(Self::slot_material(dot_texture.clone(), Color::GREEN)),
-                vec2_material: assets.add(Self::slot_material(dot_texture.clone(), Color::BLUE)),
-                ivec2_material: assets.add(Self::slot_material(
+                int_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Int,
                     dot_texture.clone(),
-                    Color::MIDNIGHT_BLUE,
                 )),
-                vec3_material: assets.add(Self::slot_material(dot_texture.clone(), Color::YELLOW)),
-                ivec3_material: assets.add(Self::slot_material(dot_texture.clone(), Color::GOLD)),
-                vec4_material: assets.add(Self::slot_material(dot_texture.clone(), Color::ORANGE)),
-                ivec4_material: assets
-                    .add(Self::slot_material(dot_texture.clone(), Color::ORANGE_RED)),
-                sampler_2d_material: assets
-                    .add(Self::slot_material(dot_texture.clone(), Color::PURPLE)),
-                sampler_cube_material: assets.add(Self::slot_material(dot_texture, Color::PINK)),
+                uint_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::UInt,
+                    dot_texture.clone(),
+                )),
+                float_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Float,
+                    dot_texture.clone(),
+                )),
+                double_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Double,
+                    dot_texture.clone(),
+                )),
+                vec2_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Vec2,
+                    dot_texture.clone(),
+                )),
+                ivec2_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::IVec2,
+                    dot_texture.clone(),
+                )),
+                vec3_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Vec3,
+                    dot_texture.clone(),
+                )),
+                ivec3_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::IVec3,
+                    dot_texture.clone(),
+                )),
+                vec4_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Vec4,
+                    dot_texture.clone(),
+                )),
+                ivec4_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::IVec4,
+                    dot_texture.clone(),
+                )),
+                sampler_2d_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::Sampler2d,
+                    dot_texture.clone(),
+                )),
+                sampler_cube_material: assets.add(GlslTypeMaterials::glsl_type_material(
+                    NativeType::SamplerCube,
+                    dot_texture,
+                )),
             },
         }
     }
@@ -103,6 +123,36 @@ impl ShadyAssets {
             NativeType::IVec4 => self.glsl_type_materials.ivec4_material.clone(),
             NativeType::Sampler2d => self.glsl_type_materials.sampler_2d_material.clone(),
             NativeType::SamplerCube => self.glsl_type_materials.sampler_cube_material.clone(),
+        }
+    }
+}
+
+impl GlslTypeMaterials {
+    pub fn glsl_type_color(glsl_type: NativeType) -> Color {
+        match glsl_type {
+            NativeType::Bool => Color::CYAN,
+            NativeType::Int => Color::DARK_GREEN,
+            NativeType::UInt => Color::YELLOW_GREEN,
+            NativeType::Float => Color::LIME_GREEN,
+            NativeType::Double => Color::GREEN,
+            NativeType::Vec2 => Color::BLUE,
+            NativeType::IVec2 => Color::MIDNIGHT_BLUE,
+            NativeType::Vec3 => Color::YELLOW,
+            NativeType::IVec3 => Color::GOLD,
+            NativeType::Vec4 => Color::ORANGE,
+            NativeType::IVec4 => Color::ORANGE_RED,
+            NativeType::Sampler2d => Color::PURPLE,
+            NativeType::SamplerCube => Color::PINK,
+        }
+    }
+
+    fn glsl_type_material(
+        glsl_type: NativeType,
+        texture: Option<Handle<Texture>>,
+    ) -> ColorMaterial {
+        ColorMaterial {
+            color: Self::glsl_type_color(glsl_type),
+            texture,
         }
     }
 }
