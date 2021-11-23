@@ -82,16 +82,28 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
+    pub fn nodes(&self) -> &HashMap<String, Node> {
+        &self.nodes
+    }
+
     fn get_input_property(&self, id: &str) -> Result<&InputProperty, ShadyError> {
         self.input_properties
             .get(id)
             .ok_or_else(|| ShadyError::MissingInputProperty(id.to_string()))
     }
 
+    pub fn input_properties(&self) -> &HashMap<String, InputProperty> {
+        &self.input_properties
+    }
+
     fn get_output_property(&self, id: &str) -> Result<&OutputProperty, ShadyError> {
         self.output_properties
             .get(id)
             .ok_or_else(|| ShadyError::MissingOutputProperty(id.to_string()))
+    }
+
+    pub fn output_properties(&self) -> &HashMap<String, OutputProperty> {
+        &self.output_properties
     }
 
     fn get_node_mut(&mut self, id: &str) -> Result<&mut Node, ShadyError> {

@@ -22,7 +22,7 @@ pub fn handle_shader_event(
                 CreationCandidate::Node { name, operation } => {
                     let node = current_shader.create_node(Node::new(name, operation.clone()));
                     let id = node.unique_id().clone();
-                    let entity = spawn_element(
+                    let response = spawn_element(
                         &mut commands,
                         &assets,
                         *target_position,
@@ -32,12 +32,12 @@ pub fn handle_shader_event(
                             output_fields: node.output_field_types(),
                         },
                     );
-                    current_shader.node_entities.insert(id, entity);
+                    current_shader.node_entities.insert(id, response.entity);
                 }
                 CreationCandidate::InputProperty(property) => {
                     let property = current_shader.add_input_property(property.clone());
                     let id = property.reference.clone();
-                    let entity = spawn_element(
+                    let response = spawn_element(
                         &mut commands,
                         &assets,
                         *target_position,
@@ -46,12 +46,14 @@ pub fn handle_shader_event(
                             output_fields: vec![(property.reference.clone(), property.glsl_type)],
                         },
                     );
-                    current_shader.input_property_entities.insert(id, entity);
+                    current_shader
+                        .input_property_entities
+                        .insert(id, response.entity);
                 }
                 CreationCandidate::OutputProperty(property) => {
                     let property = current_shader.add_output_property(property.clone());
                     let id = property.reference.clone();
-                    let entity = spawn_element(
+                    let response = spawn_element(
                         &mut commands,
                         &assets,
                         *target_position,
@@ -60,7 +62,9 @@ pub fn handle_shader_event(
                             input_fields: vec![(property.reference.clone(), property.glsl_type)],
                         },
                     );
-                    current_shader.output_property_entities.insert(id, entity);
+                    current_shader
+                        .output_property_entities
+                        .insert(id, response.entity);
                 }
             },
             ShaderEvent::DeleteNode { id } => {

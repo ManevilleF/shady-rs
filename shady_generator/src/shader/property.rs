@@ -41,6 +41,7 @@ impl InputProperty {
             self.name
         )
     }
+
     // TODO Add default OpenGL/ES properties (must match version)
 }
 
@@ -98,6 +99,10 @@ impl OutputProperty {
             },
             self.name
         )
+    }
+
+    pub fn connection(&self) -> Option<&Connection> {
+        self.connection.as_ref()
     }
 
     // TODO Add default OpenGL/ES properties (must match version)

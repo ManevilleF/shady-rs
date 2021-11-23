@@ -144,6 +144,15 @@ impl Node {
             .collect()
     }
 
+    /// Retrieves all the connections to other shader nodes
+    pub fn connections(&self) -> Vec<(&String, &Connection)> {
+        self.input_param
+            .fields
+            .iter()
+            .filter_map(|(k, f)| f.connection.as_ref().map(|c| (k, c)))
+            .collect()
+    }
+
     /// Retrieves the optional `struct` declaration for the shader code
     pub fn struct_declaration(&self) -> Option<String> {
         self.output_param.custom_declaration()

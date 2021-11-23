@@ -10,4 +10,5 @@ mod cursor_position;
 mod dragged_entities;
 mod selected_entities;
 mod shader;
+mod shader_loader;
 mod ui_state;

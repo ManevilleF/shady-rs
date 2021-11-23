@@ -7,9 +7,9 @@ use shady_generator::{NativeFunction, NodeOperation};
 
 #[derive(Debug, Clone)]
 pub enum IOState {
-    Saving,
-    Loading,
-    Exporting,
+    Saving(String),
+    Loading(String),
+    Exporting(String),
 }
 
 #[derive(Debug, Clone)]
@@ -51,19 +51,26 @@ impl Default for UiState {
 }
 
 impl IOState {
-    pub fn event(&self, path: String) -> IOEvent {
+    pub fn event(&self) -> IOEvent {
         match self {
-            IOState::Saving => IOEvent::Save(path),
-            IOState::Loading => IOEvent::Load(path),
-            IOState::Exporting => IOEvent::Export(path),
+            IOState::Saving(path) => IOEvent::Save(path.clone()),
+            IOState::Loading(path) => IOEvent::Load(path.clone()),
+            IOState::Exporting(path) => IOEvent::Export(path.clone()),
         }
     }
 
     pub fn title(&self) -> &'static str {
         match self {
-            IOState::Saving => "Save",
-            IOState::Loading => "Load",
-            IOState::Exporting => "Export",
+            IOState::Saving(_) => "Save",
+            IOState::Loading(_) => "Load",
+            IOState::Exporting(_) => "Export",
+        }
+    }
+    pub fn path_mut(&mut self) -> &mut String {
+        match self {
+            IOState::Saving(p) => p,
+            IOState::Loading(p) => p,
+            IOState::Exporting(p) => p,
         }
     }
 }

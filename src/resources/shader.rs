@@ -1,5 +1,7 @@
-use crate::{Commands, DespawnRecursiveExt, Entity};
+use crate::resources::shader_loader::ShaderLoader;
+use crate::resources::ShadyAssets;
 use bevy::log;
+use bevy::prelude::{Commands, DespawnRecursiveExt, Entity};
 use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, Shader};
 use std::ops::{Deref, DerefMut};
@@ -65,6 +67,32 @@ impl CurrentShader {
             }
         )
     }
+
+    fn clear(&mut self, commands: &mut Commands) {
+        for (key, entity) in self.node_entities.drain() {
+            log::info!("Removing node {} entity {:?}", key, entity);
+            commands.entity(entity).despawn_recursive();
+        }
+        for (key, entity) in self.input_property_entities.drain() {
+            log::info!("Removing input property {} entity {:?}", key, entity);
+            commands.entity(entity).despawn_recursive();
+        }
+        for (key, entity) in self.output_property_entities.drain() {
+            log::info!("Removing output property {} entity {:?}", key, entity);
+            commands.entity(entity).despawn_recursive();
+        }
+        for (key, entity) in self.connection_entities.drain() {
+            log::info!("Removing connection {} entity {:?}", key, entity);
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+
+    pub fn load(&mut self, shader: Shader, commands: &mut Commands, assets: &ShadyAssets) {
+        let mut loader = ShaderLoader::new(shader);
+        loader.load(commands, assets);
+        self.clear(commands);
+        *self = loader.into();
+    }
 }
 
 impl Default for CurrentShader {
@@ -90,5 +118,17 @@ impl Deref for CurrentShader {
 impl DerefMut for CurrentShader {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.shader
+    }
+}
+
+impl From<ShaderLoader> for CurrentShader {
+    fn from(l: ShaderLoader) -> Self {
+        Self {
+            shader: l.shader,
+            node_entities: l.node_entities,
+            input_property_entities: l.input_property_entities,
+            output_property_entities: l.output_property_entities,
+            connection_entities: l.connection_entities,
+        }
     }
 }

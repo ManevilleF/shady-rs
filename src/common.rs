@@ -1,5 +1,7 @@
 #![allow(dead_code)]
+
 use bevy::prelude::Vec2;
+use std::env::current_dir;
 
 #[derive(Debug, Clone)]
 pub struct Bounds {
@@ -22,6 +24,15 @@ impl Bounds {
     pub fn center(&self) -> Vec2 {
         self.min + (self.max - self.min) / 2.
     }
+}
+
+pub fn get_current_dir() -> String {
+    current_dir()
+        .unwrap()
+        .as_os_str()
+        .to_str()
+        .unwrap()
+        .to_string()
 }
 
 #[cfg(test)]

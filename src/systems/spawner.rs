@@ -2,6 +2,7 @@ use crate::components::{BoxInteraction, InteractionBox, ShadyInputSlot, ShadyOut
 use crate::resources::ShadyAssets;
 use bevy::ecs::component::Component;
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, NativeType};
 use std::cmp::max;
 
@@ -9,6 +10,13 @@ const NODE_SIZE_X: f32 = 140.;
 const NODE_HEADER_SIZE_Y: f32 = 40.;
 const SLOT_SIZE: f32 = 15.;
 const SLOT_STEP: f32 = 30.;
+
+#[derive(Debug)]
+pub struct SpawnResponse {
+    pub entity: Entity,
+    pub input_field_entities: HashMap<String, Entity>,
+    pub output_field_entities: HashMap<String, Entity>,
+}
 
 #[derive(Debug, Clone)]
 pub enum SpawnType {
@@ -108,34 +116,44 @@ fn spawn_slots<F, C>(
     box_interaction: F,
     component: C,
     use_field_name: bool,
-) where
+) -> HashMap<String, Entity>
+where
     F: Fn(&str) -> BoxInteraction,
     C: Component + Clone,
 {
+    let mut res = HashMap::default();
     for (i, (field_name, field)) in fields.into_iter().enumerate() {
-        cmd.spawn_bundle(SpriteBundle {
-            sprite: Sprite::new(size),
-            material: assets.glsl_type_material(field),
-            transform: Transform::from_xyz(pos_x, -NODE_HEADER_SIZE_Y - (SLOT_STEP * i as f32), 0.),
-            ..Default::default()
-        })
-        .insert(Name::new(format!("{} input", field_name)))
-        .insert(InteractionBox::new(size, box_interaction(&field_name)))
-        .insert(component.clone())
-        .with_children(|builder| {
-            builder.spawn_bundle(Text2dBundle {
-                transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 2., 0., 1.),
-                ..slot_text_bundle(
-                    if use_field_name {
-                        field_name
-                    } else {
-                        field.to_string()
-                    },
-                    assets,
-                )
-            });
-        });
+        let entity = cmd
+            .spawn_bundle(SpriteBundle {
+                sprite: Sprite::new(size),
+                material: assets.glsl_type_material(field),
+                transform: Transform::from_xyz(
+                    pos_x,
+                    -NODE_HEADER_SIZE_Y - (SLOT_STEP * i as f32),
+                    0.,
+                ),
+                ..Default::default()
+            })
+            .insert(Name::new(format!("{} input", field_name)))
+            .insert(InteractionBox::new(size, box_interaction(&field_name)))
+            .insert(component.clone())
+            .with_children(|builder| {
+                builder.spawn_bundle(Text2dBundle {
+                    transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 2., 0., 1.),
+                    ..slot_text_bundle(
+                        if use_field_name {
+                            field_name.clone()
+                        } else {
+                            field.to_string()
+                        },
+                        assets,
+                    )
+                });
+            })
+            .id();
+        res.insert(field_name, entity);
     }
+    res
 }
 
 pub fn spawn_element(
@@ -144,14 +162,16 @@ pub fn spawn_element(
     pos: Vec2,
     (id, name): (&str, &str),
     spawn_type: SpawnType,
-) -> Entity {
+) -> SpawnResponse {
     let header_size = Vec2::new(NODE_SIZE_X, NODE_HEADER_SIZE_Y);
     let close_button_size = Vec2::splat(NODE_HEADER_SIZE_Y / 2.);
     let slot_size = Vec2::splat(SLOT_SIZE);
     let slot_x_pos = NODE_SIZE_X / 2. - SLOT_SIZE;
     let field_len = spawn_type.max_field_len() as f32;
     let body_size = Vec2::new(NODE_SIZE_X, field_len * SLOT_STEP);
-    commands
+    let mut input_field_entities = HashMap::default();
+    let mut output_field_entities = HashMap::default();
+    let entity = commands
         .spawn_bundle(SpriteBundle {
             sprite: Sprite::new(header_size),
             material: match spawn_type {
@@ -202,7 +222,7 @@ pub fn spawn_element(
                         close_button_size,
                         BoxInteraction::DeleteNode(id.to_string()),
                     ));
-                    spawn_slots(
+                    input_field_entities = spawn_slots(
                         &mut builder,
                         input_fields,
                         (slot_size, -slot_x_pos),
@@ -216,7 +236,7 @@ pub fn spawn_element(
                         ShadyInputSlot::default(),
                         true,
                     );
-                    spawn_slots(
+                    output_field_entities = spawn_slots(
                         &mut builder,
                         output_fields,
                         (slot_size, slot_x_pos),
@@ -236,7 +256,7 @@ pub fn spawn_element(
                         close_button_size,
                         BoxInteraction::DeleteInput(id.to_string()),
                     ));
-                    spawn_slots(
+                    output_field_entities = spawn_slots(
                         &mut builder,
                         output_fields,
                         (slot_size, slot_x_pos),
@@ -255,7 +275,7 @@ pub fn spawn_element(
                         close_button_size,
                         BoxInteraction::DeleteOutput(id.to_string()),
                     ));
-                    spawn_slots(
+                    input_field_entities = spawn_slots(
                         &mut builder,
                         input_fields,
                         (slot_size, -slot_x_pos),
@@ -271,5 +291,10 @@ pub fn spawn_element(
                 }
             }
         })
-        .id()
+        .id();
+    SpawnResponse {
+        entity,
+        input_field_entities,
+        output_field_entities,
+    }
 }

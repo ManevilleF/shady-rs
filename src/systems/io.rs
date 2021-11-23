@@ -1,6 +1,8 @@
+use crate::resources::ShadyAssets;
 use crate::{CurrentShader, IOEvent};
 use bevy::log;
 use bevy::prelude::*;
+use shady_generator::Shader;
 use std::path::PathBuf;
 
 macro_rules! get_path_or_continue {
@@ -8,6 +10,18 @@ macro_rules! get_path_or_continue {
         match $res {
             Some(v) => v,
             None => continue,
+        }
+    };
+}
+
+macro_rules! get_path_res_or_continue {
+    ($res:expr) => {
+        match $res {
+            Ok(v) => v,
+            Err(e) => {
+                log::error!("{}", e);
+                continue;
+            }
         }
     };
 }
@@ -29,7 +43,12 @@ fn handle_path(p: &str, shader: &CurrentShader, is_shader: bool) -> Option<Strin
     path_builder.to_str().map(|str| str.to_string())
 }
 
-pub fn handle_io_events(shader: Res<CurrentShader>, mut io_evr: EventReader<IOEvent>) {
+pub fn handle_io_events(
+    mut commands: Commands,
+    mut shader: ResMut<CurrentShader>,
+    mut io_evr: EventReader<IOEvent>,
+    assets: Res<ShadyAssets>,
+) {
     for event in io_evr.iter() {
         match event {
             IOEvent::Save(path) => {
@@ -43,7 +62,10 @@ pub fn handle_io_events(shader: Res<CurrentShader>, mut io_evr: EventReader<IOEv
                     }
                 };
             }
-            IOEvent::Load(path) => {}
+            IOEvent::Load(path) => {
+                let new_shader = get_path_res_or_continue!(Shader::load(path));
+                shader.load(new_shader, &mut commands, &assets);
+            }
             IOEvent::Export(path) => {
                 let path = get_path_or_continue!(handle_path(path, &shader, true));
                 match shader.export_glsl_to(&path) {

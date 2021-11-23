@@ -1,3 +1,4 @@
+use crate::common::get_current_dir;
 use crate::resources::{Candidate, CreationCandidate, IOState, OperationSelection, TypeSelection};
 use crate::{CurrentShader, IOEvent, UiState};
 use bevy::prelude::*;
@@ -7,7 +8,6 @@ use shady_generator::{
     FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
     NonScalarNativeType, ScalarNativeType, ShaderType,
 };
-use std::env::current_dir;
 use std::fmt::Display;
 
 pub fn setup(egui_ctx: ResMut<EguiContext>) {
@@ -114,13 +114,13 @@ pub fn menu(
                 ui.separator();
                 ui.horizontal(|ui| {
                     if ui.button("Save").clicked() {
-                        ui_state.io_state = Some(IOState::Saving)
+                        ui_state.io_state = Some(IOState::Saving(get_current_dir()))
                     }
                     if ui.button("Load").clicked() {
-                        ui_state.io_state = Some(IOState::Loading)
+                        ui_state.io_state = Some(IOState::Loading(get_current_dir()))
                     }
                     if ui.button("Export").clicked() {
-                        ui_state.io_state = Some(IOState::Exporting)
+                        ui_state.io_state = Some(IOState::Exporting(get_current_dir()))
                     }
                 });
                 ui.label("I/O");
@@ -135,23 +135,17 @@ pub fn io(
 ) {
     let mut open = true;
     let mut done = false;
-    if let Some(state) = &ui_state.io_state {
-        let mut dir = current_dir()
-            .unwrap()
-            .as_os_str()
-            .to_str()
-            .unwrap()
-            .to_string();
+    if let Some(state) = &mut ui_state.io_state {
         egui::Window::new(state.title())
             .collapsible(false)
             .open(&mut open)
             .show(egui_ctx.ctx(), |ui| {
                 ui.horizontal(|ui| {
                     ui.label("Directory");
-                    ui.text_edit_singleline(&mut dir);
+                    ui.text_edit_singleline(state.path_mut());
                 });
                 if ui.button(state.title()).clicked() {
-                    io_ewr.send(state.event(dir));
+                    io_ewr.send(state.event());
                     done = true;
                 }
             });
