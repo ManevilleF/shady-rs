@@ -1,8 +1,8 @@
 use crate::common::get_current_dir;
 use crate::resources::{Candidate, CreationCandidate, IOState, OperationSelection, TypeSelection};
-use crate::{CurrentShader, IOEvent, UiState};
+use crate::{CurrentShader, IOEvent, UiState, VERSION};
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, ComboBox, Label, Rgba, Ui, Widget};
+use bevy_egui::egui::{Button, ComboBox, Frame, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::{
     FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
@@ -124,6 +124,19 @@ pub fn menu(
                     }
                 });
                 ui.label("I/O");
+            });
+        });
+    egui::TopBottomPanel::bottom("Build info")
+        .frame(Frame::none())
+        .show(egui_ctx.ctx(), |ui| {
+            ui.vertical_centered(|ui| {
+                let label = Label::new(format!(
+                    "App version {} - Lib version {}",
+                    VERSION,
+                    shady_generator::VERSION
+                ))
+                .small();
+                ui.label(label);
             });
         });
 }

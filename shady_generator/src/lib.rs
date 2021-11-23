@@ -16,6 +16,7 @@ mod shader;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 const UNIQUE_ID_LENGTH: usize = 10;
 
 #[macro_use]
