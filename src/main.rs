@@ -18,6 +18,10 @@ fn main() {
     let mut app = App::build();
     app.insert_resource(ClearColor(Color::DARK_GRAY))
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(WindowDescriptor {
+            title: "Shady".to_string(),
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
         .add_plugin(DebugLinesPlugin)
