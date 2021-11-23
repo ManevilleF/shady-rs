@@ -48,9 +48,11 @@ impl Output {
 }
 
 impl OutputFields {
+    pub const SINGLE_FIELD_NAME: &'static str = "out";
+
     pub fn field_names(&self) -> Vec<(String, NativeType)> {
         match self {
-            OutputFields::SingleOutput(t) => vec![("out".to_string(), *t)],
+            OutputFields::SingleOutput(t) => vec![(Self::SINGLE_FIELD_NAME.to_string(), *t)],
             OutputFields::Fields(f) => f.clone(),
         }
     }

@@ -4,14 +4,13 @@ use crate::systems::spawner::{spawn_element, SpawnResponse, SpawnType};
 use crate::CurrentShader;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use shady_generator::{Connection, ConnectionTo, Shader};
+use shady_generator::{Connection, ConnectionTo, OutputFields, Shader};
 
 macro_rules! get_entity_or_continue {
     ($res:expr, $cmd:expr) => {
         match $res {
             Ok(e) => e,
             Err(e) => {
-                bevy::log::error!("{}", e);
                 LogElement::new(LogLevel::Error, e.to_string()).spawn($cmd);
                 continue;
             }
@@ -126,7 +125,9 @@ impl ShaderLoader {
                 let connector_id = CurrentShader::unique_connector_id(&connection_to, connection);
                 let from_id = match connection {
                     Connection::InputProperty { id } => Self::unique_slot_id(id, id, false),
-                    Connection::SingleOutputNode { id } => Self::unique_slot_id(id, id, true),
+                    Connection::SingleOutputNode { id } => {
+                        Self::unique_slot_id(id, OutputFields::SINGLE_FIELD_NAME, true)
+                    }
                     Connection::ComplexOutputNode {
                         id: node_id,
                         field_name,
@@ -166,7 +167,9 @@ impl ShaderLoader {
                 let connector_id = CurrentShader::unique_connector_id(&connection_to, connection);
                 let from_id = match connection {
                     Connection::InputProperty { id } => Self::unique_slot_id(id, id, false),
-                    Connection::SingleOutputNode { id } => Self::unique_slot_id(id, id, true),
+                    Connection::SingleOutputNode { id } => {
+                        Self::unique_slot_id(id, OutputFields::SINGLE_FIELD_NAME, true)
+                    }
                     Connection::ComplexOutputNode {
                         id: node_id,
                         field_name,
