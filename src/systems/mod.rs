@@ -1,6 +1,7 @@
 pub mod input;
 pub mod io;
 pub mod lines;
+pub mod log;
 pub mod setup;
 pub mod shader;
 pub mod spawner;

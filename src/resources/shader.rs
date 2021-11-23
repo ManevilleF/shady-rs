@@ -1,3 +1,4 @@
+use crate::components::{LogElement, LogLevel};
 use crate::resources::shader_loader::ShaderLoader;
 use crate::resources::ShadyAssets;
 use bevy::log;
@@ -18,7 +19,8 @@ impl CurrentShader {
     pub fn delete_node_entity(&mut self, id: &str, commands: &mut Commands) {
         match self.node_entities.remove(id) {
             None => {
-                log::error!("No entity for node {}", id);
+                LogElement::new(LogLevel::Warn, format!("No entity for node {}", id))
+                    .spawn(commands);
             }
             Some(e) => {
                 commands.entity(e).despawn_recursive();
@@ -29,7 +31,8 @@ impl CurrentShader {
     pub fn delete_input_property_entity(&mut self, id: &str, commands: &mut Commands) {
         match self.input_property_entities.remove(id) {
             None => {
-                log::error!("No entity for input {}", id);
+                LogElement::new(LogLevel::Warn, format!("No entity for input {}", id))
+                    .spawn(commands);
             }
             Some(e) => {
                 commands.entity(e).despawn_recursive();
@@ -40,7 +43,8 @@ impl CurrentShader {
     pub fn delete_output_property_entity(&mut self, id: &str, commands: &mut Commands) {
         match self.output_property_entities.remove(id) {
             None => {
-                log::error!("No entity for output {}", id);
+                LogElement::new(LogLevel::Warn, format!("No entity for output {}", id))
+                    .spawn(commands);
             }
             Some(e) => {
                 commands.entity(e).despawn_recursive();
@@ -92,6 +96,11 @@ impl CurrentShader {
         loader.load(commands, assets);
         self.clear(commands);
         *self = loader.into();
+        LogElement::new(
+            LogLevel::Info,
+            format!("Successfully loaded shader {}", self.name),
+        )
+        .spawn(commands);
     }
 }
 

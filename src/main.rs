@@ -58,6 +58,7 @@ fn main() {
                 .with_system(systems::ui::creation_menu.system().after("ui_setup"))
                 .with_system(systems::ui::io.system()),
         )
+        .add_system_set(SystemSet::new().with_system(systems::log::handle_log_elements.system()))
         .add_system(systems::io::handle_io_events.system())
         .add_event::<ShaderEvent>()
         .add_event::<IOEvent>()

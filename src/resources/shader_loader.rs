@@ -1,10 +1,23 @@
-use crate::components::NodeConnector;
+use crate::components::{LogElement, LogLevel, NodeConnector};
 use crate::resources::ShadyAssets;
 use crate::systems::spawner::{spawn_element, SpawnResponse, SpawnType};
 use crate::CurrentShader;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, Shader};
+
+macro_rules! get_entity_or_continue {
+    ($res:expr, $cmd:expr) => {
+        match $res {
+            Ok(e) => e,
+            Err(e) => {
+                bevy::log::error!("{}", e);
+                LogElement::new(LogLevel::Error, e.to_string()).spawn($cmd);
+                continue;
+            }
+        }
+    };
+}
 
 #[derive(Debug)]
 pub struct ShaderLoader {
@@ -52,6 +65,20 @@ impl ShaderLoader {
         for (key, entity) in response.input_field_entities {
             let id = Self::unique_slot_id(element_id, &key, is_node);
             self.input_field_entities.insert(id, entity);
+        }
+    }
+
+    fn get_property_id(&self, id: &str, input: bool) -> Result<Entity, String> {
+        if input {
+            match self.input_field_entities.get(id) {
+                Some(e) => Ok(*e),
+                None => Err(format!("Failed to find {} input property. Skipping.", id)),
+            }
+        } else {
+            match self.output_field_entities.get(id) {
+                Some(e) => Ok(*e),
+                None => Err(format!("Failed to find {} input property. Skipping.", id)),
+            }
         }
     }
 
@@ -107,13 +134,13 @@ impl ShaderLoader {
                     } => Self::unique_slot_id(node_id, field_name, true),
                 };
                 let to_id = Self::unique_slot_id(key, field, true);
-                let from = self.output_field_entities.get(&from_id).unwrap();
-                let to = self.input_field_entities.get(&to_id).unwrap();
+                let from = get_entity_or_continue!(self.get_property_id(&from_id, false), commands);
+                let to = get_entity_or_continue!(self.get_property_id(&to_id, true), commands);
                 let entity = commands
                     .spawn()
                     .insert(NodeConnector {
-                        output_from: *from,
-                        input_to: *to,
+                        output_from: from,
+                        input_to: to,
                     })
                     .insert(Name::new(format!("{} connector", connector_id)))
                     .id();
@@ -148,13 +175,13 @@ impl ShaderLoader {
                     } => Self::unique_slot_id(node_id, field_name, true),
                 };
                 let to_id = Self::unique_slot_id(&key, &key, false);
-                let from = self.output_field_entities.get(&from_id).unwrap();
-                let to = self.input_field_entities.get(&to_id).unwrap();
+                let from = get_entity_or_continue!(self.get_property_id(&from_id, false), commands);
+                let to = get_entity_or_continue!(self.get_property_id(&to_id, true), commands);
                 let entity = commands
                     .spawn()
                     .insert(NodeConnector {
-                        output_from: *from,
-                        input_to: *to,
+                        output_from: from,
+                        input_to: to,
                     })
                     .insert(Name::new(format!("{} connector", connector_id)))
                     .id();

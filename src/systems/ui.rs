@@ -128,6 +128,7 @@ pub fn menu(
         });
     egui::TopBottomPanel::bottom("Build info")
         .frame(Frame::none())
+        .resizable(false)
         .show(egui_ctx.ctx(), |ui| {
             ui.vertical_centered(|ui| {
                 let label = Label::new(format!(
