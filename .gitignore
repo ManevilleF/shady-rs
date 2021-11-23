@@ -10,3 +10,7 @@ shady_generator/Cargo.lock
 # Added by cargo
 
 /target
+
+*.yaml
+*.vert
+*.frag

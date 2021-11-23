@@ -1,23 +1,34 @@
-// TODO: enable
-// #![deny(warnings)]
+//! # Shady Generator
+//!
+//! Shader generation lib for shady-rs
+#![deny(warnings)]
 // #![forbid(missing_docs)]
-// #![forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 
-pub use {error::*, glsl_type::*, graphic_library::GraphicLibrary, node::*, shader::*};
+pub use {error::*, graphic_library::*, native_type::*, node::*, shader::*};
 
 mod error;
-mod glsl_type;
 mod graphic_library;
+mod native_type;
 mod node;
 mod shader;
 
-use uuid::Uuid;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+const UNIQUE_ID_LENGTH: usize = 10;
 
 #[macro_use]
 extern crate indoc;
 
+// TODO: Check entropy of this and look for a better solution
 pub(crate) fn generate_uuid() -> String {
-    Uuid::new_v4().to_string()
+    thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(UNIQUE_ID_LENGTH)
+        .map(char::from)
+        .collect()
 }
 
 pub(crate) fn ordered_map<S, T>(

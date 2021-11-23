@@ -3,7 +3,7 @@ mod native_operation;
 
 pub use {native_function::*, native_operation::*};
 
-use crate::{GlslType, Input, NonScalarNativeType, Output, ShadyError};
+use crate::{Input, InputField, NonScalarNativeType, Output, ShadyError};
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 
@@ -17,6 +17,8 @@ pub(crate) enum InternalNodeOperation {
     CustomOperation(String),
     /// Native operation
     NativeOperation(NativeOperation),
+    /// Non scalar type split
+    TypeSplit(NonScalarNativeType),
     /// Non scalar type construction
     TypeConstruction(NonScalarNativeType),
     /// Native Function
@@ -39,20 +41,27 @@ pub enum NodeOperation {
     NativeOperation(NativeOperation),
     /// Non scalar type construction
     TypeConstruction(NonScalarNativeType),
+    /// Non scalar type split
+    TypeSplit(NonScalarNativeType),
     /// Native Function
     NativeFunction(NativeFunction),
 }
 
 impl NodeOperation {
+    /// Retrieves the input data for the operation
     pub fn input(&self) -> Input {
         match self {
             NodeOperation::CustomOperation { input, .. } => input.clone(),
             NodeOperation::NativeOperation(o) => o.input(),
             NodeOperation::TypeConstruction(t) => t.input(),
+            NodeOperation::TypeSplit(t) => Input {
+                fields: vec![("in".to_string(), InputField::new((*t).into()))],
+            },
             NodeOperation::NativeFunction(f) => f.input(),
         }
     }
 
+    /// Retrieves the output data for the operation
     pub fn output(&self) -> Output {
         match self {
             NodeOperation::CustomOperation { output, .. } => output.clone(),
@@ -60,8 +69,9 @@ impl NodeOperation {
             NodeOperation::NativeFunction(f) => f.output(),
             NodeOperation::TypeConstruction(t) => Output::GlslType {
                 glsl_type: (*t).into(),
-                field_name: "v".to_string(),
+                field_name: "out".to_string(),
             },
+            NodeOperation::TypeSplit(t) => t.output(),
         }
     }
 }
@@ -73,7 +83,10 @@ impl InternalNodeOperation {
                 format!("{}({})", function_name, input_fields.join(", "))
             }
             Self::TypeConstruction(t) => {
-                format!("{}({})", GlslType::from(*t), input_fields.join(", "))
+                format!("{}({})", t, input_fields.join(", "))
+            }
+            Self::TypeSplit(t) => {
+                format!("{}({})", t, input_fields.join(", "))
             }
             Self::NativeOperation(o) => o.glsl_operation(input_fields),
             Self::NativeFunction(f) => {
@@ -111,6 +124,7 @@ impl From<NodeOperation> for InternalNodeOperation {
             }
             NodeOperation::NativeOperation(t) => Self::NativeOperation(t),
             NodeOperation::TypeConstruction(t) => Self::TypeConstruction(t),
+            NodeOperation::TypeSplit(t) => Self::TypeSplit(t),
             NodeOperation::NativeFunction(f) => Self::NativeFunction(f),
         }
     }

@@ -1,7 +1,6 @@
-use crate::components::{InteractionBox, NodeConnector, NodeInput, NodeOutput};
+use crate::components::{NodeConnector, ShadyInputSlot, ShadyOutputSlot};
 use crate::get_cursor_position;
 use crate::resources::{NodeConnectorCandidate, ShadyAssets, WorldCursorPosition};
-use bevy::ecs::query::QueryEntityError;
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -14,25 +13,27 @@ fn draw_bezier_line((start, end): (Vec2, Vec2), lines: &mut DebugLines, color: C
 }
 
 pub fn handle_candidate_line(
+    mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
     assets: Res<ShadyAssets>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
-    connector_query: Query<&GlobalTransform, With<NodeOutput>>,
+    connector_query: Query<&GlobalTransform, With<ShadyOutputSlot>>,
     mut lines: ResMut<DebugLines>,
 ) {
-    let connector_candidate = match connector_candidate {
+    let candidate = match connector_candidate {
         None => return,
         Some(c) => c,
     };
     let position = get_cursor_position!(cursor_position);
-    let start_pos = match connector_query.get(connector_candidate.output_from) {
+    let start_pos = match connector_query.get(candidate.output_from) {
         Ok(transform) => transform.translation.xy(),
         Err(e) => {
-            log::error!(
-                "Failed to retrieve connector candidate entity {:?}: {}",
-                connector_candidate.output_from,
+            log::warn!(
+                "Failed to retrieve connector candidate entity {:?}, deleting it: {}",
+                candidate.output_from,
                 e
             );
+            commands.remove_resource::<NodeConnectorCandidate>();
             return;
         }
     };
@@ -44,26 +45,41 @@ pub fn handle_candidate_line(
 }
 
 macro_rules! get_vec2_transform {
-    ($res:expr) => {
+    ($res:expr, $entity:ident, $cmd:ident) => {
         match $res {
             Ok(t) => t.translation.xy(),
             Err(e) => {
-                log::error!("Failed to retrieve node connector entity: {}", e);
+                log::warn!(
+                    "Failed to retrieve node connector entity {:?}, deleting it : {}",
+                    $entity,
+                    e
+                );
+                $cmd.entity($entity).despawn_recursive();
                 continue;
             }
         }
     };
 }
 
+#[allow(clippy::type_complexity)]
 pub fn handle_connector_lines(
-    connector_query: Query<&NodeConnector>,
-    connector_box_query: Query<&GlobalTransform>, // , Or<(NodeInput, NodeOutput)>>,
+    mut commands: Commands,
+    connector_query: Query<(Entity, &NodeConnector)>,
+    connector_box_query: Query<&GlobalTransform, Or<(With<ShadyInputSlot>, With<ShadyOutputSlot>)>>,
     mut lines: ResMut<DebugLines>,
     assets: Res<ShadyAssets>,
 ) {
-    for node_connector in connector_query.iter() {
-        let from = get_vec2_transform!(connector_box_query.get(node_connector.output_from));
-        let to = get_vec2_transform!(connector_box_query.get(node_connector.input_to));
+    for (entity, node_connector) in connector_query.iter() {
+        let from = get_vec2_transform!(
+            connector_box_query.get(node_connector.output_from),
+            entity,
+            commands
+        );
+        let to = get_vec2_transform!(
+            connector_box_query.get(node_connector.input_to),
+            entity,
+            commands
+        );
         draw_bezier_line((from, to), &mut lines, assets.connector_color);
     }
 }

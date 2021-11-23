@@ -1,11 +1,15 @@
 use crate::common::Bounds;
 use bevy::prelude::*;
+use shady_generator::{Connection, ConnectionTo};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq)]
 pub enum BoxInteraction {
+    ConnectionStart(Connection),
+    ConnectionEnd(ConnectionTo),
+    DeleteNode(String),
+    DeleteInput(String),
+    DeleteOutput(String),
     Drag,
-    ConnectionStart,
-    ConnectionEnd,
     Ignore,
 }
 
@@ -20,24 +24,11 @@ impl InteractionBox {
         Self { size, interaction }
     }
 
-    pub fn new_drag_box(size: Vec2) -> Self {
-        Self {
-            size,
-            interaction: BoxInteraction::Drag,
-        }
-    }
-
-    pub fn new_connect_box(size: Vec2) -> Self {
-        Self {
-            size,
-            interaction: BoxInteraction::ConnectionStart,
-        }
-    }
-
+    // TODO: fix this
     pub fn get_interaction(&self, self_translation: Vec2, pos: Vec2) -> Option<BoxInteraction> {
         let bounds = Bounds::centered(self_translation, self.size);
         if bounds.in_bounds(pos) {
-            Some(self.interaction)
+            Some(self.interaction.clone())
         } else {
             None
         }

@@ -1,15 +1,14 @@
-pub use {property::*, shader_operations::*, shader_type::*, to_glsl::*};
+pub use {property::*, shader_type::*, to_glsl::*};
 
 mod precision;
 mod property;
-mod shader_operations;
 mod shader_type;
 mod to_glsl;
 
 use crate::shader::precision::ShaderPrecision;
 use crate::{
     ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
-    ConnectionTo, GlslType, GraphicLibrary, Node, NodePreset, ShadyError,
+    ConnectionTo, GraphicLibrary, NativeType, Node, ShadyError,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -35,7 +34,7 @@ pub struct Shader {
     //     skip_serializing_if = "HashMap::is_empty",
     //     serialize_with = "ordered_map"
     // )]
-    pub default_precisions: HashMap<GlslType, ShaderPrecision>,
+    pub default_precisions: HashMap<NativeType, ShaderPrecision>,
     #[serde(
         skip_serializing_if = "HashMap::is_empty",
         serialize_with = "ordered_map"
@@ -59,7 +58,7 @@ impl Shader {
         let id = node.unique_id().clone();
         if let Some(n) = self.nodes.insert(id.clone(), node) {
             log::error!(
-                "FATAL: Overwrote node {}_{} because of identical ids",
+                "FATAL: Overwrote node `{}` ({}) because of identical ids",
                 n.name(),
                 n.unique_id()
             );
@@ -67,23 +66,14 @@ impl Shader {
         self.get_node(&id).unwrap()
     }
 
-    pub fn create_node_from_preset(&mut self, node: NodePreset) -> &Node {
-        let node = node.get_node();
-        self.create_node(node)
-    }
-
-    pub fn remove_node(&mut self, node_uuid: &str) -> Option<Node> {
-        match self.nodes.remove(node_uuid) {
+    pub fn remove_node(&mut self, id: &str) -> Option<Node> {
+        match self.nodes.remove(id) {
             None => {
-                log::error!("Could not find node with uuid {} to remove", node_uuid);
+                log::error!("Could not find node with id {} to remove", id);
                 None
             }
             Some(n) => Some(n),
         }
-    }
-
-    pub fn node(&self, id: &str) -> Option<&Node> {
-        self.nodes.get(id)
     }
 
     fn get_node(&self, id: &str) -> Result<&Node, ShadyError> {
@@ -92,20 +82,78 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
+    pub fn nodes(&self) -> &HashMap<String, Node> {
+        &self.nodes
+    }
+
+    fn get_input_property(&self, id: &str) -> Result<&InputProperty, ShadyError> {
+        self.input_properties
+            .get(id)
+            .ok_or_else(|| ShadyError::MissingInputProperty(id.to_string()))
+    }
+
+    pub fn input_properties(&self) -> &HashMap<String, InputProperty> {
+        &self.input_properties
+    }
+
+    fn get_output_property(&self, id: &str) -> Result<&OutputProperty, ShadyError> {
+        self.output_properties
+            .get(id)
+            .ok_or_else(|| ShadyError::MissingOutputProperty(id.to_string()))
+    }
+
+    pub fn output_properties(&self) -> &HashMap<String, OutputProperty> {
+        &self.output_properties
+    }
+
     fn get_node_mut(&mut self, id: &str) -> Result<&mut Node, ShadyError> {
         self.nodes
             .get_mut(id)
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
-    pub fn add_input_property(&mut self, property: InputProperty) -> Option<InputProperty> {
-        self.input_properties
-            .insert(property.reference.clone(), property)
+    pub fn add_input_property(&mut self, property: InputProperty) -> &InputProperty {
+        let id = property.reference.clone();
+        if let Some(p) = self.input_properties.insert(id.clone(), property) {
+            log::error!(
+                "FATAL: Overwrote input property `{}` ({}) because of identical ids",
+                p.name,
+                p.reference
+            );
+        }
+        self.get_input_property(&id).unwrap()
     }
 
-    pub fn add_output_property(&mut self, property: OutputProperty) -> Option<OutputProperty> {
-        self.output_properties
-            .insert(property.reference.clone(), property)
+    pub fn add_output_property(&mut self, property: OutputProperty) -> &OutputProperty {
+        let id = property.reference.clone();
+        if let Some(p) = self.output_properties.insert(id.clone(), property) {
+            log::error!(
+                "FATAL: Overwrote output property `{}` ({}) because of identical ids",
+                p.name,
+                p.reference
+            );
+        }
+        self.get_output_property(&id).unwrap()
+    }
+
+    pub fn remove_input_property(&mut self, id: &str) -> Option<InputProperty> {
+        match self.input_properties.remove(id) {
+            None => {
+                log::error!("Could not find input property with id {} to remove", id);
+                None
+            }
+            Some(n) => Some(n),
+        }
+    }
+
+    pub fn remove_output_property(&mut self, id: &str) -> Option<OutputProperty> {
+        match self.output_properties.remove(id) {
+            None => {
+                log::error!("Could not find output property with id {} to remove", id);
+                None
+            }
+            Some(n) => Some(n),
+        }
     }
 
     pub fn connect(
@@ -113,13 +161,13 @@ impl Shader {
         connection_attempt: ConnectionAttempt,
     ) -> Result<ConnectionResponse, ShadyError> {
         let glsl_type = match &connection_attempt.connection_from {
-            Connection::PropertyConnection { property_id } => {
+            Connection::InputProperty { property_id } => {
                 self.input_properties
                     .get(property_id)
                     .ok_or_else(|| ShadyError::MissingInputProperty(property_id.clone()))?
                     .glsl_type
             }
-            Connection::NodeConnection {
+            Connection::Node {
                 node_id,
                 field_name,
             } => {
@@ -137,7 +185,10 @@ impl Shader {
             glsl_type,
         };
         match connection_attempt.connection_to {
-            ConnectionTo::ToNode { id, field } => {
+            ConnectionTo::Node {
+                node_id: id,
+                field_name: field,
+            } => {
                 let to_node = self.get_node_mut(&id)?;
                 to_node.connect_input(&field, connection_message)
             }
@@ -156,7 +207,10 @@ impl Shader {
         connection_to: ConnectionTo,
     ) -> Result<Option<Connection>, ShadyError> {
         match connection_to {
-            ConnectionTo::ToNode { id, field } => {
+            ConnectionTo::Node {
+                node_id: id,
+                field_name: field,
+            } => {
                 let to_node = self.get_node_mut(&id)?;
                 to_node.disconnect_field(&field)
             }
@@ -189,9 +243,27 @@ impl Shader {
         Ok(())
     }
 
+    pub fn safe_name(&self) -> String {
+        self.name.to_ascii_lowercase().trim().replace(" ", "_")
+    }
+
+    pub fn shader_file_name(&self) -> String {
+        format!(
+            "{}.{}",
+            self.safe_name(),
+            match self.shader_type {
+                ShaderType::Vertex => "vert",
+                ShaderType::Fragment => "frag",
+            }
+        )
+    }
+
+    pub fn save_file_name(&self) -> String {
+        format!("{}.yaml", self.safe_name(),)
+    }
+
     pub fn save(&self) -> Result<(), ShadyError> {
-        let path = self.name.to_ascii_lowercase();
-        self.save_to(path.replace(" ", "_").as_str())
+        self.save_to(self.save_file_name().as_str())
     }
 
     pub fn export_glsl_to(&self, file_path: &str) -> Result<(), ShadyError> {

@@ -1,6 +1,7 @@
-use crate::{FloatingNativeType, GlslType, Input, InputField, Output};
+use crate::{FloatingNativeType, Input, InputField, NativeType, Output};
 use serde::{Deserialize, Serialize};
 
+/// Shader native functions
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum NativeFunction {
     /// The `radians` function converts degrees to radians.
@@ -139,6 +140,7 @@ pub enum NativeFunction {
 }
 
 impl NativeFunction {
+    /// Retrieves the name of the native function
     pub fn function_name(&self) -> &'static str {
         match self {
             NativeFunction::Radians(_) => "radians",
@@ -181,6 +183,60 @@ impl NativeFunction {
         }
     }
 
+    /// Retrieves a unique descriptive name for the native function
+    pub fn descriptive_name(&self) -> &'static str {
+        match self {
+            NativeFunction::Radians(_) => "radians",
+            NativeFunction::Degrees(_) => "degrees",
+            NativeFunction::Sine(_) => "sin",
+            NativeFunction::Cosine(_) => "cos",
+            NativeFunction::Tangent(_) => "tan",
+            NativeFunction::ArcSine(_) => "asin",
+            NativeFunction::ArcCosine(_) => "acos",
+            NativeFunction::ArcTangent(_) => "atan",
+            NativeFunction::ArcTangent2(_) => "atan2",
+            NativeFunction::Power(_) => "pow",
+            NativeFunction::Exponential(_) => "exp",
+            NativeFunction::Exponential2(_) => "exp2",
+            NativeFunction::Logarithm(_) => "log",
+            NativeFunction::Logarithm2(_) => "log2",
+            NativeFunction::SquareRoot(_) => "sqrt",
+            NativeFunction::InverseSquareRoot(_) => "inversesqrt",
+            NativeFunction::Absolute(_) => "abs",
+            NativeFunction::Sign(_) => "sign",
+            NativeFunction::Floor(_) => "floor",
+            NativeFunction::Ceiling(_) => "ceil",
+            NativeFunction::FractionalPart(_) => "fract",
+            NativeFunction::Modulo(_) => "mod",
+            NativeFunction::FloatModulo(_) => "mod_float",
+            NativeFunction::Minimum(_) => "min",
+            NativeFunction::FloatMinimum(_) => "min_float",
+            NativeFunction::Maximum(_) => "max",
+            NativeFunction::FloatMaximum(_) => "max_float",
+            NativeFunction::Clamp(_) => "clamp",
+            NativeFunction::FloatClamp(_) => "clamp_float",
+            NativeFunction::Mix(_) => "mix",
+            NativeFunction::FloatMix(_) => "mix_float",
+            NativeFunction::Step(_) => "step",
+            NativeFunction::FloatStep(_) => "step_float",
+            NativeFunction::SmoothStep(_) => "smoothstep",
+            NativeFunction::FloatSmoothStep(_) => "smoothstep_float",
+            NativeFunction::Distance(_) => "distance",
+            NativeFunction::Length(_) => "length",
+            NativeFunction::DotProduct(_) => "dot",
+            NativeFunction::CrossProduct => "cross",
+            NativeFunction::Normalize(_) => "normalize",
+            NativeFunction::FaceForward(_) => "faceforward",
+            NativeFunction::Reflect(_) => "reflect",
+            NativeFunction::Refract(_) => "refract",
+            NativeFunction::Texture2d => "texture2d",
+            NativeFunction::Texture2dBias => "texture2d_bias",
+            NativeFunction::TextureCube => "textureCube",
+            NativeFunction::TextureCubeBias => "textureCube_bias",
+        }
+    }
+
+    /// Retrieves the input data for the native function
     pub fn input(&self) -> Input {
         match self {
             NativeFunction::Radians(t)
@@ -204,7 +260,7 @@ impl NativeFunction {
             | NativeFunction::Length(t)
             | NativeFunction::Normalize(t)
             | NativeFunction::FractionalPart(t) => Input {
-                fields: vec![("v".to_string(), InputField::new(GlslType::from(*t)))],
+                fields: vec![("v".to_string(), InputField::new(NativeType::from(*t)))],
             },
             NativeFunction::ArcTangent2(t)
             | NativeFunction::Power(t)
@@ -215,127 +271,134 @@ impl NativeFunction {
             | NativeFunction::DotProduct(t)
             | NativeFunction::Reflect(t) => Input {
                 fields: vec![
-                    ("a".to_string(), InputField::new(GlslType::from(*t))),
-                    ("b".to_string(), InputField::new(GlslType::from(*t))),
+                    ("a".to_string(), InputField::new(NativeType::from(*t))),
+                    ("b".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::FloatModulo(t)
             | NativeFunction::FloatMinimum(t)
             | NativeFunction::FloatMaximum(t) => Input {
                 fields: vec![
-                    ("a".to_string(), InputField::new(GlslType::from(*t))),
-                    ("b".to_string(), InputField::new(GlslType::Float)),
+                    ("a".to_string(), InputField::new(NativeType::from(*t))),
+                    ("b".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
             NativeFunction::Clamp(t) => Input {
                 fields: vec![
-                    ("v".to_string(), InputField::new(GlslType::from(*t))),
-                    ("min".to_string(), InputField::new(GlslType::from(*t))),
-                    ("max".to_string(), InputField::new(GlslType::from(*t))),
+                    ("v".to_string(), InputField::new(NativeType::from(*t))),
+                    ("min".to_string(), InputField::new(NativeType::from(*t))),
+                    ("max".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::FloatClamp(t) => Input {
                 fields: vec![
-                    ("v".to_string(), InputField::new(GlslType::from(*t))),
-                    ("min".to_string(), InputField::new(GlslType::Float)),
-                    ("max".to_string(), InputField::new(GlslType::Float)),
+                    ("v".to_string(), InputField::new(NativeType::from(*t))),
+                    ("min".to_string(), InputField::new(NativeType::Float)),
+                    ("max".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
             NativeFunction::Mix(t) => Input {
                 fields: vec![
-                    ("x".to_string(), InputField::new(GlslType::from(*t))),
-                    ("y".to_string(), InputField::new(GlslType::from(*t))),
-                    ("a".to_string(), InputField::new(GlslType::from(*t))),
+                    ("x".to_string(), InputField::new(NativeType::from(*t))),
+                    ("y".to_string(), InputField::new(NativeType::from(*t))),
+                    ("a".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::FloatMix(t) => Input {
                 fields: vec![
-                    ("x".to_string(), InputField::new(GlslType::from(*t))),
-                    ("y".to_string(), InputField::new(GlslType::from(*t))),
-                    ("a".to_string(), InputField::new(GlslType::Float)),
+                    ("x".to_string(), InputField::new(NativeType::from(*t))),
+                    ("y".to_string(), InputField::new(NativeType::from(*t))),
+                    ("a".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
             NativeFunction::Step(t) => Input {
                 fields: vec![
-                    ("edge".to_string(), InputField::new(GlslType::from(*t))),
-                    ("a".to_string(), InputField::new(GlslType::from(*t))),
+                    ("edge".to_string(), InputField::new(NativeType::from(*t))),
+                    ("a".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::FloatStep(t) => Input {
                 fields: vec![
-                    ("edge".to_string(), InputField::new(GlslType::from(*t))),
-                    ("a".to_string(), InputField::new(GlslType::Float)),
+                    ("edge".to_string(), InputField::new(NativeType::from(*t))),
+                    ("a".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
             NativeFunction::SmoothStep(t) => Input {
                 fields: vec![
-                    ("edge0".to_string(), InputField::new(GlslType::from(*t))),
-                    ("edge1".to_string(), InputField::new(GlslType::from(*t))),
-                    ("a".to_string(), InputField::new(GlslType::from(*t))),
+                    ("edge0".to_string(), InputField::new(NativeType::from(*t))),
+                    ("edge1".to_string(), InputField::new(NativeType::from(*t))),
+                    ("a".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::FloatSmoothStep(t) => Input {
                 fields: vec![
-                    ("edge0".to_string(), InputField::new(GlslType::Float)),
-                    ("edge1".to_string(), InputField::new(GlslType::Float)),
-                    ("a".to_string(), InputField::new(GlslType::from(*t))),
+                    ("edge0".to_string(), InputField::new(NativeType::Float)),
+                    ("edge1".to_string(), InputField::new(NativeType::Float)),
+                    ("a".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::CrossProduct => Input {
                 fields: vec![
-                    ("a".to_string(), InputField::new(GlslType::Vec3)),
-                    ("b".to_string(), InputField::new(GlslType::Vec3)),
+                    ("a".to_string(), InputField::new(NativeType::Vec3)),
+                    ("b".to_string(), InputField::new(NativeType::Vec3)),
                 ],
             },
             NativeFunction::FaceForward(t) => Input {
                 fields: vec![
-                    ("N".to_string(), InputField::new(GlslType::from(*t))),
-                    ("I".to_string(), InputField::new(GlslType::from(*t))),
-                    ("Nref".to_string(), InputField::new(GlslType::from(*t))),
+                    ("N".to_string(), InputField::new(NativeType::from(*t))),
+                    ("I".to_string(), InputField::new(NativeType::from(*t))),
+                    ("Nref".to_string(), InputField::new(NativeType::from(*t))),
                 ],
             },
             NativeFunction::Refract(t) => Input {
                 fields: vec![
-                    ("I".to_string(), InputField::new(GlslType::from(*t))),
-                    ("N".to_string(), InputField::new(GlslType::from(*t))),
-                    ("eta".to_string(), InputField::new(GlslType::Float)),
+                    ("I".to_string(), InputField::new(NativeType::from(*t))),
+                    ("N".to_string(), InputField::new(NativeType::from(*t))),
+                    ("eta".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
             NativeFunction::Texture2d => Input {
                 fields: vec![
-                    ("sampler".to_string(), InputField::new(GlslType::Sampler2d)),
-                    ("coords".to_string(), InputField::new(GlslType::Vec2)),
+                    (
+                        "sampler".to_string(),
+                        InputField::new(NativeType::Sampler2d),
+                    ),
+                    ("coords".to_string(), InputField::new(NativeType::Vec2)),
                 ],
             },
             NativeFunction::Texture2dBias => Input {
                 fields: vec![
-                    ("sampler".to_string(), InputField::new(GlslType::Sampler2d)),
-                    ("coords".to_string(), InputField::new(GlslType::Vec2)),
-                    ("bias".to_string(), InputField::new(GlslType::Float)),
+                    (
+                        "sampler".to_string(),
+                        InputField::new(NativeType::Sampler2d),
+                    ),
+                    ("coords".to_string(), InputField::new(NativeType::Vec2)),
+                    ("bias".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
             NativeFunction::TextureCube => Input {
                 fields: vec![
                     (
                         "sampler".to_string(),
-                        InputField::new(GlslType::SamplerCube),
+                        InputField::new(NativeType::SamplerCube),
                     ),
-                    ("coords".to_string(), InputField::new(GlslType::Vec3)),
+                    ("coords".to_string(), InputField::new(NativeType::Vec3)),
                 ],
             },
             NativeFunction::TextureCubeBias => Input {
                 fields: vec![
                     (
                         "sampler".to_string(),
-                        InputField::new(GlslType::SamplerCube),
+                        InputField::new(NativeType::SamplerCube),
                     ),
-                    ("coords".to_string(), InputField::new(GlslType::Vec3)),
-                    ("bias".to_string(), InputField::new(GlslType::Float)),
+                    ("coords".to_string(), InputField::new(NativeType::Vec3)),
+                    ("bias".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
         }
     }
 
+    /// Retrieves the output data for the native function
     pub fn output(&self) -> Output {
         match self {
             NativeFunction::Radians(t)
@@ -377,26 +440,77 @@ impl NativeFunction {
             | NativeFunction::FaceForward(t)
             | NativeFunction::Reflect(t)
             | NativeFunction::Refract(t) => Output::GlslType {
-                field_name: "o".to_string(),
-                glsl_type: GlslType::from(*t),
+                field_name: "out".to_string(),
+                glsl_type: NativeType::from(*t),
             },
             NativeFunction::Distance(_)
             | NativeFunction::Length(_)
             | NativeFunction::DotProduct(_) => Output::GlslType {
-                field_name: "o".to_string(),
-                glsl_type: GlslType::Float,
+                field_name: "out".to_string(),
+                glsl_type: NativeType::Float,
             },
             NativeFunction::CrossProduct => Output::GlslType {
-                field_name: "o".to_string(),
-                glsl_type: GlslType::Vec3,
+                field_name: "out".to_string(),
+                glsl_type: NativeType::Vec3,
             },
             NativeFunction::Texture2d
             | NativeFunction::Texture2dBias
             | NativeFunction::TextureCube
             | NativeFunction::TextureCubeBias => Output::GlslType {
-                field_name: "o".to_string(),
-                glsl_type: GlslType::Vec4,
+                field_name: "out".to_string(),
+                glsl_type: NativeType::Vec4,
             },
         }
     }
+
+    /// All enum variants with default values
+    pub const VARIANTS: &'static [Self] = &[
+        Self::Radians(FloatingNativeType::Float),
+        Self::Degrees(FloatingNativeType::Float),
+        Self::Sine(FloatingNativeType::Float),
+        Self::Cosine(FloatingNativeType::Float),
+        Self::Tangent(FloatingNativeType::Float),
+        Self::ArcSine(FloatingNativeType::Float),
+        Self::ArcCosine(FloatingNativeType::Float),
+        Self::ArcTangent(FloatingNativeType::Float),
+        Self::ArcTangent2(FloatingNativeType::Float),
+        Self::Power(FloatingNativeType::Float),
+        Self::Exponential(FloatingNativeType::Float),
+        Self::Exponential2(FloatingNativeType::Float),
+        Self::Logarithm(FloatingNativeType::Float),
+        Self::Logarithm2(FloatingNativeType::Float),
+        Self::SquareRoot(FloatingNativeType::Float),
+        Self::InverseSquareRoot(FloatingNativeType::Float),
+        Self::Absolute(FloatingNativeType::Float),
+        Self::Sign(FloatingNativeType::Float),
+        Self::Floor(FloatingNativeType::Float),
+        Self::Ceiling(FloatingNativeType::Float),
+        Self::FractionalPart(FloatingNativeType::Float),
+        Self::Modulo(FloatingNativeType::Float),
+        Self::FloatModulo(FloatingNativeType::Float),
+        Self::Minimum(FloatingNativeType::Float),
+        Self::FloatMinimum(FloatingNativeType::Float),
+        Self::Maximum(FloatingNativeType::Float),
+        Self::FloatMaximum(FloatingNativeType::Float),
+        Self::Clamp(FloatingNativeType::Float),
+        Self::FloatClamp(FloatingNativeType::Float),
+        Self::Mix(FloatingNativeType::Float),
+        Self::FloatMix(FloatingNativeType::Float),
+        Self::Step(FloatingNativeType::Float),
+        Self::FloatStep(FloatingNativeType::Float),
+        Self::SmoothStep(FloatingNativeType::Float),
+        Self::FloatSmoothStep(FloatingNativeType::Float),
+        Self::Distance(FloatingNativeType::Float),
+        Self::Length(FloatingNativeType::Float),
+        Self::DotProduct(FloatingNativeType::Float),
+        Self::CrossProduct,
+        Self::Normalize(FloatingNativeType::Float),
+        Self::FaceForward(FloatingNativeType::Float),
+        Self::Reflect(FloatingNativeType::Float),
+        Self::Refract(FloatingNativeType::Float),
+        Self::Texture2d,
+        Self::Texture2dBias,
+        Self::TextureCube,
+        Self::TextureCubeBias,
+    ];
 }

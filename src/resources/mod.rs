@@ -1,12 +1,14 @@
 pub use {
-    assets::*, color_scheme::*, connector_candidate::*, cursor_position::*, dragged_entities::*,
-    selected_entities::*, shader::*,
+    assets::*, connector_candidate::*, creation_candidate::*, cursor_position::*,
+    dragged_entities::*, selected_entities::*, shader::*, ui_state::*,
 };
 
 mod assets;
-mod color_scheme;
 mod connector_candidate;
+mod creation_candidate;
 mod cursor_position;
 mod dragged_entities;
 mod selected_entities;
 mod shader;
+mod shader_loader;
+mod ui_state;

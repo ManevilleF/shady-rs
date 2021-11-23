@@ -11,10 +11,7 @@ thiserror = "1.0"
 log = "0.4"
 serde_yaml = "0.8"
 lazy_static = "1.4"
-
-[dependencies.uuid]
-version = "0.8"
-features = ["v4"]
+rand = "0.8"
 
 [dependencies.serde]
 version = "1.0"

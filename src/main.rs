@@ -5,14 +5,18 @@ mod resources;
 mod systems;
 
 use crate::events::*;
-use crate::resources::{ColorScheme, CurrentShader, SelectedEntities, SelectedNodePreset};
+use crate::resources::{CurrentShader, SelectedEntities, UiState};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
+#[cfg(feature = "debug")]
+use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_prototype_debug_lines::DebugLinesPlugin;
 
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 fn main() {
-    App::build()
-        .insert_resource(ClearColor(Color::DARK_GRAY))
+    let mut app = App::build();
+    app.insert_resource(ClearColor(Color::DARK_GRAY))
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
@@ -31,7 +35,7 @@ fn main() {
                 .with_system(systems::input::handle_mouse_input.system().after("cursor")),
         )
         // Nodes
-        .add_system(systems::nodes::handle_node_spawn.system())
+        .add_system(systems::shader::handle_shader_event.system())
         // Lines
         .add_system_set(
             SystemSet::new()
@@ -44,9 +48,19 @@ fn main() {
         )
         // UI
         .add_startup_system(systems::ui::setup.system())
-        .add_system_set(SystemSet::new().with_system(systems::ui::menu.system()))
-        .add_event::<SpawnNode>()
+        .add_system_set(
+            SystemSet::new()
+                .with_system(systems::ui::menu.system().label("ui_setup"))
+                .with_system(systems::ui::creation_menu.system().after("ui_setup"))
+                .with_system(systems::ui::io.system()),
+        )
+        .add_system(systems::io::handle_io_events.system())
+        .add_event::<ShaderEvent>()
+        .add_event::<IOEvent>()
         .insert_resource(CurrentShader::default())
-        .insert_resource(SelectedNodePreset::default())
-        .run()
+        .insert_resource(UiState::default());
+    // Debug hierarchy inspector
+    #[cfg(feature = "debug")]
+    app.add_plugin(WorldInspectorPlugin::new());
+    app.run()
 }

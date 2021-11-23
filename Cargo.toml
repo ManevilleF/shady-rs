@@ -5,8 +5,17 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+debug = ["bevy-inspector-egui"]
+
 [dependencies]
+# TODO: Use better lines (bezier lines)
 bevy_prototype_debug_lines = "0.3"
+
+[dependencies.bevy-inspector-egui]
+version = "0.6"
+optional = true
 
 [dependencies.shady_generator]
 path = "shady_generator"

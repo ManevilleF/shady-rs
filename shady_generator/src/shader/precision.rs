@@ -1,4 +1,4 @@
-use crate::GlslType;
+use crate::NativeType;
 use serde::{Deserialize, Serialize};
 
 /// Shader Precision
@@ -20,7 +20,7 @@ impl Default for ShaderPrecision {
 }
 
 impl ShaderPrecision {
-    pub fn to_glsl(&self, glsl_type: GlslType) -> String {
+    pub fn to_glsl(&self, glsl_type: NativeType) -> String {
         match self {
             Self::High => format!("precision highp {};", glsl_type),
             Self::Medium => format!("precision mediump {};", glsl_type),
