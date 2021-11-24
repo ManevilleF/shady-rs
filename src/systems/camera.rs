@@ -11,7 +11,7 @@ pub fn handle_camera_movement(
     mut camera_query: Query<&mut Transform, With<OrthographicProjection>>,
     camera_translation: Res<CameraTranslation>,
 ) {
-    let mut transform = camera_query.single_mut().unwrap();
+    let mut transform = camera_query.single_mut();
     transform.translation.x = camera_translation.0.x;
     transform.translation.y = camera_translation.0.y;
 }

@@ -1,6 +1,5 @@
 use crate::components::{BoxInteraction, InteractionBox, ShadyInputSlot, ShadyOutputSlot};
 use crate::resources::{GlslTypeMaterials, ShadyAssets};
-use bevy::ecs::component::Component;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, InputField, NativeType, OutputFields};

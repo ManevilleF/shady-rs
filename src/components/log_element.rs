@@ -1,5 +1,5 @@
 use bevy::log;
-use bevy::prelude::{Commands, Entity};
+use bevy::prelude::{Commands, Component, Entity};
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::Inspectable;
 
@@ -12,7 +12,7 @@ pub enum LogLevel {
 }
 
 #[cfg_attr(feature = "debug", derive(Inspectable))]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Component)]
 pub struct LogElement {
     pub log_level: LogLevel,
     pub message: String,

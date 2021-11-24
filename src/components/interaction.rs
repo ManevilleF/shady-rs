@@ -14,7 +14,7 @@ pub enum BoxInteraction {
     Ignore,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Component)]
 pub struct InteractionBox {
     pub size: Vec2,
     pub interaction: BoxInteraction,

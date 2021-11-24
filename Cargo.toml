@@ -16,7 +16,7 @@ debug = ["bevy-inspector-egui"]
 
 [dependencies]
 # TODO: Use better lines (bezier lines)
-bevy_prototype_debug_lines = "0.3"
+bevy_prototype_debug_lines = "0.4"
 env_logger = "0.9"
 rfd = "0.6"
 futures-lite = "1.12"
@@ -35,6 +35,12 @@ version = "0.7"
 version = "0.5"
 default-features = false
 features = ["render", "bevy_winit", "png", "x11", "bevy_wgpu"]
+
+[patch.crates-io]
+bevy = { git = "https://github.com/bevyengine/bevy", branch = "main"}
+bevy_prototype_debug_lines = { git = "https://github.com/Toqozz/bevy_debug_lines", branch = "bevy-main" }
+bevy_egui = { git = "https://github.com/jakobhellermann/bevy_egui", branch = "bevy-main"}
+bevy-inspector-egui = { git = "https://github.com/jakobhellermann/bevy-inspector-egui/", branch = "bevy-main" }
 
 # Enable optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]

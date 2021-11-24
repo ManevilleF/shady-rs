@@ -1,9 +1,9 @@
-use bevy::prelude::Color;
+use bevy::prelude::{Color, Component};
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::Inspectable;
 
 #[cfg_attr(feature = "debug", derive(Inspectable))]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Component)]
 pub struct ShadyOutputSlot {
     pub color: Color,
 }

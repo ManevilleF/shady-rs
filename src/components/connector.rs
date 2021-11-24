@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
 
 #[cfg_attr(feature = "debug", derive(Inspectable))]
-#[derive(Debug)]
+#[derive(Debug, Component)]
 pub struct NodeConnector {
     pub output_from: Entity,
     pub input_to: Entity,
