@@ -1,5 +1,5 @@
 use crate::components::{LogElement, LogLevel};
-use crate::resources::ShadyAssets;
+use crate::resources::{CameraTranslation, ShadyAssets};
 use crate::{CurrentShader, IOEvent};
 use bevy::prelude::*;
 use shady_generator::Shader;
@@ -40,6 +40,7 @@ pub fn handle_io_events(
     mut commands: Commands,
     mut shader: ResMut<CurrentShader>,
     mut io_evr: EventReader<IOEvent>,
+    camera_translation: Res<CameraTranslation>,
     assets: Res<ShadyAssets>,
 ) {
     for event in io_evr.iter() {
@@ -59,7 +60,7 @@ pub fn handle_io_events(
             }
             IOEvent::Load(path) => {
                 let new_shader = get_path_or_continue!(Shader::load(path), &mut commands);
-                shader.load(new_shader, &mut commands, &assets);
+                shader.load(new_shader, &mut commands, &assets, camera_translation.0);
             }
             IOEvent::Export(path) => {
                 let path = get_path_or_continue!(handle_path(path, &shader, true), &mut commands);

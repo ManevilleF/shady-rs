@@ -1,7 +1,8 @@
 use crate::components::{BoxInteraction, InteractionBox};
 use crate::events::ShaderEvent;
 use crate::resources::{
-    CreationCandidate, DraggedEntities, NodeConnectorCandidate, WorldCursorPosition,
+    CameraDragging, CameraTranslation, CreationCandidate, DraggedEntities, NodeConnectorCandidate,
+    WorldCursorPosition,
 };
 use crate::{get_cursor_position, get_or_continue};
 use bevy::log;
@@ -9,8 +10,12 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use shady_generator::ConnectionAttempt;
 
-pub fn handle_mouse_position(mut commands: Commands, windows: Res<Windows>) {
-    match WorldCursorPosition::new(&windows) {
+pub fn handle_mouse_position(
+    mut commands: Commands,
+    windows: Res<Windows>,
+    camera_translation: Res<CameraTranslation>,
+) {
+    match WorldCursorPosition::new(&windows, &camera_translation) {
         None => commands.remove_resource::<WorldCursorPosition>(),
         Some(p) => commands.insert_resource(p),
     }
@@ -37,16 +42,11 @@ fn get_interaction(
     interactions.first().cloned()
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn handle_mouse_input(
+pub fn handle_element_dragging(
     mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
-    connector_candidate: Option<Res<NodeConnectorCandidate>>,
     dragged_entities: Option<ResMut<DraggedEntities>>,
-    mut node_evw: EventWriter<ShaderEvent>,
     mouse_input: Res<Input<MouseButton>>,
-    box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
-    creation_candidate: Option<Res<CreationCandidate>>,
     mut transform_query: Query<&mut Transform, With<InteractionBox>>,
 ) {
     let position = get_cursor_position!(cursor_position);
@@ -62,8 +62,47 @@ pub fn handle_mouse_input(
             transform.translation += Vec3::new(delta_pos.x, delta_pos.y, 0.);
         }
         dragged_entities.previous_cursor_position = position.0;
+    }
+}
+
+pub fn handle_camera_dragging(
+    mut commands: Commands,
+    camera_dragging: Option<Res<CameraDragging>>,
+    mut camera_translation: ResMut<CameraTranslation>,
+    mouse_input: Res<Input<MouseButton>>,
+    windows: Res<Windows>, //
+) {
+    if !mouse_input.pressed(MouseButton::Right) {
+        commands.remove_resource::<CameraDragging>();
         return;
     }
+    let position = match WorldCursorPosition::new(&windows, &camera_translation) {
+        None => return,
+        Some(p) => p,
+    };
+
+    match camera_dragging {
+        None => commands.insert_resource(CameraDragging {
+            previous_cursor_position: position.0,
+        }),
+        Some(drag) => {
+            let delta = position.0 - drag.previous_cursor_position;
+            camera_translation.0 -= delta;
+        }
+    }
+}
+
+pub fn handle_mouse_interaction(
+    mut commands: Commands,
+    cursor_position: Option<Res<WorldCursorPosition>>,
+    connector_candidate: Option<Res<NodeConnectorCandidate>>,
+    mut node_evw: EventWriter<ShaderEvent>,
+    mouse_input: Res<Input<MouseButton>>,
+    box_query: Query<(Entity, &GlobalTransform, &InteractionBox)>,
+    creation_candidate: Option<Res<CreationCandidate>>,
+) {
+    let position = get_cursor_position!(cursor_position);
+
     // Interaction
     if mouse_input.just_pressed(MouseButton::Left) {
         match get_interaction(&box_query, position.0) {

@@ -2,7 +2,7 @@ use crate::components::{LogElement, LogLevel};
 use crate::resources::shader_loader::ShaderLoader;
 use crate::resources::ShadyAssets;
 use bevy::log;
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity};
+use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Vec2};
 use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, Shader};
 use std::ops::{Deref, DerefMut};
@@ -110,9 +110,15 @@ impl CurrentShader {
         }
     }
 
-    pub fn load(&mut self, shader: Shader, commands: &mut Commands, assets: &ShadyAssets) {
+    pub fn load(
+        &mut self,
+        shader: Shader,
+        commands: &mut Commands,
+        assets: &ShadyAssets,
+        pos: Vec2,
+    ) {
         let mut loader = ShaderLoader::new(shader);
-        loader.load(commands, assets);
+        loader.load(commands, assets, pos);
         self.clear(commands);
         *self = loader.into();
         LogElement::new(
