@@ -37,7 +37,12 @@ fn main() {
                         .system()
                         .label("cursor"),
                 )
-                .with_system(systems::input::handle_mouse_input.system().after("cursor")),
+                .with_system(
+                    systems::input::handle_mouse_interaction
+                        .system()
+                        .after("cursor"),
+                )
+                .with_system(systems::input::handle_dragging.system().after("cursor")),
         )
         // Nodes
         .add_system(systems::shader::handle_shader_event.system())
