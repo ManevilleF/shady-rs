@@ -81,8 +81,8 @@ impl ShaderLoader {
         }
     }
 
-    pub fn load(&mut self, commands: &mut Commands, assets: &ShadyAssets) {
-        let mut pos = Vec2::ZERO;
+    pub fn load(&mut self, commands: &mut Commands, assets: &ShadyAssets, pos: Vec2) {
+        let mut pos = pos;
         let delta = 200.;
         for (key, property) in self.shader.input_properties().clone().into_iter() {
             let response = spawn_element(

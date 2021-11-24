@@ -27,8 +27,8 @@ fn main() {
         .add_plugin(EguiPlugin)
         .add_plugin(DebugLinesPlugin)
         .insert_resource(SelectedEntities::default())
-        .add_startup_system(systems::setup::setup_camera.system())
-        .add_startup_system(systems::setup::setup_assets.system())
+        .add_startup_system(systems::camera::setup_camera.system())
+        .add_startup_system(systems::assets::setup_assets.system())
         // Mouse
         .add_system_set(
             SystemSet::new()
@@ -42,7 +42,16 @@ fn main() {
                         .system()
                         .after("cursor"),
                 )
-                .with_system(systems::input::handle_dragging.system().after("cursor")),
+                .with_system(
+                    systems::input::handle_element_dragging
+                        .system()
+                        .after("cursor"),
+                )
+                .with_system(
+                    systems::input::handle_camera_dragging
+                        .system()
+                        .after("cursor"),
+                ),
         )
         // Nodes
         .add_system(systems::shader::handle_shader_event.system())
@@ -71,6 +80,7 @@ fn main() {
                 .with_system(systems::ui::handle_log_elements.system().after("ui_io")),
         )
         .add_system(systems::io::handle_io_events.system())
+        .add_system(systems::camera::handle_camera_movement.system())
         .add_event::<ShaderEvent>()
         .add_event::<IOEvent>()
         .insert_resource(CurrentShader::default())

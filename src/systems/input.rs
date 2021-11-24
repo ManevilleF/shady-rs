@@ -1,7 +1,7 @@
 use crate::components::{BoxInteraction, InteractionBox};
 use crate::events::ShaderEvent;
 use crate::resources::{
-    CameraTranslation, CreationCandidate, DraggedEntities, NodeConnectorCandidate,
+    CameraDragging, CameraTranslation, CreationCandidate, DraggedEntities, NodeConnectorCandidate,
     WorldCursorPosition,
 };
 use crate::{get_cursor_position, get_or_continue};
@@ -42,7 +42,7 @@ fn get_interaction(
     interactions.first().cloned()
 }
 
-pub fn handle_dragging(
+pub fn handle_element_dragging(
     mut commands: Commands,
     cursor_position: Option<Res<WorldCursorPosition>>,
     dragged_entities: Option<ResMut<DraggedEntities>>,
@@ -62,6 +62,31 @@ pub fn handle_dragging(
             transform.translation += Vec3::new(delta_pos.x, delta_pos.y, 0.);
         }
         dragged_entities.previous_cursor_position = position.0;
+    }
+}
+
+pub fn handle_camera_dragging(
+    mut commands: Commands,
+    cursor_position: Option<Res<WorldCursorPosition>>,
+    camera_dragging: Option<ResMut<CameraDragging>>,
+    mut camera_translation: ResMut<CameraTranslation>,
+    mouse_input: Res<Input<MouseButton>>,
+) {
+    let position = get_cursor_position!(cursor_position);
+
+    if !mouse_input.pressed(MouseButton::Right) {
+        commands.remove_resource::<CameraDragging>();
+        return;
+    }
+    match camera_dragging {
+        None => commands.insert_resource(CameraDragging {
+            previous_cursor_position: position.0,
+        }),
+        Some(mut drag) => {
+            let delta = position.0 - drag.previous_cursor_position;
+            camera_translation.0 -= delta;
+            drag.previous_cursor_position = position.0 - delta;
+        }
     }
 }
 
