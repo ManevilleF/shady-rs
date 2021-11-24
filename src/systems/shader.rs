@@ -1,11 +1,11 @@
-use crate::components::NodeConnector;
+use crate::components::{LogElement, LogLevel, NodeConnector};
 use crate::events::ShaderEvent;
 use crate::resources::{CreationCandidate, NodeConnectorCandidate, ShadyAssets};
 use crate::systems::spawner::{spawn_element, SpawnType};
 use crate::CurrentShader;
 use bevy::log;
 use bevy::prelude::*;
-use shady_generator::Node;
+use shady_generator::{Connection, ConnectionTo, Node};
 
 pub fn handle_shader_event(
     mut commands: Commands,
@@ -29,7 +29,7 @@ pub fn handle_shader_event(
                         (node.unique_id(), node.name()),
                         SpawnType::Node {
                             input_fields: node.input_field_types(),
-                            output_fields: node.output_field_types(),
+                            output_fields: node.output_fields(),
                         },
                     );
                     current_shader.node_entities.insert(id, response.entity);
@@ -68,23 +68,39 @@ pub fn handle_shader_event(
                 }
             },
             ShaderEvent::DeleteNode { id } => {
-                log::info!("Deleting node {}", id);
+                LogElement::new(LogLevel::Info, format!("Deleting node {}", id))
+                    .spawn(&mut commands);
                 if current_shader.remove_node(id).is_none() {
-                    log::error!("Shader did not have a Node with id {}", id);
+                    LogElement::new(
+                        LogLevel::Error,
+                        format!("Shader did not have a Node with id {}", id),
+                    )
+                    .spawn(&mut commands);
                 }
                 current_shader.delete_node_entity(id, &mut commands);
             }
             ShaderEvent::DeleteInputProperty { id } => {
-                log::info!("Deleting input property {}", id);
+                LogElement::new(LogLevel::Info, format!("Deleting input property {}", id))
+                    .spawn(&mut commands);
                 if current_shader.remove_input_property(id).is_none() {
-                    log::error!("Shader did not have an input with id {}", id);
+                    LogElement::new(
+                        LogLevel::Error,
+                        format!("Shader did not have an input with id {}", id),
+                    )
+                    .spawn(&mut commands);
                 }
                 current_shader.delete_input_property_entity(id, &mut commands);
             }
             ShaderEvent::DeleteOutputProperty { id } => {
-                log::info!("Deleting output property {}", id);
+                LogElement::new(LogLevel::Info, format!("Deleting output property {}", id))
+                    .spawn(&mut commands);
                 if current_shader.remove_output_property(id).is_none() {
-                    log::error!("Shader did not have an output property with id {}", id);
+                    // TODO: add UI logger
+                    LogElement::new(
+                        LogLevel::Error,
+                        format!("Shader did not have an output property with id {}", id),
+                    )
+                    .spawn(&mut commands);
                 }
                 current_shader.delete_output_property_entity(id, &mut commands);
             }
@@ -96,7 +112,13 @@ pub fn handle_shader_event(
                             log::info!("Detected connection reset, removing {:?} ({})", c, id);
                             match current_shader.connection_entities.get(&id) {
                                 Some(entity) => commands.entity(*entity).despawn_recursive(),
-                                None => log::error!("Failed to remove connection {:?}", c),
+                                None => {
+                                    LogElement::new(
+                                        LogLevel::Error,
+                                        format!("Failed to remove connection {:?}", c),
+                                    )
+                                    .spawn(&mut commands);
+                                }
                             }
                         }
                         let id = CurrentShader::unique_connector_id(
@@ -115,10 +137,49 @@ pub fn handle_shader_event(
                         commands.remove_resource::<NodeConnectorCandidate>();
                     }
                     Err(e) => {
-                        // TODO: add UI logger
-                        log::error!("Failed apply connection: `{}`", e);
+                        LogElement::new(
+                            LogLevel::Error,
+                            format!("Failed apply connection: `{}`", e),
+                        )
+                        .spawn(&mut commands);
                     }
                 };
+            }
+            ShaderEvent::Disconnect(connection_to) => {
+                match current_shader.disconnect(connection_to.clone()) {
+                    Ok(Some(connection_from)) => {
+                        current_shader.delete_connection_entity(
+                            connection_to,
+                            &connection_from,
+                            &mut commands,
+                        );
+                        LogElement::new(
+                            LogLevel::Info,
+                            format!(
+                                "Removed connnection from {} to {}",
+                                match connection_from {
+                                    Connection::ComplexOutputNode { id, field_name } =>
+                                        format!("Node {} field {}", id, field_name),
+                                    Connection::SingleOutputNode { id } => format!("Node {}", id),
+                                    Connection::InputProperty { id: property_id } =>
+                                        format!("Input Property {}", property_id),
+                                },
+                                match &connection_to {
+                                    ConnectionTo::Node { id, field_name } =>
+                                        format!("Node {} field {}", id, field_name),
+                                    ConnectionTo::OutputProperty { id } =>
+                                        format!("Output Property {}", id),
+                                }
+                            ),
+                        )
+                        .spawn(&mut commands);
+                    }
+                    Err(e) => {
+                        LogElement::new(LogLevel::Error, format!("Failed to disconnect: `{}`", e))
+                            .spawn(&mut commands);
+                    }
+                    _ => {}
+                }
             }
         }
     }

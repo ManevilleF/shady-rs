@@ -1,15 +1,15 @@
 use crate::components::{BoxInteraction, InteractionBox, ShadyInputSlot, ShadyOutputSlot};
-use crate::resources::ShadyAssets;
+use crate::resources::{GlslTypeMaterials, ShadyAssets};
 use bevy::ecs::component::Component;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use shady_generator::{Connection, ConnectionTo, NativeType};
+use shady_generator::{Connection, ConnectionTo, NativeType, OutputFields};
 use std::cmp::max;
 
 const NODE_SIZE_X: f32 = 140.;
 const NODE_HEADER_SIZE_Y: f32 = 40.;
 const SLOT_SIZE: f32 = 15.;
-const SLOT_STEP: f32 = 30.;
+pub const SLOT_STEP: f32 = 30.;
 
 #[derive(Debug)]
 pub struct SpawnResponse {
@@ -22,7 +22,7 @@ pub struct SpawnResponse {
 pub enum SpawnType {
     Node {
         input_fields: Vec<(String, NativeType)>,
-        output_fields: Vec<(String, NativeType)>,
+        output_fields: OutputFields,
     },
     InputProperty {
         output_fields: Vec<(String, NativeType)>,
@@ -108,17 +108,18 @@ fn slot_text_bundle(value: String, assets: &ShadyAssets) -> Text2dBundle {
     }
 }
 
-fn spawn_slots<F, C>(
+fn spawn_slots<F, CF, C>(
     cmd: &mut ChildBuilder,
     fields: Vec<(String, NativeType)>,
     (size, pos_x): (Vec2, f32),
     assets: &ShadyAssets,
     box_interaction: F,
-    component: C,
+    component: CF,
     use_field_name: bool,
 ) -> HashMap<String, Entity>
 where
     F: Fn(&str) -> BoxInteraction,
+    CF: Fn(Color) -> C,
     C: Component + Clone,
 {
     let mut res = HashMap::default();
@@ -136,7 +137,7 @@ where
             })
             .insert(Name::new(format!("{} input", field_name)))
             .insert(InteractionBox::new(size, box_interaction(&field_name)))
-            .insert(component.clone())
+            .insert(component(GlslTypeMaterials::glsl_type_color(field)))
             .with_children(|builder| {
                 builder.spawn_bundle(Text2dBundle {
                     transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 2., 0., 1.),
@@ -229,25 +230,30 @@ pub fn spawn_element(
                         assets,
                         |f| {
                             BoxInteraction::ConnectionEnd(ConnectionTo::Node {
-                                node_id: id.to_string(),
+                                id: id.to_string(),
                                 field_name: f.to_string(),
                             })
                         },
-                        ShadyInputSlot::default(),
+                        ShadyInputSlot::new,
                         true,
                     );
                     output_field_entities = spawn_slots(
                         &mut builder,
-                        output_fields,
+                        output_fields.field_names(),
                         (slot_size, slot_x_pos),
                         assets,
                         |f| {
-                            BoxInteraction::ConnectionStart(Connection::Node {
-                                node_id: id.to_string(),
-                                field_name: f.to_string(),
+                            BoxInteraction::ConnectionStart(match output_fields {
+                                OutputFields::SingleOutput(_) => {
+                                    Connection::SingleOutputNode { id: id.to_string() }
+                                }
+                                OutputFields::Fields(_) => Connection::ComplexOutputNode {
+                                    id: id.to_string(),
+                                    field_name: f.to_string(),
+                                },
                             })
                         },
-                        ShadyOutputSlot,
+                        ShadyOutputSlot::new,
                         true,
                     );
                 }
@@ -263,10 +269,10 @@ pub fn spawn_element(
                         assets,
                         |_f| {
                             BoxInteraction::ConnectionStart(Connection::InputProperty {
-                                property_id: id.to_string(),
+                                id: id.to_string(),
                             })
                         },
-                        ShadyOutputSlot,
+                        ShadyOutputSlot::new,
                         false,
                     );
                 }
@@ -285,7 +291,7 @@ pub fn spawn_element(
                                 id: id.to_string(),
                             })
                         },
-                        ShadyInputSlot::default(),
+                        ShadyInputSlot::new,
                         false,
                     );
                 }

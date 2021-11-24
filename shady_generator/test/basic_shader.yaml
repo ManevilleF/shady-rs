@@ -17,5 +17,6 @@ output_properties:
     glsl_type: Vec3
     connection:
       InputProperty:
-        property_id: Gl_Pos123
+        id: Gl_Pos123
+nodes: {}
 max_processing_depth: 256

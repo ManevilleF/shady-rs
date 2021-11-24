@@ -4,12 +4,12 @@ use shady_generator::{Connection, ConnectionTo};
 
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq)]
 pub enum BoxInteraction {
+    Drag,
     ConnectionStart(Connection),
     ConnectionEnd(ConnectionTo),
     DeleteNode(String),
     DeleteInput(String),
     DeleteOutput(String),
-    Drag,
     Ignore,
 }
 
@@ -24,9 +24,8 @@ impl InteractionBox {
         Self { size, interaction }
     }
 
-    // TODO: fix this
     pub fn get_interaction(&self, self_translation: Vec2, pos: Vec2) -> Option<BoxInteraction> {
-        let bounds = Bounds::centered(self_translation, self.size);
+        let bounds = Bounds::centered(self_translation, self.size / 2.);
         if bounds.in_bounds(pos) {
             Some(self.interaction.clone())
         } else {

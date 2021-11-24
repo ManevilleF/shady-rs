@@ -1,3 +1,4 @@
+use crate::components::{LogElement, LogLevel};
 use crate::resources::shader_loader::ShaderLoader;
 use crate::resources::ShadyAssets;
 use bevy::log;
@@ -18,7 +19,8 @@ impl CurrentShader {
     pub fn delete_node_entity(&mut self, id: &str, commands: &mut Commands) {
         match self.node_entities.remove(id) {
             None => {
-                log::error!("No entity for node {}", id);
+                LogElement::new(LogLevel::Warn, format!("No entity for node {}", id))
+                    .spawn(commands);
             }
             Some(e) => {
                 commands.entity(e).despawn_recursive();
@@ -29,7 +31,8 @@ impl CurrentShader {
     pub fn delete_input_property_entity(&mut self, id: &str, commands: &mut Commands) {
         match self.input_property_entities.remove(id) {
             None => {
-                log::error!("No entity for input {}", id);
+                LogElement::new(LogLevel::Warn, format!("No entity for input {}", id))
+                    .spawn(commands);
             }
             Some(e) => {
                 commands.entity(e).despawn_recursive();
@@ -40,7 +43,26 @@ impl CurrentShader {
     pub fn delete_output_property_entity(&mut self, id: &str, commands: &mut Commands) {
         match self.output_property_entities.remove(id) {
             None => {
-                log::error!("No entity for output {}", id);
+                LogElement::new(LogLevel::Warn, format!("No entity for output {}", id))
+                    .spawn(commands);
+            }
+            Some(e) => {
+                commands.entity(e).despawn_recursive();
+            }
+        }
+    }
+
+    pub fn delete_connection_entity(
+        &mut self,
+        to: &ConnectionTo,
+        from: &Connection,
+        commands: &mut Commands,
+    ) {
+        let id = Self::unique_connector_id(to, from);
+        match self.connection_entities.remove(&id) {
+            None => {
+                LogElement::new(LogLevel::Error, format!("No entity for connection {}", id))
+                    .spawn(commands);
             }
             Some(e) => {
                 commands.entity(e).despawn_recursive();
@@ -52,15 +74,16 @@ impl CurrentShader {
         format!(
             "{}_{}",
             match from {
-                Connection::InputProperty { property_id } => property_id.clone(),
-                Connection::Node {
-                    node_id,
+                Connection::InputProperty { id } | Connection::SingleOutputNode { id } =>
+                    id.clone(),
+                Connection::ComplexOutputNode {
+                    id: node_id,
                     field_name,
                 } => format!("{}::{}", node_id, field_name),
             },
             match to {
                 ConnectionTo::Node {
-                    node_id: id,
+                    id,
                     field_name: field,
                 } => format!("{}::{}", id, field),
                 ConnectionTo::OutputProperty { id } => id.clone(),
@@ -92,6 +115,11 @@ impl CurrentShader {
         loader.load(commands, assets);
         self.clear(commands);
         *self = loader.into();
+        LogElement::new(
+            LogLevel::Info,
+            format!("Successfully loaded shader {}", self.name),
+        )
+        .spawn(commands);
     }
 }
 

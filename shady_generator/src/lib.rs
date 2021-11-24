@@ -4,6 +4,7 @@
 #![deny(warnings)]
 // #![forbid(missing_docs)]
 #![forbid(unsafe_code)]
+// TODO: Global renaming for native type
 
 pub use {error::*, graphic_library::*, native_type::*, node::*, shader::*};
 
@@ -23,12 +24,15 @@ const UNIQUE_ID_LENGTH: usize = 10;
 extern crate indoc;
 
 // TODO: Check entropy of this and look for a better solution
-pub(crate) fn generate_uuid() -> String {
-    thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(UNIQUE_ID_LENGTH)
-        .map(char::from)
-        .collect()
+pub(crate) fn generate_unique_id() -> String {
+    format!(
+        "v{}",
+        thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(UNIQUE_ID_LENGTH)
+            .map(char::from)
+            .collect::<String>()
+    )
 }
 
 pub(crate) fn ordered_map<S, T>(

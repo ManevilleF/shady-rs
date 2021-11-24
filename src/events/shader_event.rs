@@ -1,6 +1,6 @@
 use crate::resources::CreationCandidate;
 use bevy::prelude::{Entity, Vec2};
-use shady_generator::ConnectionAttempt;
+use shady_generator::{ConnectionAttempt, ConnectionTo};
 
 #[derive(Debug, Clone)]
 pub enum ShaderEvent {
@@ -22,4 +22,5 @@ pub enum ShaderEvent {
         from: Entity,
         to: Entity,
     },
+    Disconnect(ConnectionTo),
 }

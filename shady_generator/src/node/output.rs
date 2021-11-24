@@ -4,10 +4,7 @@ use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Output {
-    GlslType {
-        glsl_type: NativeType,
-        field_name: String,
-    },
+    GlslType(NativeType),
     CustomType(CustomOutput),
     Split(NonScalarNativeType),
 }
@@ -15,27 +12,29 @@ pub enum Output {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomOutput {
     pub struct_name: String,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub fields: Vec<(String, NativeType)>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum OutputFields {
+    SingleOutput(NativeType),
+    Fields(Vec<(String, NativeType)>),
 }
 
 impl Output {
     pub fn glsl_type(&self) -> String {
         match self {
-            Output::GlslType { glsl_type, .. } => glsl_type.get_glsl_type().to_string(),
+            Output::GlslType(glsl_type) => glsl_type.get_glsl_type().to_string(),
             Output::CustomType(c) => c.struct_name.clone(),
             Output::Split(t) => NativeType::from(*t).get_glsl_type().to_string(),
         }
     }
 
-    pub fn fields(&self) -> Vec<(String, NativeType)> {
+    pub fn fields(&self) -> OutputFields {
         match self {
-            Output::GlslType {
-                glsl_type,
-                field_name,
-            } => vec![(field_name.clone(), *glsl_type)],
-            Output::CustomType(c) => c.fields.clone(),
-            Output::Split(t) => t.fields(),
+            Output::GlslType(glsl_type) => OutputFields::SingleOutput(*glsl_type),
+            Output::CustomType(c) => OutputFields::Fields(c.fields.clone()),
+            Output::Split(t) => OutputFields::Fields(t.fields()),
         }
     }
 
@@ -44,6 +43,31 @@ impl Output {
             Some(c.glsl_struct_declaration())
         } else {
             None
+        }
+    }
+}
+
+impl OutputFields {
+    pub const SINGLE_FIELD_NAME: &'static str = "out";
+
+    pub fn field_names(&self) -> Vec<(String, NativeType)> {
+        match self {
+            OutputFields::SingleOutput(t) => vec![(Self::SINGLE_FIELD_NAME.to_string(), *t)],
+            OutputFields::Fields(f) => f.clone(),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            OutputFields::SingleOutput(_t) => 1,
+            OutputFields::Fields(f) => f.len(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        match self {
+            OutputFields::SingleOutput(_t) => false,
+            OutputFields::Fields(f) => f.is_empty(),
         }
     }
 }

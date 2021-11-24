@@ -15,9 +15,14 @@ use bevy_prototype_debug_lines::DebugLinesPlugin;
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
+    env_logger::init();
     let mut app = App::build();
     app.insert_resource(ClearColor(Color::DARK_GRAY))
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(WindowDescriptor {
+            title: "Shady".to_string(),
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
         .add_plugin(DebugLinesPlugin)
@@ -51,8 +56,14 @@ fn main() {
         .add_system_set(
             SystemSet::new()
                 .with_system(systems::ui::menu.system().label("ui_setup"))
-                .with_system(systems::ui::creation_menu.system().after("ui_setup"))
-                .with_system(systems::ui::io.system()),
+                .with_system(
+                    systems::ui::creation_menu
+                        .system()
+                        .after("ui_setup")
+                        .label("ui_menu"),
+                )
+                .with_system(systems::ui::io.system().after("ui_menu").label("ui_io"))
+                .with_system(systems::ui::handle_log_elements.system().after("ui_io")),
         )
         .add_system(systems::io::handle_io_events.system())
         .add_event::<ShaderEvent>()

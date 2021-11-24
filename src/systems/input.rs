@@ -96,6 +96,9 @@ pub fn handle_mouse_input(
                             from: candidate.output_from,
                             to: entity,
                         });
+                    } else {
+                        // Disconnect
+                        node_evw.send(ShaderEvent::Disconnect(connection_to));
                     }
                 }
                 BoxInteraction::Drag => commands.insert_resource(DraggedEntities {

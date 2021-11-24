@@ -16,24 +16,21 @@ output_properties:
     reference: Out_Pos456
     glsl_type: Vec2
     connection:
-      Node:
-        node_id: node_azerty
-        field_name: out
+      SingleOutputNode:
+        id: node_azerty
 nodes:
   node_azerty:
     name: MyNode
-    uuid: node_azerty
-    input_param:
+    id: node_azerty
+    input:
       fields:
         - - pos
           - glsl_type: Vec3
             connection:
               InputProperty:
-                property_id: Gl_Pos123
-    output_param:
-      GlslType:
-        glsl_type: Vec2
-        field_name: out
+                id: Gl_Pos123
+    output:
+      GlslType: Vec2
     operation:
       CustomOperation: test_func
 max_processing_depth: 256

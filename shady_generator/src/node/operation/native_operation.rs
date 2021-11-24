@@ -46,20 +46,14 @@ impl NativeOperation {
             | NativeOperation::Sub(t)
             | NativeOperation::Mul(t)
             | NativeOperation::Div(t)
-            | NativeOperation::Selection(t) => Output::GlslType {
-                glsl_type: *t,
-                field_name: "out".to_string(),
-            },
+            | NativeOperation::Selection(t) => Output::GlslType(*t),
             NativeOperation::And
             | NativeOperation::Or
             | NativeOperation::Xor
             | NativeOperation::No
             | NativeOperation::Equals(_)
             | NativeOperation::GreaterThan(_)
-            | NativeOperation::GreaterThanEqual(_) => Output::GlslType {
-                glsl_type: NativeType::Bool,
-                field_name: "out".to_string(),
-            },
+            | NativeOperation::GreaterThanEqual(_) => Output::GlslType(NativeType::Bool),
         }
     }
 
@@ -135,10 +129,10 @@ impl NativeOperation {
             NativeOperation::Inc(t) => format!("{}++", t),
             NativeOperation::Dec(t) => format!("{}--", t),
             NativeOperation::Minus(t) => format!("-{}", t),
-            NativeOperation::Add(t) => format!("{0} +  {0}", t),
-            NativeOperation::Sub(t) => format!("{0} -  {0}", t),
-            NativeOperation::Mul(t) => format!("{0} *  {0}", t),
-            NativeOperation::Div(t) => format!("{0} /  {0}", t),
+            NativeOperation::Add(t) => format!("{0} + {0}", t),
+            NativeOperation::Sub(t) => format!("{0} - {0}", t),
+            NativeOperation::Mul(t) => format!("{0} * {0}", t),
+            NativeOperation::Div(t) => format!("{0} / {0}", t),
             NativeOperation::No => "NO".to_string(),
             NativeOperation::And => "AND".to_string(),
             NativeOperation::Or => "OR".to_string(),
