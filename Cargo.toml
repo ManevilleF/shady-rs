@@ -7,7 +7,7 @@ license-file = "LICENSE"
 readme = "README.md"
 repository = "https://github.com/ManevilleF/shady-rs"
 keywords = ["GPU", "Shader", "GLSL", "OpenGL", "bevy"]
-exclude = [".github"]
+exclude = [".github", "docs"]
 description = "Shader Graph made in rust"
 
 [features]

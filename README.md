@@ -3,6 +3,8 @@ A Shader Graph made in Rust
 
 > This is still a work in progress
 
+![screenshot](./docs/screenshot.png "Screenshot")
+
 ## TODO List
 
 - [ ] Presets (Unity, bevy)
