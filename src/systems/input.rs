@@ -67,25 +67,27 @@ pub fn handle_element_dragging(
 
 pub fn handle_camera_dragging(
     mut commands: Commands,
-    cursor_position: Option<Res<WorldCursorPosition>>,
-    camera_dragging: Option<ResMut<CameraDragging>>,
+    camera_dragging: Option<Res<CameraDragging>>,
     mut camera_translation: ResMut<CameraTranslation>,
     mouse_input: Res<Input<MouseButton>>,
+    windows: Res<Windows>, //
 ) {
-    let position = get_cursor_position!(cursor_position);
-
     if !mouse_input.pressed(MouseButton::Right) {
         commands.remove_resource::<CameraDragging>();
         return;
     }
+    let position = match WorldCursorPosition::new(&windows, &camera_translation) {
+        None => return,
+        Some(p) => p,
+    };
+
     match camera_dragging {
         None => commands.insert_resource(CameraDragging {
             previous_cursor_position: position.0,
         }),
-        Some(mut drag) => {
+        Some(drag) => {
             let delta = position.0 - drag.previous_cursor_position;
             camera_translation.0 -= delta;
-            drag.previous_cursor_position = position.0 - delta;
         }
     }
 }

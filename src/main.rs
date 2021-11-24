@@ -47,11 +47,7 @@ fn main() {
                         .system()
                         .after("cursor"),
                 )
-                .with_system(
-                    systems::input::handle_camera_dragging
-                        .system()
-                        .after("cursor"),
-                ),
+                .with_system(systems::input::handle_camera_dragging.system()),
         )
         // Nodes
         .add_system(systems::shader::handle_shader_event.system())
