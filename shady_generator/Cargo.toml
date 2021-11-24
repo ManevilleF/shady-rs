@@ -2,8 +2,13 @@
 name = "shady_generator"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Felix de Maneville <felix.maneville@gmail.com>"]
+license-file = "../LICENSE"
+repository = "https://github.com/ManevilleF/shady-rs/tree/main/shady_generator"
+keywords = ["GPU", "Shader", "GLSL", "OpenGL", "bevy"]
+description = "Shader code generator made in rust for shady-rs"
+readme = "README.md"
+exclude = ["test"]
 
 [dependencies]
 indoc = "1.0"
