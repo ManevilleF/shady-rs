@@ -186,11 +186,15 @@ impl Node {
             .fields
             .get_mut(field_pos)
             .ok_or_else(|| ShadyError::WrongFieldKey(target_field.to_string()))?;
-        let expected_type = field.glsl_type();
-        if connect_message.glsl_type != expected_type {
+        let expected_types = if field.tolerant {
+            field.glsl_type.tolerated_input_types().to_vec()
+        } else {
+            vec![field.glsl_type()]
+        };
+        if !expected_types.contains(&connect_message.glsl_type) {
             return Err(ShadyError::WrongNativeType {
                 input_type: connect_message.glsl_type,
-                expected_type,
+                expected_types,
             });
         }
         Ok(field.connection.replace(connect_message.connection))

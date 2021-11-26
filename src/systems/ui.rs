@@ -7,7 +7,7 @@ use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget}
 use bevy_egui::{egui, EguiContext};
 use shady_generator::{
     FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
-    NonScalarNativeType, ScalarNativeType, ShaderType,
+    NonScalarNativeType, NumericScalarNativeType, ShaderType,
 };
 use std::fmt::Display;
 
@@ -269,7 +269,12 @@ pub fn creation_menu(
                                 }
                                 NativeOperation::GreaterThan(t)
                                 | NativeOperation::GreaterThanEqual(t) => {
-                                    type_selection(ui, ScalarNativeType::VARIANTS, t, &mut picked);
+                                    type_selection(
+                                        ui,
+                                        NumericScalarNativeType::VARIANTS,
+                                        t,
+                                        &mut picked,
+                                    );
                                 }
                                 _ => {
                                     picked = true;

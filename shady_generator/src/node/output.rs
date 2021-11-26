@@ -34,7 +34,7 @@ impl Output {
         match self {
             Output::GlslType(glsl_type) => OutputFields::SingleOutput(*glsl_type),
             Output::CustomType(c) => OutputFields::Fields(c.fields.clone()),
-            Output::Split(t) => OutputFields::Fields(t.fields()),
+            Output::Split(t) => OutputFields::Fields(t.type_construction_fields()),
         }
     }
 

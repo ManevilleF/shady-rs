@@ -26,6 +26,7 @@ nodes:
       fields:
         - - pos
           - glsl_type: Vec3
+            tolerant: false
             connection:
               InputProperty:
                 id: Gl_Pos123

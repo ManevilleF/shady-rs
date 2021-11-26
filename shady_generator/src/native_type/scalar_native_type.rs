@@ -1,47 +1,27 @@
-use crate::NativeType;
-use serde::{Deserialize, Serialize};
-use std::fmt::{self, Display, Formatter};
+use crate::{make_native_type_enum, NativeType};
 
-/// Scalar shader native types
-#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
-pub enum ScalarNativeType {
-    /// Boolean type
+make_native_type_enum!(ScalarNativeType {
     Bool,
-    /// Signed Integer type
     Int,
-    /// Unsigned Integer type
     UInt,
-    /// Floating number type
     Float,
-    /// Double floating number type (long)
     Double,
-}
+});
 
-impl ScalarNativeType {
-    /// All enum variants
-    pub const VARIANTS: &'static [Self] =
-        &[Self::Bool, Self::Int, Self::UInt, Self::Float, Self::Double];
-}
-
-impl From<ScalarNativeType> for NativeType {
-    fn from(t: ScalarNativeType) -> Self {
-        match t {
-            ScalarNativeType::Bool => NativeType::Bool,
-            ScalarNativeType::Int => NativeType::Int,
-            ScalarNativeType::UInt => NativeType::UInt,
-            ScalarNativeType::Float => NativeType::Float,
-            ScalarNativeType::Double => NativeType::Double,
-        }
-    }
-}
-
-impl Display for ScalarNativeType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", NativeType::from(*self))
-    }
-}
+make_native_type_enum!(NumericScalarNativeType {
+    Int,
+    UInt,
+    Float,
+    Double,
+});
 
 impl Default for ScalarNativeType {
+    fn default() -> Self {
+        Self::Float
+    }
+}
+
+impl Default for NumericScalarNativeType {
     fn default() -> Self {
         Self::Float
     }

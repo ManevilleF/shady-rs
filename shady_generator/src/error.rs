@@ -5,12 +5,12 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum ShadyError {
     /// Shader Native type mismatch
-    #[error("Wrong input value type, got {input_type} expected {expected_type}")]
+    #[error("Wrong input value type, got {input_type} expected a type in {expected_types:?}")]
     WrongNativeType {
         /// Received native type
         input_type: NativeType,
         /// Expected native type
-        expected_type: NativeType,
+        expected_types: Vec<NativeType>,
     },
     /// Wrong Node field
     #[error("Could not find a field with key `{0}`")]

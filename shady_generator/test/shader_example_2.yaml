@@ -45,11 +45,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               InputProperty:
                 id: i1
         - - y
           - glsl_type: Float
+            tolerant: false
             connection: ~
     output:
       GlslType: Float
@@ -62,11 +64,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: e
         - - y
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: d
@@ -81,11 +85,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: b
         - - y
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: d
@@ -100,11 +106,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: e
         - - y
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: g
@@ -119,11 +127,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               InputProperty:
                 id: i1
         - - y
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: f
@@ -138,11 +148,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               SingleOutputNode:
                 id: a
         - - y
           - glsl_type: Float
+            tolerant: false
             connection: ~
     output:
       GlslType: Float
@@ -155,11 +167,13 @@ nodes:
       fields:
         - - x
           - glsl_type: Float
+            tolerant: false
             connection:
               InputProperty:
                 id: i2
         - - y
           - glsl_type: Float
+            tolerant: false
             connection: ~
     output:
       GlslType: Float

@@ -1,4 +1,4 @@
-use crate::{Input, InputField, NativeType, Output, ScalarNativeType};
+use crate::{Input, InputField, NativeType, NumericScalarNativeType, Output};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,9 +22,9 @@ pub enum NativeOperation {
     /// Equals operation: `a == b`, returns a boolean
     Equals(NativeType),
     /// Greater than operation: `a > b`, returns a boolean
-    GreaterThan(ScalarNativeType),
+    GreaterThan(NumericScalarNativeType),
     /// Greater or equal operation: `a >= b`, returns a boolean
-    GreaterThanEqual(ScalarNativeType),
+    GreaterThanEqual(NumericScalarNativeType),
     /// No operation: `!a`, takes and return booleans
     No,
     /// And operation: `a && b`, takes and return booleans
@@ -68,8 +68,13 @@ impl NativeOperation {
             NativeOperation::Add(t)
             | NativeOperation::Sub(t)
             | NativeOperation::Mul(t)
-            | NativeOperation::Div(t)
-            | NativeOperation::Equals(t) => Input {
+            | NativeOperation::Div(t) => Input {
+                fields: vec![
+                    ("a".to_string(), InputField::new(*t)),
+                    ("b".to_string(), InputField::new_tolerant(*t)),
+                ],
+            },
+            NativeOperation::Equals(t) => Input {
                 fields: vec![
                     ("a".to_string(), InputField::new(*t)),
                     ("b".to_string(), InputField::new(*t)),
@@ -176,8 +181,8 @@ impl NativeOperation {
         Self::Div(NativeType::Float),
         Self::Selection(NativeType::Float),
         Self::Equals(NativeType::Float),
-        Self::GreaterThan(ScalarNativeType::Float),
-        Self::GreaterThanEqual(ScalarNativeType::Float),
+        Self::GreaterThan(NumericScalarNativeType::Float),
+        Self::GreaterThanEqual(NumericScalarNativeType::Float),
         Self::No,
         Self::And,
         Self::Or,

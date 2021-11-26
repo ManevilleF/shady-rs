@@ -53,7 +53,7 @@ impl NodeOperation {
         match self {
             NodeOperation::CustomOperation { input, .. } => input.clone(),
             NodeOperation::NativeOperation(o) => o.input(),
-            NodeOperation::TypeConstruction(t) => t.input(),
+            NodeOperation::TypeConstruction(t) => t.type_construction_input(),
             NodeOperation::TypeSplit(t) => Input {
                 fields: vec![("in".to_string(), InputField::new((*t).into()))],
             },
@@ -68,7 +68,7 @@ impl NodeOperation {
             NodeOperation::NativeOperation(o) => o.output(),
             NodeOperation::NativeFunction(f) => f.output(),
             NodeOperation::TypeConstruction(t) => Output::GlslType((*t).into()),
-            NodeOperation::TypeSplit(t) => t.output(),
+            NodeOperation::TypeSplit(t) => Output::Split(*t),
         }
     }
 }

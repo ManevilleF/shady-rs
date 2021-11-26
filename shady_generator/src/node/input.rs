@@ -5,9 +5,9 @@ use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InputField {
-    // TODO: Add enum for specific Glsltype selection or a more global type allowing conversion
-    // For example, if it accepts all scalar types you may convert it like `float(bool)`
     pub glsl_type: NativeType,
+    #[serde(default)]
+    pub tolerant: bool,
     pub connection: Option<Connection>,
 }
 
@@ -32,6 +32,15 @@ impl InputField {
     pub fn new(glsl_type: NativeType) -> Self {
         Self {
             glsl_type,
+            tolerant: false,
+            connection: None,
+        }
+    }
+
+    pub fn new_tolerant(glsl_type: NativeType) -> Self {
+        Self {
+            glsl_type,
+            tolerant: true,
             connection: None,
         }
     }

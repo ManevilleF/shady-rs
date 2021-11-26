@@ -63,7 +63,7 @@ impl OutputProperty {
         if connect_message.glsl_type != self.glsl_type {
             return Err(ShadyError::WrongNativeType {
                 input_type: connect_message.glsl_type,
-                expected_type: self.glsl_type,
+                expected_types: vec![self.glsl_type],
             });
         }
         Ok(self.connection.replace(connect_message.connection))
