@@ -108,7 +108,7 @@ impl ShaderLoader {
                 pos,
                 (&key, node.name()),
                 SpawnType::Node {
-                    input_fields: node.input_field_types(),
+                    input_fields: node.input_fields().into_iter().map(Into::into).collect(),
                     output_fields: node.output_fields(),
                 },
             );
@@ -156,7 +156,9 @@ impl ShaderLoader {
                 pos,
                 (&key, &property.name),
                 SpawnType::OutputProperty {
-                    input_fields: vec![(property.reference.clone(), property.glsl_type)],
+                    input_fields: vec![
+                        (property.reference.clone(), property.glsl_type, false).into()
+                    ],
                 },
             );
             self.input_property_entities

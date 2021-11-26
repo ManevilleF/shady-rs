@@ -28,7 +28,7 @@ pub fn handle_shader_event(
                         *target_position,
                         (node.unique_id(), node.name()),
                         SpawnType::Node {
-                            input_fields: node.input_field_types(),
+                            input_fields: node.input_fields().into_iter().map(Into::into).collect(),
                             output_fields: node.output_fields(),
                         },
                     );
@@ -59,7 +59,12 @@ pub fn handle_shader_event(
                         *target_position,
                         (&property.reference, &property.name),
                         SpawnType::OutputProperty {
-                            input_fields: vec![(property.reference.clone(), property.glsl_type)],
+                            input_fields: vec![(
+                                property.reference.clone(),
+                                property.glsl_type,
+                                false,
+                            )
+                                .into()],
                         },
                     );
                     current_shader

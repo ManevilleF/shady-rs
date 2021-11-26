@@ -1,7 +1,8 @@
 mod native_function;
 mod native_operation;
+mod non_scalar_swizzle;
 
-pub use {native_function::*, native_operation::*};
+pub use {native_function::*, native_operation::*, non_scalar_swizzle::*};
 
 use crate::{Input, InputField, NonScalarNativeType, Output, ShadyError};
 use serde::{Deserialize, Serialize};
@@ -23,6 +24,7 @@ pub(crate) enum InternalNodeOperation {
     TypeConstruction(NonScalarNativeType),
     /// Native Function
     NativeFunction(NativeFunction),
+    NonScalarSwizzle(NonScalarSwizzle),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,6 +47,7 @@ pub enum NodeOperation {
     TypeSplit(NonScalarNativeType),
     /// Native Function
     NativeFunction(NativeFunction),
+    NonScalarSwizzle(NonScalarSwizzle),
 }
 
 impl NodeOperation {
@@ -58,6 +61,7 @@ impl NodeOperation {
                 fields: vec![("in".to_string(), InputField::new((*t).into()))],
             },
             NodeOperation::NativeFunction(f) => f.input(),
+            NodeOperation::NonScalarSwizzle(s) => s.input(),
         }
     }
 
@@ -67,8 +71,9 @@ impl NodeOperation {
             NodeOperation::CustomOperation { output, .. } => output.clone(),
             NodeOperation::NativeOperation(o) => o.output(),
             NodeOperation::NativeFunction(f) => f.output(),
-            NodeOperation::TypeConstruction(t) => Output::GlslType((*t).into()),
+            NodeOperation::TypeConstruction(t) => Output::NativeType((*t).into()),
             NodeOperation::TypeSplit(t) => Output::Split(*t),
+            NodeOperation::NonScalarSwizzle(s) => s.output(),
         }
     }
 }
@@ -88,6 +93,9 @@ impl InternalNodeOperation {
             Self::NativeOperation(o) => o.glsl_operation(input_fields),
             Self::NativeFunction(f) => {
                 format!("{}({})", f.function_name(), input_fields.join(", "))
+            }
+            Self::NonScalarSwizzle(s) => {
+                format!("{}.{}", input_fields.join(","), s.glsl_method())
             }
         }
     }
@@ -123,6 +131,7 @@ impl From<NodeOperation> for InternalNodeOperation {
             NodeOperation::TypeConstruction(t) => Self::TypeConstruction(t),
             NodeOperation::TypeSplit(t) => Self::TypeSplit(t),
             NodeOperation::NativeFunction(f) => Self::NativeFunction(f),
+            NodeOperation::NonScalarSwizzle(f) => Self::NonScalarSwizzle(f),
         }
     }
 }

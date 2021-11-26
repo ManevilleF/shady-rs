@@ -119,15 +119,6 @@ impl Node {
         self.input.fields.clone()
     }
 
-    /// Retrieves all input fields as `NativeType`
-    pub fn input_field_types(&self) -> Vec<(String, NativeType)> {
-        self.input
-            .fields
-            .iter()
-            .map(|(k, i)| (k.clone(), i.glsl_type))
-            .collect()
-    }
-
     /// Retrieves all output fields
     pub fn output_fields(&self) -> OutputFields {
         self.output.fields()

@@ -6,8 +6,9 @@ use bevy::prelude::*;
 use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::{
-    FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
-    NonScalarNativeType, NumericScalarNativeType, ShaderType,
+    FieldToGlsl, FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
+    NonScalarNativeType, NonScalarSwizzle, NumericScalarNativeType, ShaderType, Vec2Field,
+    Vec3Field, Vec4Field,
 };
 use std::fmt::Display;
 
@@ -32,6 +33,32 @@ fn type_selection<T: Copy + Display + PartialEq>(
             *picked = true;
         }
     }
+}
+
+fn swizzle_selection<T: FieldToGlsl, const SIZE: usize>(
+    ui: &mut Ui,
+    variants: &[[T; SIZE]],
+    value: &mut [T; SIZE],
+    picked: &mut bool,
+) {
+    ui.horizontal_wrapped(|ui| {
+        for native_type in variants {
+            if ui
+                .selectable_value(
+                    value,
+                    *native_type,
+                    native_type
+                        .iter()
+                        .map(FieldToGlsl::to_glsl)
+                        .collect::<Vec<&str>>()
+                        .join(""),
+                )
+                .clicked()
+            {
+                *picked = true;
+            }
+        }
+    });
 }
 
 pub fn menu(
@@ -93,6 +120,11 @@ pub fn menu(
                 ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::TypeSplit(
                     NonScalarNativeType::Vec2,
                 )));
+            }
+            if ui.button("Type Swizzle").clicked() {
+                ui_state.candidate = Some(Candidate::OperationSelection(
+                    OperationSelection::TypeSwizzle(NonScalarSwizzle::default()),
+                ));
             }
             if ui.button("Native Operation").clicked() {
                 ui_state.candidate = Some(Candidate::OperationSelection(
@@ -237,6 +269,14 @@ pub fn creation_menu(
                                     }
                                 }
                             }
+                            OperationSelection::TypeSwizzle(swizzle) => {
+                                for available_function in NonScalarSwizzle::VARIANTS {
+                                    if ui.button(available_function.descriptive_name()).clicked() {
+                                        *swizzle = available_function.clone();
+                                        picked = true;
+                                    }
+                                }
+                            }
                         });
                         if picked {
                             new_candidate = Some(Candidate::TypeSelection(
@@ -334,6 +374,82 @@ pub fn creation_menu(
                                     picked = true;
                                 }
                             },
+                            TypeSelection::TypeSwizzle(swizzle) => {
+                                match swizzle {
+                                    NonScalarSwizzle::Vec2ToVec2(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec2Field::every_vec2_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec2ToVec3(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec2Field::every_vec3_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec2ToVec4(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec2Field::every_vec4_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec3ToVec2(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec3Field::every_vec2_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec3ToVec3(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec3Field::every_vec3_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec3ToVec4(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec3Field::every_vec4_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec4ToVec2(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec4Field::every_vec2_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec4ToVec3(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec4Field::every_vec3_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                    NonScalarSwizzle::Vec4ToVec4(v) => {
+                                        swizzle_selection(
+                                            ui,
+                                            &Vec4Field::every_vec4_possibility(),
+                                            v,
+                                            &mut picked,
+                                        );
+                                    }
+                                };
+                            }
                         }
                         if picked {
                             new_candidate = Some(Candidate::Creation(

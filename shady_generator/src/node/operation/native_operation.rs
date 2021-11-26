@@ -46,14 +46,14 @@ impl NativeOperation {
             | NativeOperation::Sub(t)
             | NativeOperation::Mul(t)
             | NativeOperation::Div(t)
-            | NativeOperation::Selection(t) => Output::GlslType(*t),
+            | NativeOperation::Selection(t) => Output::NativeType(*t),
             NativeOperation::And
             | NativeOperation::Or
             | NativeOperation::Xor
             | NativeOperation::No
             | NativeOperation::Equals(_)
             | NativeOperation::GreaterThan(_)
-            | NativeOperation::GreaterThanEqual(_) => Output::GlslType(NativeType::Bool),
+            | NativeOperation::GreaterThanEqual(_) => Output::NativeType(NativeType::Bool),
         }
     }
 

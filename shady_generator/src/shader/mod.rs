@@ -40,6 +40,7 @@ pub struct Shader {
 }
 
 impl Shader {
+    // TODO: Return error if element already exists
     pub fn create_node(&mut self, node: Node) -> &Node {
         let id = node.unique_id().clone();
         if let Some(n) = self.nodes.insert(id.clone(), node) {
@@ -98,6 +99,7 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
+    // TODO: Return error if element already exists
     pub fn add_input_property(&mut self, property: InputProperty) -> &InputProperty {
         let id = property.reference.clone();
         if let Some(p) = self.input_properties.insert(id.clone(), property) {
@@ -110,6 +112,7 @@ impl Shader {
         self.get_input_property(&id).unwrap()
     }
 
+    // TODO: Return error if element already exists
     pub fn add_output_property(&mut self, property: OutputProperty) -> &OutputProperty {
         let id = property.reference.clone();
         if let Some(p) = self.output_properties.insert(id.clone(), property) {
@@ -261,6 +264,7 @@ impl Shader {
         let mut file = OpenOptions::new()
             .create(true)
             .write(true)
+            .truncate(true)
             .open(file_path)?;
         let data = self.to_glsl()?;
         let data = format!("// {}\n{}", EXPORT_HEADER, data);

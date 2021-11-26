@@ -195,7 +195,7 @@ mod tests {
                     ("y".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
-            output: Output::GlslType(NativeType::Float),
+            output: Output::NativeType(NativeType::Float),
         }
     }
 
@@ -248,7 +248,7 @@ mod tests {
             input: Input {
                 fields: vec![("pos".to_string(), InputField::new(NativeType::Vec3))],
             },
-            output: Output::GlslType(NativeType::Vec2),
+            output: Output::NativeType(NativeType::Vec2),
         };
         shader.create_node(Node::new_with_custom_id(
             "MyNode",

@@ -1,7 +1,8 @@
 use crate::resources::CreationCandidate;
 use crate::IOEvent;
 use shady_generator::{
-    InputProperty, NativeOperation, NativeType, NonScalarNativeType, OutputProperty,
+    InputProperty, NativeOperation, NativeType, NonScalarNativeType, NonScalarSwizzle,
+    OutputProperty,
 };
 use shady_generator::{NativeFunction, NodeOperation};
 
@@ -20,12 +21,14 @@ pub enum TypeSelection {
     TypeSplit(NonScalarNativeType),
     NativeOperation(NativeOperation),
     NativeFunction(NativeFunction),
+    TypeSwizzle(NonScalarSwizzle),
 }
 
 #[derive(Debug, Clone)]
 pub enum OperationSelection {
     NativeOperation(NativeOperation),
     NativeFunction(NativeFunction),
+    TypeSwizzle(NonScalarSwizzle),
 }
 
 #[derive(Debug)]
@@ -88,6 +91,7 @@ impl OperationSelection {
         match self {
             OperationSelection::NativeOperation(o) => TypeSelection::NativeOperation(o.clone()),
             OperationSelection::NativeFunction(f) => TypeSelection::NativeFunction(f.clone()),
+            OperationSelection::TypeSwizzle(n) => TypeSelection::TypeSwizzle(n.clone()),
         }
     }
 }
@@ -114,6 +118,10 @@ impl TypeSelection {
             Self::NativeFunction(f) => CreationCandidate::Node {
                 name: f.function_name().to_string(),
                 operation: NodeOperation::NativeFunction(f.clone()),
+            },
+            Self::TypeSwizzle(s) => CreationCandidate::Node {
+                name: s.complete_name(),
+                operation: NodeOperation::NonScalarSwizzle(s.clone()),
             },
         }
     }
