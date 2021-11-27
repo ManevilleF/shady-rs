@@ -50,11 +50,13 @@ pub fn handle_shader_event(
                         }
                     };
                     let id = constant.key();
+                    // TODO: remove this when the UI allows constant edits
+                    let name = format!("{} ({})", constant.name, constant.str_value());
                     let response = spawn_element(
                         &mut commands,
                         &assets,
                         *target_position,
-                        (&id, &constant.name),
+                        (&id, &name),
                         SpawnType::Constant {
                             output_fields: vec![(id.clone(), constant.native_type())],
                         },

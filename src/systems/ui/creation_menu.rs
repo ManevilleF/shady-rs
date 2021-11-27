@@ -1,22 +1,90 @@
-use crate::common::get_current_dir;
-use crate::components::{LogElement, LogLevel};
-use crate::resources::{Candidate, CreationCandidate, IOState, OperationSelection, TypeSelection};
-use crate::{CurrentShader, IOEvent, UiState, VERSION};
+use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
+use crate::UiState;
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget};
+use bevy_egui::egui::{Button, Rgba, Slider, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::node_operation::*;
 use shady_generator::{
-    ConstantValue, FloatingNativeType, GraphicLibrary, NativeType, NonScalarNativeType,
-    NumericScalarNativeType, ShaderType,
+    ConstantValue, FloatingNativeType, NativeType, NonScalarNativeType, NumericScalarNativeType,
 };
 use std::fmt::Display;
 
-pub fn setup(egui_ctx: ResMut<EguiContext>) {
-    egui_ctx.ctx().set_visuals(egui::Visuals {
-        window_corner_radius: 0.0,
-        ..Default::default()
+fn int_range(ui: &mut Ui, v: &mut i32, name: &str) {
+    ui.horizontal(|ui| {
+        ui.label(name);
+        ui.add(Slider::new(v, i32::MIN..=i32::MAX));
     });
+}
+
+fn uint_range(ui: &mut Ui, v: &mut u32, name: &str) {
+    ui.horizontal(|ui| {
+        ui.label(name);
+        ui.add(Slider::new(v, u32::MIN..=u32::MAX));
+    });
+}
+
+fn f32_range(ui: &mut Ui, v: &mut f32, name: &str) {
+    ui.horizontal(|ui| {
+        ui.label(name);
+        ui.add(Slider::new(v, f32::MIN..=f32::MAX));
+    });
+}
+
+fn f64_range(ui: &mut Ui, v: &mut f64, name: &str) {
+    ui.horizontal(|ui| {
+        ui.label(name);
+        ui.add(Slider::new(v, f64::MIN..=f64::MAX));
+    });
+}
+
+fn constant_value_selection(ui: &mut Ui, constant: &mut ConstantValue) {
+    match constant {
+        ConstantValue::Bool(v) => {
+            ui.checkbox(v, "Value");
+        }
+        ConstantValue::Int(v) => {
+            int_range(ui, v, "Value");
+        }
+        ConstantValue::UInt(v) => {
+            uint_range(ui, v, "Value");
+        }
+        ConstantValue::Float(v) => {
+            f32_range(ui, v, "Value");
+        }
+        ConstantValue::Double(v) => {
+            f64_range(ui, v, "Value");
+        }
+        ConstantValue::Vec2(v) => {
+            for (i, value) in v.iter_mut().enumerate() {
+                f32_range(ui, value, i.to_string().as_str());
+            }
+        }
+        ConstantValue::IVec2(v) => {
+            for (i, value) in v.iter_mut().enumerate() {
+                int_range(ui, value, i.to_string().as_str());
+            }
+        }
+        ConstantValue::Vec3(v) => {
+            for (i, value) in v.iter_mut().enumerate() {
+                f32_range(ui, value, i.to_string().as_str());
+            }
+        }
+        ConstantValue::IVec3(v) => {
+            for (i, value) in v.iter_mut().enumerate() {
+                int_range(ui, value, i.to_string().as_str());
+            }
+        }
+        ConstantValue::Vec4(v) => {
+            for (i, value) in v.iter_mut().enumerate() {
+                f32_range(ui, value, i.to_string().as_str());
+            }
+        }
+        ConstantValue::IVec4(v) => {
+            for (i, value) in v.iter_mut().enumerate() {
+                int_range(ui, value, i.to_string().as_str());
+            }
+        }
+    }
 }
 
 fn type_selection<T: Copy + Display + PartialEq>(
@@ -59,187 +127,6 @@ fn swizzle_selection<T: FieldToGlsl, const SIZE: usize>(
             }
         }
     });
-}
-
-pub fn menu(
-    egui_ctx: ResMut<EguiContext>,
-    mut ui_state: ResMut<UiState>,
-    mut shader: ResMut<CurrentShader>,
-) {
-    egui::SidePanel::left("Menu")
-        .default_width(200.)
-        .min_width(150.)
-        .max_width(300.)
-        .show(egui_ctx.ctx(), |ui| {
-            ui.label(
-                Label::new("Shady-rs")
-                    .text_color(Rgba::from_rgb(1., 1., 1.))
-                    .strong()
-                    .heading(),
-            );
-            ui.separator();
-
-            ui.label("Shader name:");
-            ui.text_edit_singleline(&mut shader.name);
-
-            ComboBox::from_label("Type")
-                .selected_text(shader.shader_type.to_string())
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut shader.shader_type, ShaderType::Vertex, "Vertex");
-                    ui.selectable_value(&mut shader.shader_type, ShaderType::Fragment, "Fragment");
-                });
-
-            ComboBox::from_label("Target Lib")
-                .selected_text(shader.library.to_string())
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut shader.library, GraphicLibrary::OpenGl, "OpenGl");
-                    ui.selectable_value(&mut shader.library, GraphicLibrary::OpenGlEs, "OpenGlEs");
-                    ui.selectable_value(&mut shader.library, GraphicLibrary::WebGPU, "WebGPU");
-                });
-
-            ui.separator();
-            ui.label("Create Property:");
-            if ui.button("Input Property").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::InputProperty(
-                    NativeType::default(),
-                )));
-            }
-            if ui.button("Output Property").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::OutputProperty(
-                    NativeType::default(),
-                )));
-            }
-            ui.separator();
-            if ui.button("Create Constant").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::Constant(
-                    ConstantValue::default(),
-                )))
-            }
-            ui.separator();
-            ui.label("Create Node:");
-            if ui.button("Type Construction").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(
-                    TypeSelection::TypeConstruction(NonScalarNativeType::Vec2),
-                ));
-            }
-            if ui.button("Type Split").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::TypeSplit(
-                    NonScalarNativeType::Vec2,
-                )));
-            }
-            if ui.button("Type Swizzle").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::TypeSwizzle(NonScalarSwizzle::default()),
-                ));
-            }
-            if ui.button("Native Operation").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::NativeOperation(NativeOperation::Inc(NativeType::Float)),
-                ));
-            }
-            if ui.button("Native function").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::NativeFunction(NativeFunction::Absolute(
-                        FloatingNativeType::Float,
-                    )),
-                ));
-            }
-
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                ui.add(
-                    egui::Hyperlink::new("https://github.com/ManevilleF/shady-rs")
-                        .text("Shady-rs by ManevilleF"),
-                );
-                ui.separator();
-                ui.horizontal(|ui| {
-                    if ui.button("Save").clicked() {
-                        ui_state.io_state = Some(IOState::Saving(get_current_dir()))
-                    }
-                    if ui.button("Load").clicked() {
-                        ui_state.io_state = Some(IOState::Loading(get_current_dir()))
-                    }
-                    if ui.button("Export").clicked() {
-                        ui_state.io_state = Some(IOState::Exporting(get_current_dir()))
-                    }
-                });
-                ui.label("I/O");
-            });
-        });
-    egui::TopBottomPanel::bottom("Build info")
-        .frame(Frame::none())
-        .resizable(false)
-        .show(egui_ctx.ctx(), |ui| {
-            ui.vertical_centered(|ui| {
-                let label = Label::new(format!(
-                    "App version {} - Lib version {}",
-                    VERSION,
-                    shady_generator::VERSION
-                ))
-                .small();
-                ui.label(label);
-            });
-        });
-}
-
-pub fn handle_log_elements(
-    egui_ctx: ResMut<EguiContext>,
-    mut commands: Commands,
-    mut query: Query<(Entity, &mut LogElement)>,
-    time: Res<Time>,
-) {
-    let delta_time = time.delta_seconds();
-    egui::SidePanel::right("Logger")
-        .min_width(200.)
-        .frame(Frame::none())
-        .resizable(false)
-        .show(egui_ctx.ctx(), |ui| {
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
-                for (entity, mut log) in query.iter_mut() {
-                    let mut label = Label::new(&log.message).small();
-                    match log.log_level {
-                        LogLevel::Info => label = label.text_color(Color32::GREEN),
-                        LogLevel::Warn => label = label.strong().text_color(Color32::RED),
-                        LogLevel::Error => label = label.strong().text_color(Color32::RED),
-                    };
-                    ui.label(label);
-                    log.alive_time -= delta_time;
-                    if log.alive_time <= 0.0 {
-                        commands.entity(entity).despawn();
-                    }
-                }
-            });
-        });
-}
-
-pub fn io(
-    egui_ctx: ResMut<EguiContext>,
-    mut ui_state: ResMut<UiState>,
-    mut io_ewr: EventWriter<IOEvent>,
-) {
-    let mut open = true;
-    let mut done = false;
-    if let Some(state) = &mut ui_state.io_state {
-        egui::Window::new(state.title())
-            .default_size((500., 200.))
-            .open(&mut open)
-            .show(egui_ctx.ctx(), |ui| {
-                ui.label(state.message());
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.label("Directory");
-                    egui::TextEdit::singleline(state.path_mut())
-                        .desired_width(500.)
-                        .ui(ui)
-                });
-                if ui.button(state.title()).clicked() {
-                    io_ewr.send(state.event());
-                    done = true;
-                }
-            });
-    }
-    if !open || done {
-        ui_state.io_state = None;
-    }
 }
 
 pub fn creation_menu(
@@ -480,7 +367,7 @@ pub fn creation_menu(
                                     ui.label("Name");
                                     ui.text_edit_singleline(&mut c.name);
                                 });
-                                // TODO: Check value
+                                constant_value_selection(ui, &mut c.value);
                             }
                             CreationCandidate::InputProperty(p) => {
                                 ui.horizontal(|ui| {
