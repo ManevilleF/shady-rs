@@ -1,4 +1,4 @@
-use crate::{NativeType, Output};
+use crate::NativeType;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
@@ -30,11 +30,19 @@ pub enum ConstantValue {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Constant {
-    pub reference: String,
+    pub name: String,
     pub value: ConstantValue,
 }
 
 impl Constant {
+    pub fn key(&self) -> String {
+        self.name
+            .to_ascii_uppercase()
+            .replace(" ", "_")
+            .trim()
+            .to_string()
+    }
+
     pub fn native_type(&self) -> NativeType {
         match self.value {
             ConstantValue::Bool(_) => NativeType::Bool,
@@ -49,10 +57,6 @@ impl Constant {
             ConstantValue::Vec4(_) => NativeType::Vec4,
             ConstantValue::IVec4(_) => NativeType::IVec4,
         }
-    }
-
-    pub fn output(&self) -> Output {
-        Output::NativeType(self.native_type())
     }
 
     fn complex_declaration<T: Display, const SIZE: usize>(v: [T; SIZE], t: NativeType) -> String {
@@ -80,7 +84,7 @@ impl Constant {
         format!(
             "const {} {} = {};",
             self.native_type(),
-            self.reference,
+            self.key(),
             self.str_value()
         )
     }

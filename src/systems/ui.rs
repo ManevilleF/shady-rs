@@ -477,8 +477,8 @@ pub fn creation_menu(
                             }
                             CreationCandidate::Constant(c) => {
                                 ui.horizontal(|ui| {
-                                    ui.label("Reference");
-                                    ui.text_edit_singleline(&mut c.reference);
+                                    ui.label("Name");
+                                    ui.text_edit_singleline(&mut c.name);
                                 });
                                 // TODO: Check value
                             }

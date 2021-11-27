@@ -119,9 +119,9 @@ impl ShaderLoader {
                 commands,
                 assets,
                 pos,
-                (&key, &constant.reference),
+                (&key, &constant.name),
                 SpawnType::Constant {
-                    output_fields: vec![(constant.reference.clone(), constant.native_type())],
+                    output_fields: vec![(constant.key(), constant.native_type())],
                 },
             );
             pos.y -= delta;

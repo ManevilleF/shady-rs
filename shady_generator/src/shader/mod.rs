@@ -110,7 +110,7 @@ impl Shader {
     }
 
     pub fn add_constant(&mut self, constant: Constant) -> Result<&Constant, ShadyError> {
-        let id = constant.reference.clone();
+        let id = constant.key();
         if self.constants.contains_key(&id) {
             return Err(DuplicateConstant(id));
         }

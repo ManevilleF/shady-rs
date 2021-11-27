@@ -49,17 +49,14 @@ pub fn handle_shader_event(
                             return;
                         }
                     };
-                    let id = constant.reference.clone();
+                    let id = constant.key();
                     let response = spawn_element(
                         &mut commands,
                         &assets,
                         *target_position,
-                        (&constant.reference, &constant.reference),
+                        (&id, &constant.name),
                         SpawnType::Constant {
-                            output_fields: vec![(
-                                constant.reference.clone(),
-                                constant.native_type(),
-                            )],
+                            output_fields: vec![(id.clone(), constant.native_type())],
                         },
                     );
                     current_shader

@@ -29,6 +29,20 @@ impl NodeGeneration {
 }
 
 impl Shader {
+    fn get_constants_declarations(&self) -> String {
+        let mut declarations = String::new();
+        let mut constants: Vec<(String, String)> = self
+            .constants
+            .iter()
+            .map(|(k, v)| (k.clone(), v.glsl_declaration()))
+            .collect();
+        constants.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+        for (_, value) in constants {
+            declarations = format!("{}{}\n", declarations, value);
+        }
+        declarations
+    }
+
     fn get_property_declarations(&self) -> String {
         let mut property_declarations = String::new();
         let mut input: Vec<(String, String)> = self
@@ -121,6 +135,7 @@ impl Shader {
     }
 
     pub fn to_glsl(&self) -> Result<String, ShadyError> {
+        let constants_declarations = self.get_constants_declarations();
         let property_declarations = self.get_property_declarations();
 
         let mut nodes_to_handle = Vec::new();
@@ -154,6 +169,8 @@ impl Shader {
         let function_declarations = function_declarations.join("\n\n");
 
         Ok(formatdoc! {"
+            // Constants
+            {constants}
             // Properties
             {properties}
             // Struct Declarations
@@ -167,6 +184,7 @@ impl Shader {
                 {output}
             }}
         ", 
+            constants = constants_declarations,
             properties = property_declarations,
             structs = struct_declarations,
             functions = function_declarations,
@@ -989,6 +1007,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
 
                 // Struct Declarations
@@ -1011,6 +1031,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in vec3 Gl_Pos123; // Gl_Position
                 out vec3 Out_Pos456; // Out_Pos
@@ -1036,6 +1058,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in vec3 Gl_Pos123; // Gl_Position
                 out vec2 Out_Pos456; // Out_Pos
@@ -1066,6 +1090,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in float i; // I
                 out float o_1; // O_1
@@ -1103,6 +1129,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in float i1; // I_1
                 in float i2; // I_2

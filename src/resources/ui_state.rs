@@ -100,7 +100,7 @@ impl TypeSelection {
     pub fn creation_candidate(&self) -> CreationCandidate {
         match self {
             Self::Constant(v) => CreationCandidate::Constant(Constant {
-                reference: "MY_CONST".to_string(),
+                name: "My Constant".to_string(),
                 value: *v,
             }),
             Self::InputProperty(t) => {
