@@ -1,10 +1,7 @@
 use crate::resources::CreationCandidate;
 use crate::IOEvent;
-use shady_generator::{
-    InputProperty, NativeOperation, NativeType, NonScalarNativeType, NonScalarSwizzle,
-    OutputProperty,
-};
-use shady_generator::{NativeFunction, NodeOperation};
+use shady_generator::node_operation::*;
+use shady_generator::{InputProperty, NativeType, NonScalarNativeType, OutputProperty};
 
 #[derive(Debug, Clone)]
 pub enum IOState {

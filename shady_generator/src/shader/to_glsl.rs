@@ -179,10 +179,9 @@ impl Shader {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::node_operation::NodeOperation;
     use crate::shader::{InputProperty, OutputProperty};
-    use crate::{
-        ConnectionAttempt, ConnectionTo, Input, InputField, NativeType, Node, NodeOperation, Output,
-    };
+    use crate::{ConnectionAttempt, ConnectionTo, Input, InputField, NativeType, Node, Output};
 
     fn init_base_operation() -> NodeOperation {
         NodeOperation::CustomOperation {

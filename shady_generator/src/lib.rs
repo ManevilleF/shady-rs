@@ -17,6 +17,7 @@ mod graphic_library;
 mod input;
 mod native_type;
 mod node;
+pub mod node_operation;
 mod output;
 mod shader;
 

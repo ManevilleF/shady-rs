@@ -5,10 +5,10 @@ use crate::{CurrentShader, IOEvent, UiState, VERSION};
 use bevy::prelude::*;
 use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
+use shady_generator::node_operation::*;
 use shady_generator::{
-    FieldToGlsl, FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
-    NonScalarNativeType, NonScalarSwizzle, NumericScalarNativeType, ShaderType, Vec2Field,
-    Vec3Field, Vec4Field,
+    FloatingNativeType, GraphicLibrary, NativeType, NonScalarNativeType, NumericScalarNativeType,
+    ShaderType,
 };
 use std::fmt::Display;
 

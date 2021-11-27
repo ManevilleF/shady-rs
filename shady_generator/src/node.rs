@@ -1,13 +1,10 @@
-pub use operation::*;
-
 use crate::error::ShadyError;
+use crate::node_operation::*;
 use crate::{
     generate_unique_id, Connection, ConnectionMessage, ConnectionResponse, Input, InputField,
     NativeType, Output, OutputFields,
 };
 use serde::{Deserialize, Serialize};
-
-mod operation;
 
 /// A Shader node, representing an operation and input/output data
 /// A Node also has a name, a unique id
@@ -219,6 +216,7 @@ impl Node {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::node_operation::NativeOperation;
     use crate::{NonScalarNativeType, ScalarNativeType};
 
     #[test]

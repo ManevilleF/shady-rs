@@ -1,4 +1,5 @@
-use shady_generator::{InputProperty, NodeOperation, OutputProperty};
+use shady_generator::node_operation::NodeOperation;
+use shady_generator::{InputProperty, OutputProperty};
 
 #[derive(Debug, Clone)]
 pub enum CreationCandidate {
