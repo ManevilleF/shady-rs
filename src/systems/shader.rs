@@ -43,7 +43,7 @@ pub fn handle_shader_event(
                         *target_position,
                         (&property.reference, &property.name),
                         SpawnType::InputProperty {
-                            output_fields: vec![(property.reference.clone(), property.glsl_type)],
+                            output_fields: vec![(property.reference.clone(), property.native_type)],
                         },
                     );
                     current_shader
@@ -61,7 +61,7 @@ pub fn handle_shader_event(
                         SpawnType::OutputProperty {
                             input_fields: vec![(
                                 property.reference.clone(),
-                                property.glsl_type,
+                                property.native_type,
                                 false,
                             )
                                 .into()],
@@ -166,8 +166,9 @@ pub fn handle_shader_event(
                                     Connection::ComplexOutputNode { id, field_name } =>
                                         format!("Node {} field {}", id, field_name),
                                     Connection::SingleOutputNode { id } => format!("Node {}", id),
-                                    Connection::InputProperty { id: property_id } =>
-                                        format!("Input Property {}", property_id),
+                                    Connection::InputProperty { id } =>
+                                        format!("Input Property {}", id),
+                                    Connection::Constant { id } => format!("Constant {}", id),
                                 },
                                 match &connection_to {
                                     ConnectionTo::Node { id, field_name } =>

@@ -91,7 +91,7 @@ impl ShaderLoader {
                 pos,
                 (&key, &property.name),
                 SpawnType::InputProperty {
-                    output_fields: vec![(property.reference.clone(), property.glsl_type)],
+                    output_fields: vec![(property.reference.clone(), property.native_type)],
                 },
             );
             pos.y -= delta;
@@ -124,7 +124,9 @@ impl ShaderLoader {
                 };
                 let connector_id = CurrentShader::unique_connector_id(&connection_to, connection);
                 let from_id = match connection {
-                    Connection::InputProperty { id } => Self::unique_slot_id(id, id, false),
+                    Connection::InputProperty { id } | Connection::Constant { id } => {
+                        Self::unique_slot_id(id, id, false)
+                    }
                     Connection::SingleOutputNode { id } => {
                         Self::unique_slot_id(id, OutputFields::SINGLE_FIELD_NAME, true)
                     }
@@ -157,7 +159,7 @@ impl ShaderLoader {
                 (&key, &property.name),
                 SpawnType::OutputProperty {
                     input_fields: vec![
-                        (property.reference.clone(), property.glsl_type, false).into()
+                        (property.reference.clone(), property.native_type, false).into()
                     ],
                 },
             );
@@ -168,7 +170,9 @@ impl ShaderLoader {
                 let connection_to = ConnectionTo::OutputProperty { id: key.clone() };
                 let connector_id = CurrentShader::unique_connector_id(&connection_to, connection);
                 let from_id = match connection {
-                    Connection::InputProperty { id } => Self::unique_slot_id(id, id, false),
+                    Connection::InputProperty { id } | Connection::Constant { id } => {
+                        Self::unique_slot_id(id, id, false)
+                    }
                     Connection::SingleOutputNode { id } => {
                         Self::unique_slot_id(id, OutputFields::SINGLE_FIELD_NAME, true)
                     }

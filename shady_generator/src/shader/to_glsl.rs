@@ -1,6 +1,5 @@
 use crate::error::ShadyError;
-use crate::node::Connection;
-use crate::shader::Shader;
+use crate::{Connection, Shader};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -180,11 +179,10 @@ impl Shader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::node::{
-        ConnectionAttempt, ConnectionTo, Input, InputField, Node, NodeOperation, Output,
-    };
     use crate::shader::{InputProperty, OutputProperty};
-    use crate::NativeType;
+    use crate::{
+        ConnectionAttempt, ConnectionTo, Input, InputField, NativeType, Node, NodeOperation, Output,
+    };
 
     fn init_base_operation() -> NodeOperation {
         NodeOperation::CustomOperation {
@@ -205,13 +203,13 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
             reference: "Gl_Pos123".to_string(),
-            glsl_type: NativeType::Vec3,
+            native_type: NativeType::Vec3,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "Out_Pos".to_string(),
             reference: "Out_Pos456".to_string(),
-            glsl_type: NativeType::Vec3,
+            native_type: NativeType::Vec3,
             connection: None,
         });
         shader
@@ -234,13 +232,13 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "Gl_Position".to_string(),
             reference: "Gl_Pos123".to_string(),
-            glsl_type: NativeType::Vec3,
+            native_type: NativeType::Vec3,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "Out_Pos".to_string(),
             reference: "Out_Pos456".to_string(),
-            glsl_type: NativeType::Vec2,
+            native_type: NativeType::Vec2,
             connection: None,
         });
         let operation_template = NodeOperation::CustomOperation {
@@ -286,25 +284,25 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
@@ -428,31 +426,31 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I_1".to_string(),
             reference: "i1".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             uniform: false,
         });
         shader.add_input_property(InputProperty {
             name: "I_2".to_string(),
             reference: "i2".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
@@ -623,25 +621,25 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O_1".to_string(),
             reference: "o_1".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_2".to_string(),
             reference: "o_2".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.add_output_property(OutputProperty {
             name: "O_3".to_string(),
             reference: "o_3".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
@@ -777,13 +775,13 @@ mod tests {
         shader.add_input_property(InputProperty {
             name: "I".to_string(),
             reference: "i".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             uniform: false,
         });
         shader.add_output_property(OutputProperty {
             name: "O".to_string(),
             reference: "o".to_string(),
-            glsl_type: NativeType::Float,
+            native_type: NativeType::Float,
             connection: None,
         });
         shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));

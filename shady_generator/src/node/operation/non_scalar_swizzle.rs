@@ -224,28 +224,6 @@ impl NonScalarSwizzle {
     }
 }
 
-impl Vec4Field {
-    pub fn every_vec4_possibility() -> Vec<[Self; 4]> {
-        let start_array = [Self::X, Self::Y, Self::Z, Self::W];
-        let mut res = Vec::new();
-        for x in 0..4 {
-            for y in 0..4 {
-                for z in 0..4 {
-                    for w in 0..4 {
-                        res.push([
-                            start_array[x],
-                            start_array[y],
-                            start_array[z],
-                            start_array[w],
-                        ]);
-                    }
-                }
-            }
-        }
-        res
-    }
-}
-
 impl Default for NonScalarSwizzle {
     fn default() -> Self {
         Self::Vec2ToVec3([Vec2Field::X, Vec2Field::Y, Vec2Field::X])

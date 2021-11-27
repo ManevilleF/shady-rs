@@ -1,5 +1,6 @@
-pub use {property::*, shader_type::*, to_glsl::*};
+pub use {constant::*, property::*, shader_type::*, to_glsl::*};
 
+mod constant;
 mod precision;
 mod property;
 mod shader_type;
@@ -30,6 +31,8 @@ pub struct Shader {
     #[serde(default)]
     pub shader_type: ShaderType,
     pub default_precisions: HashMap<NativeType, ShaderPrecision>,
+    #[serde(serialize_with = "ordered_map")]
+    constants: HashMap<String, Constant>,
     #[serde(serialize_with = "ordered_map")]
     input_properties: HashMap<String, InputProperty>,
     #[serde(serialize_with = "ordered_map")]
@@ -150,12 +153,17 @@ impl Shader {
         connection_attempt: ConnectionAttempt,
     ) -> Result<ConnectionResponse, ShadyError> {
         let glsl_type = match &connection_attempt.connection_from {
-            Connection::InputProperty { id: property_id } => {
+            Connection::InputProperty { id } => {
                 self.input_properties
-                    .get(property_id)
-                    .ok_or_else(|| ShadyError::MissingInputProperty(property_id.clone()))?
-                    .glsl_type
+                    .get(id)
+                    .ok_or_else(|| ShadyError::MissingInputProperty(id.clone()))?
+                    .native_type
             }
+            Connection::Constant { id } => self
+                .constants
+                .get(id)
+                .ok_or_else(|| ShadyError::MissingConstant(id.clone()))?
+                .native_type(),
             Connection::ComplexOutputNode { id, field_name } => {
                 let from_node = self
                     .nodes
@@ -176,7 +184,7 @@ impl Shader {
         };
         let connection_message = ConnectionMessage {
             connection: connection_attempt.connection_from.clone(),
-            glsl_type,
+            native_type: glsl_type,
         };
         match connection_attempt.connection_to {
             ConnectionTo::Node {
@@ -286,6 +294,7 @@ impl Default for Shader {
             library: Default::default(),
             shader_type: Default::default(),
             default_precisions: Default::default(),
+            constants: Default::default(),
             input_properties: Default::default(),
             output_properties: Default::default(),
             nodes: Default::default(),

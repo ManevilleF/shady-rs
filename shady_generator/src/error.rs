@@ -23,11 +23,14 @@ pub enum ShadyError {
     /// Missing Node
     #[error("Could not find node with uuid `{0}`")]
     MissingNode(String),
+    /// Missing constan
+    #[error("Could not find constant with id `{0}`")]
+    MissingConstant(String),
     /// Missing input Property
-    #[error("Could not find input property with uuid `{0}`")]
+    #[error("Could not find input property with id `{0}`")]
     MissingInputProperty(String),
     /// Missing output Property
-    #[error("Could not find output property with uuid `{0}`")]
+    #[error("Could not find output property with id `{0}`")]
     MissingOutputProperty(String),
     /// Node generation processing reached its max depth
     #[error("Node processing reached depth {0}, check your nodes for potential loops")]

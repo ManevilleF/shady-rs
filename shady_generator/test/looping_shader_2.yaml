@@ -4,17 +4,18 @@ name: Looping Shader 2
 library: OpenGl
 shader_type: Vertex
 default_precisions: {}
+constants: {}
 input_properties:
   i:
     name: I
     reference: i
-    glsl_type: Float
+    native_type: Float
     uniform: false
 output_properties:
   o:
     name: O
     reference: o
-    glsl_type: Float
+    native_type: Float
     connection:
       SingleOutputNode:
         id: a
@@ -37,7 +38,7 @@ nodes:
               SingleOutputNode:
                 id: c
     output:
-      GlslType: Float
+      NativeType: Float
     operation:
       CustomOperation: test_func
   b:
@@ -56,7 +57,7 @@ nodes:
             tolerant: false
             connection: ~
     output:
-      GlslType: Float
+      NativeType: Float
     operation:
       CustomOperation: test_func
   c:
@@ -75,7 +76,7 @@ nodes:
             tolerant: false
             connection: ~
     output:
-      GlslType: Float
+      NativeType: Float
     operation:
       CustomOperation: test_func
 max_processing_depth: 256

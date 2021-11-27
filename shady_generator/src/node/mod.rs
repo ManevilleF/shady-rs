@@ -1,13 +1,13 @@
-pub use {connection::*, input::*, operation::*, output::*};
+pub use operation::*;
 
 use crate::error::ShadyError;
-use crate::{generate_unique_id, NativeType};
+use crate::{
+    generate_unique_id, Connection, ConnectionMessage, ConnectionResponse, Input, InputField,
+    NativeType, Output, OutputFields,
+};
 use serde::{Deserialize, Serialize};
 
-mod connection;
-mod input;
 mod operation;
-mod output;
 
 /// A Shader node, representing an operation and input/output data
 /// A Node also has a name, a unique id
@@ -130,7 +130,7 @@ impl Node {
             .fields
             .iter()
             .filter_map(|(_, f)| match f.connection.as_ref()? {
-                Connection::InputProperty { .. } => None,
+                Connection::InputProperty { .. } | Connection::Constant { .. } => None,
                 Connection::ComplexOutputNode { id, .. } | Connection::SingleOutputNode { id } => {
                     Some(id.clone())
                 }
@@ -182,9 +182,9 @@ impl Node {
         } else {
             vec![field.glsl_type()]
         };
-        if !expected_types.contains(&connect_message.glsl_type) {
+        if !expected_types.contains(&connect_message.native_type) {
             return Err(ShadyError::WrongNativeType {
-                input_type: connect_message.glsl_type,
+                input_type: connect_message.native_type,
                 expected_types,
             });
         }
@@ -234,7 +234,7 @@ mod tests {
                     id: "some_var".to_string(),
                     field_name: "a".to_string(),
                 },
-                glsl_type: ScalarNativeType::Float.into(),
+                native_type: ScalarNativeType::Float.into(),
             },
         )
         .unwrap();
@@ -245,7 +245,7 @@ mod tests {
                     id: "other_var".to_string(),
                     field_name: "z".to_string(),
                 },
-                glsl_type: ScalarNativeType::Float.into(),
+                native_type: ScalarNativeType::Float.into(),
             },
         )
         .unwrap();

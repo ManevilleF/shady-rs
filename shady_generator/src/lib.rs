@@ -6,12 +6,18 @@
 #![forbid(unsafe_code)]
 // TODO: Global renaming for native type
 
-pub use {error::*, graphic_library::*, native_type::*, node::*, shader::*};
+pub use {
+    connection::*, error::*, graphic_library::*, input::*, native_type::*, node::*, output::*,
+    shader::*,
+};
 
+mod connection;
 mod error;
 mod graphic_library;
+mod input;
 mod native_type;
 mod node;
+mod output;
 mod shader;
 
 use rand::distributions::Alphanumeric;
