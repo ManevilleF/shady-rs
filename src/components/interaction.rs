@@ -8,6 +8,7 @@ pub enum BoxInteraction {
     ConnectionStart(Connection),
     ConnectionEnd(ConnectionTo),
     DeleteNode(String),
+    DeleteConstant(String),
     DeleteInput(String),
     DeleteOutput(String),
     Ignore,

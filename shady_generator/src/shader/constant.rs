@@ -1,8 +1,8 @@
 use crate::{NativeType, Output};
 use serde::{Deserialize, Serialize};
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ConstantValue {
     /// Boolean type
     Bool(bool),
@@ -82,6 +82,50 @@ impl Constant {
             self.native_type(),
             self.reference,
             self.str_value()
+        )
+    }
+}
+
+impl ConstantValue {
+    pub const VARIANTS: &'static [Self] = &[
+        Self::Bool(true),
+        Self::Int(1),
+        Self::UInt(1),
+        Self::Float(1.0),
+        Self::Double(1.0),
+        Self::Vec2([1.0, 1.0]),
+        Self::IVec2([1, 1]),
+        Self::Vec3([1.0, 1.0, 1.0]),
+        Self::IVec3([1, 1, 1]),
+        Self::Vec4([1.0, 1.0, 1.0, 1.0]),
+        Self::IVec4([1, 1, 1, 1]),
+    ];
+}
+
+impl Default for ConstantValue {
+    fn default() -> Self {
+        Self::Float(0.0)
+    }
+}
+
+impl Display for ConstantValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ConstantValue::Bool(_) => "Bool",
+                ConstantValue::Int(_) => "Int",
+                ConstantValue::UInt(_) => "UInt",
+                ConstantValue::Float(_) => "Float",
+                ConstantValue::Double(_) => "Double",
+                ConstantValue::Vec2(_) => "Vec2",
+                ConstantValue::IVec2(_) => "IVec2",
+                ConstantValue::Vec3(_) => "Vec3",
+                ConstantValue::IVec3(_) => "IVec3",
+                ConstantValue::Vec4(_) => "Vec4",
+                ConstantValue::IVec4(_) => "IVec4",
+            }
         )
     }
 }

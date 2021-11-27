@@ -7,6 +7,7 @@ mod shader_type;
 mod to_glsl;
 
 use crate::shader::precision::ShaderPrecision;
+use crate::ShadyError::{DuplicateConstant, DuplicateInputProperty, DuplicateOutputProperty};
 use crate::{
     ordered_map, Connection, ConnectionAttempt, ConnectionMessage, ConnectionResponse,
     ConnectionTo, GraphicLibrary, NativeType, Node, OutputFields, ShadyError,
@@ -43,17 +44,13 @@ pub struct Shader {
 }
 
 impl Shader {
-    // TODO: Return error if element already exists
-    pub fn create_node(&mut self, node: Node) -> &Node {
+    pub fn create_node(&mut self, node: Node) -> Result<&Node, ShadyError> {
         let id = node.unique_id().clone();
-        if let Some(n) = self.nodes.insert(id.clone(), node) {
-            log::error!(
-                "FATAL: Overwrote node `{}` ({}) because of identical ids",
-                n.name(),
-                n.unique_id()
-            );
+        if self.nodes.contains_key(&id) {
+            return Err(ShadyError::DuplicateNode(id));
         }
-        self.get_node(&id).unwrap()
+        self.nodes.insert(id.clone(), node);
+        Ok(self.get_node(&id).unwrap())
     }
 
     pub fn remove_node(&mut self, id: &str) -> Option<Node> {
@@ -74,6 +71,16 @@ impl Shader {
 
     pub fn nodes(&self) -> &HashMap<String, Node> {
         &self.nodes
+    }
+
+    fn get_constant(&self, id: &str) -> Result<&Constant, ShadyError> {
+        self.constants
+            .get(id)
+            .ok_or_else(|| ShadyError::MissingConstant(id.to_string()))
+    }
+
+    pub fn constants(&self) -> &HashMap<String, Constant> {
+        &self.constants
     }
 
     fn get_input_property(&self, id: &str) -> Result<&InputProperty, ShadyError> {
@@ -102,32 +109,48 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
-    // TODO: Return error if element already exists
-    pub fn add_input_property(&mut self, property: InputProperty) -> &InputProperty {
-        let id = property.reference.clone();
-        if let Some(p) = self.input_properties.insert(id.clone(), property) {
-            log::error!(
-                "FATAL: Overwrote input property `{}` ({}) because of identical ids",
-                p.name,
-                p.reference
-            );
+    pub fn add_constant(&mut self, constant: Constant) -> Result<&Constant, ShadyError> {
+        let id = constant.reference.clone();
+        if self.constants.contains_key(&id) {
+            return Err(DuplicateConstant(id));
         }
-        self.get_input_property(&id).unwrap()
+        self.constants.insert(id.clone(), constant);
+        Ok(self.get_constant(&id).unwrap())
     }
 
-    // TODO: Return error if element already exists
-    pub fn add_output_property(&mut self, property: OutputProperty) -> &OutputProperty {
+    pub fn add_input_property(
+        &mut self,
+        property: InputProperty,
+    ) -> Result<&InputProperty, ShadyError> {
         let id = property.reference.clone();
-        if let Some(p) = self.output_properties.insert(id.clone(), property) {
-            log::error!(
-                "FATAL: Overwrote output property `{}` ({}) because of identical ids",
-                p.name,
-                p.reference
-            );
+        if self.input_properties.contains_key(&id) {
+            return Err(DuplicateInputProperty(id));
         }
-        self.get_output_property(&id).unwrap()
+        self.input_properties.insert(id.clone(), property);
+        Ok(self.get_input_property(&id).unwrap())
     }
 
+    pub fn add_output_property(
+        &mut self,
+        property: OutputProperty,
+    ) -> Result<&OutputProperty, ShadyError> {
+        let id = property.reference.clone();
+        if self.output_properties.contains_key(&id) {
+            return Err(DuplicateOutputProperty(id));
+        }
+        self.output_properties.insert(id.clone(), property);
+        Ok(self.get_output_property(&id).unwrap())
+    }
+
+    pub fn remove_constant(&mut self, id: &str) -> Option<Constant> {
+        match self.constants.remove(id) {
+            None => {
+                log::error!("Could not find constant with id {} to remove", id);
+                None
+            }
+            Some(n) => Some(n),
+        }
+    }
     pub fn remove_input_property(&mut self, id: &str) -> Option<InputProperty> {
         match self.input_properties.remove(id) {
             None => {

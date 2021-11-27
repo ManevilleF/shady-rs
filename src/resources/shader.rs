@@ -11,6 +11,7 @@ use std::ops::{Deref, DerefMut};
 pub struct CurrentShader {
     pub shader: Shader,
     pub node_entities: HashMap<String, Entity>,
+    pub constants_entities: HashMap<String, Entity>,
     pub input_property_entities: HashMap<String, Entity>,
     pub output_property_entities: HashMap<String, Entity>,
     pub connection_entities: HashMap<String, Entity>,
@@ -20,6 +21,18 @@ impl CurrentShader {
         match self.node_entities.remove(id) {
             None => {
                 LogElement::new(LogLevel::Warn, format!("No entity for node {}", id))
+                    .spawn(commands);
+            }
+            Some(e) => {
+                commands.entity(e).despawn_recursive();
+            }
+        }
+    }
+
+    pub fn delete_constant_entity(&mut self, id: &str, commands: &mut Commands) {
+        match self.constants_entities.remove(id) {
+            None => {
+                LogElement::new(LogLevel::Warn, format!("No entity for constant {}", id))
                     .spawn(commands);
             }
             Some(e) => {
@@ -97,6 +110,10 @@ impl CurrentShader {
             log::info!("Removing node {} entity {:?}", key, entity);
             commands.entity(entity).despawn_recursive();
         }
+        for (key, entity) in self.constants_entities.drain() {
+            log::info!("Removing constant {} entity {:?}", key, entity);
+            commands.entity(entity).despawn_recursive();
+        }
         for (key, entity) in self.input_property_entities.drain() {
             log::info!("Removing input property {} entity {:?}", key, entity);
             commands.entity(entity).despawn_recursive();
@@ -135,6 +152,7 @@ impl Default for CurrentShader {
         Self {
             shader: Default::default(),
             node_entities: Default::default(),
+            constants_entities: Default::default(),
             input_property_entities: Default::default(),
             output_property_entities: Default::default(),
             connection_entities: Default::default(),
@@ -161,6 +179,7 @@ impl From<ShaderLoader> for CurrentShader {
         Self {
             shader: l.shader,
             node_entities: l.node_entities,
+            constants_entities: l.constants_entities,
             input_property_entities: l.input_property_entities,
             output_property_entities: l.output_property_entities,
             connection_entities: l.connection_entities,

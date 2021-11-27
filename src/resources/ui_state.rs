@@ -1,7 +1,9 @@
 use crate::resources::CreationCandidate;
 use crate::IOEvent;
 use shady_generator::node_operation::*;
-use shady_generator::{InputProperty, NativeType, NonScalarNativeType, OutputProperty};
+use shady_generator::{
+    Constant, ConstantValue, InputProperty, NativeType, NonScalarNativeType, OutputProperty,
+};
 
 #[derive(Debug, Clone)]
 pub enum IOState {
@@ -12,6 +14,7 @@ pub enum IOState {
 
 #[derive(Debug, Clone)]
 pub enum TypeSelection {
+    Constant(ConstantValue),
     InputProperty(NativeType),
     OutputProperty(NativeType),
     TypeConstruction(NonScalarNativeType),
@@ -96,6 +99,10 @@ impl OperationSelection {
 impl TypeSelection {
     pub fn creation_candidate(&self) -> CreationCandidate {
         match self {
+            Self::Constant(v) => CreationCandidate::Constant(Constant {
+                reference: "MY_CONST".to_string(),
+                value: *v,
+            }),
             Self::InputProperty(t) => {
                 CreationCandidate::InputProperty(InputProperty::new(*t, false))
             }

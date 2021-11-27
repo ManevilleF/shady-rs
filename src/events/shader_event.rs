@@ -11,6 +11,9 @@ pub enum ShaderEvent {
     DeleteNode {
         id: String,
     },
+    DeleteConstant {
+        id: String,
+    },
     DeleteInputProperty {
         id: String,
     },

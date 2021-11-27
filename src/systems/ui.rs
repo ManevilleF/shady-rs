@@ -7,8 +7,8 @@ use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget}
 use bevy_egui::{egui, EguiContext};
 use shady_generator::node_operation::*;
 use shady_generator::{
-    FloatingNativeType, GraphicLibrary, NativeType, NonScalarNativeType, NumericScalarNativeType,
-    ShaderType,
+    ConstantValue, FloatingNativeType, GraphicLibrary, NativeType, NonScalarNativeType,
+    NumericScalarNativeType, ShaderType,
 };
 use std::fmt::Display;
 
@@ -108,6 +108,12 @@ pub fn menu(
                 ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::OutputProperty(
                     NativeType::default(),
                 )));
+            }
+            ui.separator();
+            if ui.button("Create Constant").clicked() {
+                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::Constant(
+                    ConstantValue::default(),
+                )))
             }
             ui.separator();
             ui.label("Create Node:");
@@ -289,6 +295,9 @@ pub fn creation_menu(
                         ui.heading("Select a type");
                         ui.separator();
                         match intermediate_candidate {
+                            TypeSelection::Constant(c) => {
+                                type_selection(ui, ConstantValue::VARIANTS, c, &mut picked);
+                            }
                             TypeSelection::InputProperty(t) | TypeSelection::OutputProperty(t) => {
                                 type_selection(ui, NativeType::VARIANTS, t, &mut picked);
                             }
@@ -465,6 +474,13 @@ pub fn creation_menu(
                                     ui.label("Name");
                                     ui.text_edit_singleline(name);
                                 });
+                            }
+                            CreationCandidate::Constant(c) => {
+                                ui.horizontal(|ui| {
+                                    ui.label("Reference");
+                                    ui.text_edit_singleline(&mut c.reference);
+                                });
+                                // TODO: Check value
                             }
                             CreationCandidate::InputProperty(p) => {
                                 ui.horizontal(|ui| {

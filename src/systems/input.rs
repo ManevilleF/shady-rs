@@ -154,6 +154,9 @@ pub fn handle_mouse_interaction(
                 BoxInteraction::DeleteInput(id) => {
                     node_evw.send(ShaderEvent::DeleteInputProperty { id })
                 }
+                BoxInteraction::DeleteConstant(id) => {
+                    node_evw.send(ShaderEvent::DeleteConstant { id })
+                }
             },
         }
     }

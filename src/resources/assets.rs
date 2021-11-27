@@ -25,6 +25,7 @@ pub struct ShadyAssets {
     pub node_title_text_color: Color,
     pub node_id_text_color: Color,
     pub slot_text_color: Color,
+    pub constant_title_material: Handle<ColorMaterial>,
     pub input_property_title_material: Handle<ColorMaterial>,
     pub output_property_title_material: Handle<ColorMaterial>,
     pub delete_icon_material: Handle<ColorMaterial>,
@@ -44,6 +45,7 @@ impl ShadyAssets {
             node_title_text_color: Color::WHITE,
             node_id_text_color: Color::GRAY,
             slot_text_color: Color::WHITE,
+            constant_title_material: assets.add(Color::MIDNIGHT_BLUE.into()),
             input_property_title_material: assets.add(Color::LIME_GREEN.into()),
             output_property_title_material: assets.add(Color::ORANGE.into()),
             delete_icon_material: assets.add(ColorMaterial {

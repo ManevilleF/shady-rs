@@ -64,6 +64,9 @@ pub enum SpawnType {
     InputProperty {
         output_fields: Vec<(String, NativeType)>,
     },
+    Constant {
+        output_fields: Vec<(String, NativeType)>,
+    },
     OutputProperty {
         input_fields: Vec<SlotSpawnInfo>,
     },
@@ -76,7 +79,9 @@ impl SpawnType {
                 input_fields,
                 output_fields,
             } => max(input_fields.len(), output_fields.len()),
-            SpawnType::InputProperty { output_fields } => output_fields.len(),
+            SpawnType::InputProperty { output_fields } | SpawnType::Constant { output_fields } => {
+                output_fields.len()
+            }
             SpawnType::OutputProperty { input_fields } => input_fields.len(),
         }
     }
@@ -222,6 +227,7 @@ pub fn spawn_element(
                 SpawnType::Node { .. } => assets.node_title_material.clone(),
                 SpawnType::InputProperty { .. } => assets.input_property_title_material.clone(),
                 SpawnType::OutputProperty { .. } => assets.output_property_title_material.clone(),
+                SpawnType::Constant { .. } => assets.constant_title_material.clone(),
             },
             transform: Transform::from_xyz(pos.x, pos.y, 0.),
             ..Default::default()
@@ -302,6 +308,25 @@ pub fn spawn_element(
                         },
                         ShadyOutputSlot::new,
                         true,
+                    );
+                }
+                SpawnType::Constant { output_fields } => {
+                    close_button.insert(InteractionBox::new(
+                        close_button_size,
+                        BoxInteraction::DeleteConstant(id.to_string()),
+                    ));
+                    output_field_entities = spawn_slots(
+                        &mut builder,
+                        output_fields.into_iter().map(Into::into).collect(),
+                        (slot_size, slot_x_pos),
+                        assets,
+                        |_f| {
+                            BoxInteraction::ConnectionStart(Connection::Constant {
+                                id: id.to_string(),
+                            })
+                        },
+                        ShadyOutputSlot::new,
+                        false,
                     );
                 }
                 SpawnType::InputProperty { output_fields } => {

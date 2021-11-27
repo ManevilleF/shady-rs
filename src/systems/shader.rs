@@ -20,7 +20,14 @@ pub fn handle_shader_event(
                 candidate,
             } => match candidate {
                 CreationCandidate::Node { name, operation } => {
-                    let node = current_shader.create_node(Node::new(name, operation.clone()));
+                    let node = match current_shader.create_node(Node::new(name, operation.clone()))
+                    {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
                     let id = node.unique_id().clone();
                     let response = spawn_element(
                         &mut commands,
@@ -34,8 +41,39 @@ pub fn handle_shader_event(
                     );
                     current_shader.node_entities.insert(id, response.entity);
                 }
+                CreationCandidate::Constant(constant) => {
+                    let constant = match current_shader.add_constant(constant.clone()) {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
+                    let id = constant.reference.clone();
+                    let response = spawn_element(
+                        &mut commands,
+                        &assets,
+                        *target_position,
+                        (&constant.reference, &constant.reference),
+                        SpawnType::Constant {
+                            output_fields: vec![(
+                                constant.reference.clone(),
+                                constant.native_type(),
+                            )],
+                        },
+                    );
+                    current_shader
+                        .constants_entities
+                        .insert(id, response.entity);
+                }
                 CreationCandidate::InputProperty(property) => {
-                    let property = current_shader.add_input_property(property.clone());
+                    let property = match current_shader.add_input_property(property.clone()) {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
                     let id = property.reference.clone();
                     let response = spawn_element(
                         &mut commands,
@@ -51,7 +89,13 @@ pub fn handle_shader_event(
                         .insert(id, response.entity);
                 }
                 CreationCandidate::OutputProperty(property) => {
-                    let property = current_shader.add_output_property(property.clone());
+                    let property = match current_shader.add_output_property(property.clone()) {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
                     let id = property.reference.clone();
                     let response = spawn_element(
                         &mut commands,
@@ -83,6 +127,18 @@ pub fn handle_shader_event(
                     .spawn(&mut commands);
                 }
                 current_shader.delete_node_entity(id, &mut commands);
+            }
+            ShaderEvent::DeleteConstant { id } => {
+                LogElement::new(LogLevel::Info, format!("Deleting constant {}", id))
+                    .spawn(&mut commands);
+                if current_shader.remove_constant(id).is_none() {
+                    LogElement::new(
+                        LogLevel::Error,
+                        format!("Shader did not have a constant with id {}", id),
+                    )
+                    .spawn(&mut commands);
+                }
+                current_shader.delete_constant_entity(id, &mut commands);
             }
             ShaderEvent::DeleteInputProperty { id } => {
                 LogElement::new(LogLevel::Info, format!("Deleting input property {}", id))
