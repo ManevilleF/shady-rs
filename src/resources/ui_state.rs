@@ -1,9 +1,9 @@
 use crate::resources::CreationCandidate;
 use crate::IOEvent;
+use shady_generator::node_operation::*;
 use shady_generator::{
-    InputProperty, NativeOperation, NativeType, NonScalarNativeType, OutputProperty,
+    Constant, ConstantValue, InputProperty, NativeType, NonScalarNativeType, OutputProperty,
 };
-use shady_generator::{NativeFunction, NodeOperation};
 
 #[derive(Debug, Clone)]
 pub enum IOState {
@@ -14,18 +14,21 @@ pub enum IOState {
 
 #[derive(Debug, Clone)]
 pub enum TypeSelection {
+    Constant(ConstantValue),
     InputProperty(NativeType),
     OutputProperty(NativeType),
     TypeConstruction(NonScalarNativeType),
     TypeSplit(NonScalarNativeType),
     NativeOperation(NativeOperation),
     NativeFunction(NativeFunction),
+    TypeSwizzle(NonScalarSwizzle),
 }
 
 #[derive(Debug, Clone)]
 pub enum OperationSelection {
     NativeOperation(NativeOperation),
     NativeFunction(NativeFunction),
+    TypeSwizzle(NonScalarSwizzle),
 }
 
 #[derive(Debug)]
@@ -88,6 +91,7 @@ impl OperationSelection {
         match self {
             OperationSelection::NativeOperation(o) => TypeSelection::NativeOperation(o.clone()),
             OperationSelection::NativeFunction(f) => TypeSelection::NativeFunction(f.clone()),
+            OperationSelection::TypeSwizzle(n) => TypeSelection::TypeSwizzle(n.clone()),
         }
     }
 }
@@ -95,6 +99,10 @@ impl OperationSelection {
 impl TypeSelection {
     pub fn creation_candidate(&self) -> CreationCandidate {
         match self {
+            Self::Constant(v) => CreationCandidate::Constant(Constant {
+                name: format!("My {}", v.native_type()),
+                value: *v,
+            }),
             Self::InputProperty(t) => {
                 CreationCandidate::InputProperty(InputProperty::new(*t, false))
             }
@@ -114,6 +122,10 @@ impl TypeSelection {
             Self::NativeFunction(f) => CreationCandidate::Node {
                 name: f.function_name().to_string(),
                 operation: NodeOperation::NativeFunction(f.clone()),
+            },
+            Self::TypeSwizzle(s) => CreationCandidate::Node {
+                name: s.complete_name(),
+                operation: NodeOperation::NonScalarSwizzle(s.clone()),
             },
         }
     }

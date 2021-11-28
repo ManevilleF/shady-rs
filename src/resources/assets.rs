@@ -25,12 +25,14 @@ pub struct ShadyAssets {
     pub node_title_text_color: Color,
     pub node_id_text_color: Color,
     pub slot_text_color: Color,
+    pub constant_title_material: Handle<ColorMaterial>,
     pub input_property_title_material: Handle<ColorMaterial>,
     pub output_property_title_material: Handle<ColorMaterial>,
     pub delete_icon_material: Handle<ColorMaterial>,
     pub node_body_material: Handle<ColorMaterial>,
     pub selected_connector_color: Color,
     pub glsl_type_materials: GlslTypeMaterials,
+    pub tolerant_slot_material: Handle<ColorMaterial>,
 }
 
 impl ShadyAssets {
@@ -43,6 +45,7 @@ impl ShadyAssets {
             node_title_text_color: Color::WHITE,
             node_id_text_color: Color::GRAY,
             slot_text_color: Color::WHITE,
+            constant_title_material: assets.add(Color::MIDNIGHT_BLUE.into()),
             input_property_title_material: assets.add(Color::LIME_GREEN.into()),
             output_property_title_material: assets.add(Color::ORANGE.into()),
             delete_icon_material: assets.add(ColorMaterial {
@@ -50,7 +53,7 @@ impl ShadyAssets {
                 texture: Some(close_texture),
             }),
             node_body_material: assets.add(Color::GRAY.into()),
-            selected_connector_color: Color::GOLD,
+            selected_connector_color: Color::WHITE,
             glsl_type_materials: GlslTypeMaterials {
                 bool_material: assets.add(GlslTypeMaterials::glsl_type_material(
                     NativeType::Bool,
@@ -102,9 +105,13 @@ impl ShadyAssets {
                 )),
                 sampler_cube_material: assets.add(GlslTypeMaterials::glsl_type_material(
                     NativeType::SamplerCube,
-                    dot_texture,
+                    dot_texture.clone(),
                 )),
             },
+            tolerant_slot_material: assets.add(ColorMaterial {
+                color: Color::WHITE,
+                texture: dot_texture,
+            }),
         }
     }
 

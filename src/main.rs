@@ -67,7 +67,7 @@ fn main() {
             SystemSet::new()
                 .with_system(systems::ui::menu.system().label("ui_setup"))
                 .with_system(
-                    systems::ui::creation_menu
+                    systems::ui::creation_menu::creation_menu
                         .system()
                         .after("ui_setup")
                         .label("ui_menu"),

@@ -4,17 +4,18 @@ name: Simple Shader
 library: OpenGl
 shader_type: Vertex
 default_precisions: {}
+constants: {}
 input_properties:
   Gl_Pos123:
     name: Gl_Position
     reference: Gl_Pos123
-    glsl_type: Vec3
+    native_type: Vec3
     uniform: false
 output_properties:
   Out_Pos456:
     name: Out_Pos
     reference: Out_Pos456
-    glsl_type: Vec2
+    native_type: Vec2
     connection:
       SingleOutputNode:
         id: node_azerty
@@ -31,7 +32,7 @@ nodes:
               InputProperty:
                 id: Gl_Pos123
     output:
-      GlslType: Vec2
+      NativeType: Vec2
     operation:
       CustomOperation: test_func
 max_processing_depth: 256

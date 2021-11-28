@@ -1,4 +1,5 @@
-use shady_generator::{InputProperty, NodeOperation, OutputProperty};
+use shady_generator::node_operation::NodeOperation;
+use shady_generator::{Constant, InputProperty, OutputProperty};
 
 #[derive(Debug, Clone)]
 pub enum CreationCandidate {
@@ -8,4 +9,5 @@ pub enum CreationCandidate {
     },
     InputProperty(InputProperty),
     OutputProperty(OutputProperty),
+    Constant(Constant),
 }

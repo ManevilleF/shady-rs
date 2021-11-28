@@ -1,5 +1,4 @@
-use crate::node::Connection;
-use crate::NativeType;
+use crate::{Connection, NativeType};
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 

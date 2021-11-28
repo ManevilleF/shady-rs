@@ -20,7 +20,14 @@ pub fn handle_shader_event(
                 candidate,
             } => match candidate {
                 CreationCandidate::Node { name, operation } => {
-                    let node = current_shader.create_node(Node::new(name, operation.clone()));
+                    let node = match current_shader.create_node(Node::new(name, operation.clone()))
+                    {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
                     let id = node.unique_id().clone();
                     let response = spawn_element(
                         &mut commands,
@@ -28,14 +35,42 @@ pub fn handle_shader_event(
                         *target_position,
                         (node.unique_id(), node.name()),
                         SpawnType::Node {
-                            input_fields: node.input_field_types(),
+                            input_fields: node.input_fields().into_iter().map(Into::into).collect(),
                             output_fields: node.output_fields(),
                         },
                     );
                     current_shader.node_entities.insert(id, response.entity);
                 }
+                CreationCandidate::Constant(constant) => {
+                    let constant = match current_shader.add_constant(constant.clone()) {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
+                    let id = constant.key();
+                    let response = spawn_element(
+                        &mut commands,
+                        &assets,
+                        *target_position,
+                        (&id, &constant.name),
+                        SpawnType::Constant {
+                            output_fields: vec![(id.clone(), constant.native_type())],
+                        },
+                    );
+                    current_shader
+                        .constants_entities
+                        .insert(id, response.entity);
+                }
                 CreationCandidate::InputProperty(property) => {
-                    let property = current_shader.add_input_property(property.clone());
+                    let property = match current_shader.add_input_property(property.clone()) {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
                     let id = property.reference.clone();
                     let response = spawn_element(
                         &mut commands,
@@ -43,7 +78,7 @@ pub fn handle_shader_event(
                         *target_position,
                         (&property.reference, &property.name),
                         SpawnType::InputProperty {
-                            output_fields: vec![(property.reference.clone(), property.glsl_type)],
+                            output_fields: vec![(property.reference.clone(), property.native_type)],
                         },
                     );
                     current_shader
@@ -51,7 +86,13 @@ pub fn handle_shader_event(
                         .insert(id, response.entity);
                 }
                 CreationCandidate::OutputProperty(property) => {
-                    let property = current_shader.add_output_property(property.clone());
+                    let property = match current_shader.add_output_property(property.clone()) {
+                        Ok(e) => e,
+                        Err(err) => {
+                            LogElement::new(LogLevel::Error, err.to_string()).spawn(&mut commands);
+                            return;
+                        }
+                    };
                     let id = property.reference.clone();
                     let response = spawn_element(
                         &mut commands,
@@ -59,7 +100,12 @@ pub fn handle_shader_event(
                         *target_position,
                         (&property.reference, &property.name),
                         SpawnType::OutputProperty {
-                            input_fields: vec![(property.reference.clone(), property.glsl_type)],
+                            input_fields: vec![(
+                                property.reference.clone(),
+                                property.native_type,
+                                false,
+                            )
+                                .into()],
                         },
                     );
                     current_shader
@@ -78,6 +124,18 @@ pub fn handle_shader_event(
                     .spawn(&mut commands);
                 }
                 current_shader.delete_node_entity(id, &mut commands);
+            }
+            ShaderEvent::DeleteConstant { id } => {
+                LogElement::new(LogLevel::Info, format!("Deleting constant {}", id))
+                    .spawn(&mut commands);
+                if current_shader.remove_constant(id).is_none() {
+                    LogElement::new(
+                        LogLevel::Error,
+                        format!("Shader did not have a constant with id {}", id),
+                    )
+                    .spawn(&mut commands);
+                }
+                current_shader.delete_constant_entity(id, &mut commands);
             }
             ShaderEvent::DeleteInputProperty { id } => {
                 LogElement::new(LogLevel::Info, format!("Deleting input property {}", id))
@@ -161,8 +219,9 @@ pub fn handle_shader_event(
                                     Connection::ComplexOutputNode { id, field_name } =>
                                         format!("Node {} field {}", id, field_name),
                                     Connection::SingleOutputNode { id } => format!("Node {}", id),
-                                    Connection::InputProperty { id: property_id } =>
-                                        format!("Input Property {}", property_id),
+                                    Connection::InputProperty { id } =>
+                                        format!("Input Property {}", id),
+                                    Connection::Constant { id } => format!("Constant {}", id),
                                 },
                                 match &connection_to {
                                     ConnectionTo::Node { id, field_name } =>

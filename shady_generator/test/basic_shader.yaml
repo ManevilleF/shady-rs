@@ -4,17 +4,18 @@ name: Basic Shader
 library: OpenGl
 shader_type: Vertex
 default_precisions: {}
+constants: {}
 input_properties:
   Gl_Pos123:
     name: Gl_Position
     reference: Gl_Pos123
-    glsl_type: Vec3
+    native_type: Vec3
     uniform: false
 output_properties:
   Out_Pos456:
     name: Out_Pos
     reference: Out_Pos456
-    glsl_type: Vec3
+    native_type: Vec3
     connection:
       InputProperty:
         id: Gl_Pos123

@@ -4,7 +4,7 @@ use std::ops::Deref;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Output {
-    GlslType(NativeType),
+    NativeType(NativeType),
     CustomType(CustomOutput),
     Split(NonScalarNativeType),
 }
@@ -24,7 +24,7 @@ pub enum OutputFields {
 impl Output {
     pub fn glsl_type(&self) -> String {
         match self {
-            Output::GlslType(glsl_type) => glsl_type.get_glsl_type().to_string(),
+            Output::NativeType(glsl_type) => glsl_type.get_glsl_type().to_string(),
             Output::CustomType(c) => c.struct_name.clone(),
             Output::Split(t) => NativeType::from(*t).get_glsl_type().to_string(),
         }
@@ -32,7 +32,7 @@ impl Output {
 
     pub fn fields(&self) -> OutputFields {
         match self {
-            Output::GlslType(glsl_type) => OutputFields::SingleOutput(*glsl_type),
+            Output::NativeType(glsl_type) => OutputFields::SingleOutput(*glsl_type),
             Output::CustomType(c) => OutputFields::Fields(c.fields.clone()),
             Output::Split(t) => OutputFields::Fields(t.type_construction_fields()),
         }

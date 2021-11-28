@@ -1,21 +1,19 @@
-use crate::common::get_current_dir;
-use crate::components::{LogElement, LogLevel};
-use crate::resources::{Candidate, CreationCandidate, IOState, OperationSelection, TypeSelection};
-use crate::{CurrentShader, IOEvent, UiState, VERSION};
+use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
+use crate::UiState;
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, Color32, ComboBox, Frame, Label, Rgba, Ui, Widget};
+use bevy_egui::egui::{Button, Response, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
+use shady_generator::node_operation::*;
 use shady_generator::{
-    FloatingNativeType, GraphicLibrary, NativeFunction, NativeOperation, NativeType,
-    NonScalarNativeType, NumericScalarNativeType, ShaderType,
+    ConstantValue, FloatingNativeType, NativeType, NonScalarNativeType, NumericScalarNativeType,
 };
 use std::fmt::Display;
 
-pub fn setup(egui_ctx: ResMut<EguiContext>) {
-    egui_ctx.ctx().set_visuals(egui::Visuals {
-        window_corner_radius: 0.0,
-        ..Default::default()
-    });
+fn create_button(ui: &mut Ui) -> Response {
+    Button::new("Create")
+        .fill(Rgba::from_rgb(0.2, 0.6, 0.2))
+        .text_color(Rgba::from_rgb(1., 1., 1.).into())
+        .ui(ui)
 }
 
 fn type_selection<T: Copy + Display + PartialEq>(
@@ -24,9 +22,9 @@ fn type_selection<T: Copy + Display + PartialEq>(
     value: &mut T,
     picked: &mut bool,
 ) {
-    for native_type in variants {
+    for variant in variants {
         if ui
-            .selectable_value(value, *native_type, native_type.to_string())
+            .selectable_value(value, *variant, variant.to_string())
             .clicked()
         {
             *picked = true;
@@ -34,174 +32,24 @@ fn type_selection<T: Copy + Display + PartialEq>(
     }
 }
 
-pub fn menu(
-    egui_ctx: ResMut<EguiContext>,
-    mut ui_state: ResMut<UiState>,
-    mut shader: ResMut<CurrentShader>,
+fn swizzle_selection<T: FieldToGlsl, const SIZE: usize>(
+    ui: &mut Ui,
+    value: &mut [T; SIZE],
+    picked: &mut bool,
 ) {
-    egui::SidePanel::left("Menu")
-        .default_width(200.)
-        .min_width(150.)
-        .max_width(300.)
-        .show(egui_ctx.ctx(), |ui| {
-            ui.label(
-                Label::new("Shady-rs")
-                    .text_color(Rgba::from_rgb(1., 1., 1.))
-                    .strong()
-                    .heading(),
-            );
-            ui.separator();
-
-            ui.label("Shader name:");
-            ui.text_edit_singleline(&mut shader.name);
-
-            ComboBox::from_label("Type")
-                .selected_text(shader.shader_type.to_string())
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut shader.shader_type, ShaderType::Vertex, "Vertex");
-                    ui.selectable_value(&mut shader.shader_type, ShaderType::Fragment, "Fragment");
-                });
-
-            ComboBox::from_label("Target Lib")
-                .selected_text(shader.library.to_string())
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut shader.library, GraphicLibrary::OpenGl, "OpenGl");
-                    ui.selectable_value(&mut shader.library, GraphicLibrary::OpenGlEs, "OpenGlEs");
-                    ui.selectable_value(&mut shader.library, GraphicLibrary::WebGPU, "WebGPU");
-                });
-
-            ui.separator();
-            ui.label("Create Property:");
-            if ui.button("Input Property").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::InputProperty(
-                    NativeType::default(),
-                )));
-            }
-            if ui.button("Output Property").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::OutputProperty(
-                    NativeType::default(),
-                )));
-            }
-            ui.separator();
-            ui.label("Create Node:");
-            if ui.button("Type Construction").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(
-                    TypeSelection::TypeConstruction(NonScalarNativeType::Vec2),
-                ));
-            }
-            if ui.button("Type Split").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::TypeSplit(
-                    NonScalarNativeType::Vec2,
-                )));
-            }
-            if ui.button("Native Operation").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::NativeOperation(NativeOperation::Inc(NativeType::Float)),
-                ));
-            }
-            if ui.button("Native function").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::NativeFunction(NativeFunction::Absolute(
-                        FloatingNativeType::Float,
-                    )),
-                ));
-            }
-
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                ui.add(
-                    egui::Hyperlink::new("https://github.com/ManevilleF/shady-rs")
-                        .text("Shady-rs by ManevilleF"),
-                );
-                ui.separator();
-                ui.horizontal(|ui| {
-                    if ui.button("Save").clicked() {
-                        ui_state.io_state = Some(IOState::Saving(get_current_dir()))
-                    }
-                    if ui.button("Load").clicked() {
-                        ui_state.io_state = Some(IOState::Loading(get_current_dir()))
-                    }
-                    if ui.button("Export").clicked() {
-                        ui_state.io_state = Some(IOState::Exporting(get_current_dir()))
-                    }
-                });
-                ui.label("I/O");
-            });
-        });
-    egui::TopBottomPanel::bottom("Build info")
-        .frame(Frame::none())
-        .resizable(false)
-        .show(egui_ctx.ctx(), |ui| {
-            ui.vertical_centered(|ui| {
-                let label = Label::new(format!(
-                    "App version {} - Lib version {}",
-                    VERSION,
-                    shady_generator::VERSION
-                ))
-                .small();
-                ui.label(label);
-            });
-        });
-}
-
-pub fn handle_log_elements(
-    egui_ctx: ResMut<EguiContext>,
-    mut commands: Commands,
-    mut query: Query<(Entity, &mut LogElement)>,
-    time: Res<Time>,
-) {
-    let delta_time = time.delta_seconds();
-    egui::SidePanel::right("Logger")
-        .min_width(200.)
-        .frame(Frame::none())
-        .resizable(false)
-        .show(egui_ctx.ctx(), |ui| {
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
-                for (entity, mut log) in query.iter_mut() {
-                    let mut label = Label::new(&log.message).small();
-                    match log.log_level {
-                        LogLevel::Info => label = label.text_color(Color32::GREEN),
-                        LogLevel::Warn => label = label.strong().text_color(Color32::RED),
-                        LogLevel::Error => label = label.strong().text_color(Color32::RED),
-                    };
-                    ui.label(label);
-                    log.alive_time -= delta_time;
-                    if log.alive_time <= 0.0 {
-                        commands.entity(entity).despawn();
-                    }
+    ui.vertical_centered_justified(|ui| {
+        for (i, v) in value.iter_mut().enumerate() {
+            ui.horizontal(|ui| {
+                ui.label(i.to_string());
+                for variant in T::all_variants() {
+                    ui.selectable_value(v, variant, variant.to_glsl());
                 }
             });
-        });
-}
-
-pub fn io(
-    egui_ctx: ResMut<EguiContext>,
-    mut ui_state: ResMut<UiState>,
-    mut io_ewr: EventWriter<IOEvent>,
-) {
-    let mut open = true;
-    let mut done = false;
-    if let Some(state) = &mut ui_state.io_state {
-        egui::Window::new(state.title())
-            .default_size((500., 200.))
-            .open(&mut open)
-            .show(egui_ctx.ctx(), |ui| {
-                ui.label(state.message());
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.label("Directory");
-                    egui::TextEdit::singleline(state.path_mut())
-                        .desired_width(500.)
-                        .ui(ui)
-                });
-                if ui.button(state.title()).clicked() {
-                    io_ewr.send(state.event());
-                    done = true;
-                }
-            });
-    }
-    if !open || done {
-        ui_state.io_state = None;
-    }
+        }
+        if create_button(ui).clicked() {
+            *picked = true;
+        }
+    });
 }
 
 pub fn creation_menu(
@@ -237,6 +85,14 @@ pub fn creation_menu(
                                     }
                                 }
                             }
+                            OperationSelection::TypeSwizzle(swizzle) => {
+                                for available_function in NonScalarSwizzle::VARIANTS {
+                                    if ui.button(available_function.descriptive_name()).clicked() {
+                                        *swizzle = available_function.clone();
+                                        picked = true;
+                                    }
+                                }
+                            }
                         });
                         if picked {
                             new_candidate = Some(Candidate::TypeSelection(
@@ -249,6 +105,9 @@ pub fn creation_menu(
                         ui.heading("Select a type");
                         ui.separator();
                         match intermediate_candidate {
+                            TypeSelection::Constant(c) => {
+                                type_selection(ui, ConstantValue::VARIANTS, c, &mut picked);
+                            }
                             TypeSelection::InputProperty(t) | TypeSelection::OutputProperty(t) => {
                                 type_selection(ui, NativeType::VARIANTS, t, &mut picked);
                             }
@@ -334,6 +193,37 @@ pub fn creation_menu(
                                     picked = true;
                                 }
                             },
+                            TypeSelection::TypeSwizzle(swizzle) => {
+                                match swizzle {
+                                    NonScalarSwizzle::Vec2ToVec2(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec2ToVec3(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec2ToVec4(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec3ToVec2(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec3ToVec3(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec3ToVec4(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec4ToVec2(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec4ToVec3(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                    NonScalarSwizzle::Vec4ToVec4(v) => {
+                                        swizzle_selection(ui, v, &mut picked);
+                                    }
+                                };
+                            }
                         }
                         if picked {
                             new_candidate = Some(Candidate::Creation(
@@ -348,6 +238,12 @@ pub fn creation_menu(
                                 ui.horizontal(|ui| {
                                     ui.label("Name");
                                     ui.text_edit_singleline(name);
+                                });
+                            }
+                            CreationCandidate::Constant(c) => {
+                                ui.horizontal(|ui| {
+                                    ui.label("Name");
+                                    ui.text_edit_singleline(&mut c.name);
                                 });
                             }
                             CreationCandidate::InputProperty(p) => {
@@ -373,12 +269,7 @@ pub fn creation_menu(
                             }
                         }
                         ui.separator();
-                        if Button::new("Create")
-                            .fill(Rgba::from_rgb(0.2, 0.6, 0.2))
-                            .text_color(Rgba::from_rgb(1., 1., 1.).into())
-                            .ui(ui)
-                            .clicked()
-                        {
+                        if create_button(ui).clicked() {
                             commands.insert_resource(creation_candidate.clone());
                             close = true;
                         }

@@ -3,7 +3,7 @@ use crate::resources::{GlslTypeMaterials, ShadyAssets};
 use bevy::ecs::component::Component;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use shady_generator::{Connection, ConnectionTo, NativeType, OutputFields};
+use shady_generator::{Connection, ConnectionTo, InputField, NativeType, OutputFields};
 use std::cmp::max;
 
 const NODE_SIZE_X: f32 = 140.;
@@ -19,16 +19,56 @@ pub struct SpawnResponse {
 }
 
 #[derive(Debug, Clone)]
+pub struct SlotSpawnInfo {
+    field: String,
+    native_type: NativeType,
+    tolerant: bool,
+}
+
+impl From<(String, NativeType, bool)> for SlotSpawnInfo {
+    fn from((field, native_type, tolerant): (String, NativeType, bool)) -> Self {
+        Self {
+            field,
+            native_type,
+            tolerant,
+        }
+    }
+}
+
+impl From<(String, NativeType)> for SlotSpawnInfo {
+    fn from((field, native_type): (String, NativeType)) -> Self {
+        Self {
+            field,
+            native_type,
+            tolerant: false,
+        }
+    }
+}
+
+impl From<(String, InputField)> for SlotSpawnInfo {
+    fn from((field, input): (String, InputField)) -> Self {
+        Self {
+            field,
+            native_type: input.glsl_type,
+            tolerant: input.tolerant,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum SpawnType {
     Node {
-        input_fields: Vec<(String, NativeType)>,
+        input_fields: Vec<SlotSpawnInfo>,
         output_fields: OutputFields,
     },
     InputProperty {
         output_fields: Vec<(String, NativeType)>,
     },
+    Constant {
+        output_fields: Vec<(String, NativeType)>,
+    },
     OutputProperty {
-        input_fields: Vec<(String, NativeType)>,
+        input_fields: Vec<SlotSpawnInfo>,
     },
 }
 
@@ -39,7 +79,9 @@ impl SpawnType {
                 input_fields,
                 output_fields,
             } => max(input_fields.len(), output_fields.len()),
-            SpawnType::InputProperty { output_fields } => output_fields.len(),
+            SpawnType::InputProperty { output_fields } | SpawnType::Constant { output_fields } => {
+                output_fields.len()
+            }
             SpawnType::OutputProperty { input_fields } => input_fields.len(),
         }
     }
@@ -110,7 +152,7 @@ fn slot_text_bundle(value: String, assets: &ShadyAssets) -> Text2dBundle {
 
 fn spawn_slots<F, CF, C>(
     cmd: &mut ChildBuilder,
-    fields: Vec<(String, NativeType)>,
+    fields: Vec<SlotSpawnInfo>,
     (size, pos_x): (Vec2, f32),
     assets: &ShadyAssets,
     box_interaction: F,
@@ -123,11 +165,15 @@ where
     C: Component + Clone,
 {
     let mut res = HashMap::default();
-    for (i, (field_name, field)) in fields.into_iter().enumerate() {
+    for (i, info) in fields.into_iter().enumerate() {
         let entity = cmd
             .spawn_bundle(SpriteBundle {
                 sprite: Sprite::new(size),
-                material: assets.glsl_type_material(field),
+                material: if info.tolerant {
+                    assets.tolerant_slot_material.clone()
+                } else {
+                    assets.glsl_type_material(info.native_type)
+                },
                 transform: Transform::from_xyz(
                     pos_x,
                     -NODE_HEADER_SIZE_Y - (SLOT_STEP * i as f32),
@@ -135,24 +181,26 @@ where
                 ),
                 ..Default::default()
             })
-            .insert(Name::new(format!("{} input", field_name)))
-            .insert(InteractionBox::new(size, box_interaction(&field_name)))
-            .insert(component(GlslTypeMaterials::glsl_type_color(field)))
+            .insert(Name::new(format!("{} input", info.field)))
+            .insert(InteractionBox::new(size, box_interaction(&info.field)))
+            .insert(component(GlslTypeMaterials::glsl_type_color(
+                info.native_type,
+            )))
             .with_children(|builder| {
                 builder.spawn_bundle(Text2dBundle {
                     transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 2., 0., 1.),
                     ..slot_text_bundle(
                         if use_field_name {
-                            field_name.clone()
+                            info.field.clone()
                         } else {
-                            field.to_string()
+                            info.native_type.to_string()
                         },
                         assets,
                     )
                 });
             })
             .id();
-        res.insert(field_name, entity);
+        res.insert(info.field, entity);
     }
     res
 }
@@ -179,6 +227,7 @@ pub fn spawn_element(
                 SpawnType::Node { .. } => assets.node_title_material.clone(),
                 SpawnType::InputProperty { .. } => assets.input_property_title_material.clone(),
                 SpawnType::OutputProperty { .. } => assets.output_property_title_material.clone(),
+                SpawnType::Constant { .. } => assets.constant_title_material.clone(),
             },
             transform: Transform::from_xyz(pos.x, pos.y, 0.),
             ..Default::default()
@@ -239,7 +288,11 @@ pub fn spawn_element(
                     );
                     output_field_entities = spawn_slots(
                         &mut builder,
-                        output_fields.field_names(),
+                        output_fields
+                            .field_names()
+                            .into_iter()
+                            .map(Into::into)
+                            .collect(),
                         (slot_size, slot_x_pos),
                         assets,
                         |f| {
@@ -257,6 +310,25 @@ pub fn spawn_element(
                         true,
                     );
                 }
+                SpawnType::Constant { output_fields } => {
+                    close_button.insert(InteractionBox::new(
+                        close_button_size,
+                        BoxInteraction::DeleteConstant(id.to_string()),
+                    ));
+                    output_field_entities = spawn_slots(
+                        &mut builder,
+                        output_fields.into_iter().map(Into::into).collect(),
+                        (slot_size, slot_x_pos),
+                        assets,
+                        |_f| {
+                            BoxInteraction::ConnectionStart(Connection::Constant {
+                                id: id.to_string(),
+                            })
+                        },
+                        ShadyOutputSlot::new,
+                        false,
+                    );
+                }
                 SpawnType::InputProperty { output_fields } => {
                     close_button.insert(InteractionBox::new(
                         close_button_size,
@@ -264,7 +336,7 @@ pub fn spawn_element(
                     ));
                     output_field_entities = spawn_slots(
                         &mut builder,
-                        output_fields,
+                        output_fields.into_iter().map(Into::into).collect(),
                         (slot_size, slot_x_pos),
                         assets,
                         |_f| {

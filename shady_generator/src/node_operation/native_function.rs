@@ -439,15 +439,15 @@ impl NativeFunction {
             | NativeFunction::Normalize(t)
             | NativeFunction::FaceForward(t)
             | NativeFunction::Reflect(t)
-            | NativeFunction::Refract(t) => Output::GlslType(NativeType::from(*t)),
+            | NativeFunction::Refract(t) => Output::NativeType(NativeType::from(*t)),
             NativeFunction::Distance(_)
             | NativeFunction::Length(_)
-            | NativeFunction::DotProduct(_) => Output::GlslType(NativeType::Float),
-            NativeFunction::CrossProduct => Output::GlslType(NativeType::Vec3),
+            | NativeFunction::DotProduct(_) => Output::NativeType(NativeType::Float),
+            NativeFunction::CrossProduct => Output::NativeType(NativeType::Vec3),
             NativeFunction::Texture2d
             | NativeFunction::Texture2dBias
             | NativeFunction::TextureCube
-            | NativeFunction::TextureCubeBias => Output::GlslType(NativeType::Vec4),
+            | NativeFunction::TextureCubeBias => Output::NativeType(NativeType::Vec4),
         }
     }
 

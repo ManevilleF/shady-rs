@@ -1,6 +1,5 @@
 use crate::error::ShadyError;
-use crate::node::Connection;
-use crate::shader::Shader;
+use crate::{Connection, Shader};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -30,6 +29,20 @@ impl NodeGeneration {
 }
 
 impl Shader {
+    fn get_constants_declarations(&self) -> String {
+        let mut declarations = String::new();
+        let mut constants: Vec<(String, String)> = self
+            .constants
+            .iter()
+            .map(|(k, v)| (k.clone(), v.glsl_declaration()))
+            .collect();
+        constants.sort_by(|(k1, _), (k2, _)| k1.cmp(k2));
+        for (_, value) in constants {
+            declarations = format!("{}{}\n", declarations, value);
+        }
+        declarations
+    }
+
     fn get_property_declarations(&self) -> String {
         let mut property_declarations = String::new();
         let mut input: Vec<(String, String)> = self
@@ -122,6 +135,7 @@ impl Shader {
     }
 
     pub fn to_glsl(&self) -> Result<String, ShadyError> {
+        let constants_declarations = self.get_constants_declarations();
         let property_declarations = self.get_property_declarations();
 
         let mut nodes_to_handle = Vec::new();
@@ -155,6 +169,8 @@ impl Shader {
         let function_declarations = function_declarations.join("\n\n");
 
         Ok(formatdoc! {"
+            // Constants
+            {constants}
             // Properties
             {properties}
             // Struct Declarations
@@ -168,6 +184,7 @@ impl Shader {
                 {output}
             }}
         ", 
+            constants = constants_declarations,
             properties = property_declarations,
             structs = struct_declarations,
             functions = function_declarations,
@@ -180,11 +197,9 @@ impl Shader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::node::{
-        ConnectionAttempt, ConnectionTo, Input, InputField, Node, NodeOperation, Output,
-    };
+    use crate::node_operation::NodeOperation;
     use crate::shader::{InputProperty, OutputProperty};
-    use crate::NativeType;
+    use crate::{ConnectionAttempt, ConnectionTo, Input, InputField, NativeType, Node, Output};
 
     fn init_base_operation() -> NodeOperation {
         NodeOperation::CustomOperation {
@@ -195,25 +210,29 @@ mod tests {
                     ("y".to_string(), InputField::new(NativeType::Float)),
                 ],
             },
-            output: Output::GlslType(NativeType::Float),
+            output: Output::NativeType(NativeType::Float),
         }
     }
 
     fn init_basic_shader() -> Shader {
         let mut shader = Shader::new("Basic Shader".to_string());
 
-        shader.add_input_property(InputProperty {
-            name: "Gl_Position".to_string(),
-            reference: "Gl_Pos123".to_string(),
-            glsl_type: NativeType::Vec3,
-            uniform: false,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "Out_Pos".to_string(),
-            reference: "Out_Pos456".to_string(),
-            glsl_type: NativeType::Vec3,
-            connection: None,
-        });
+        shader
+            .add_input_property(InputProperty {
+                name: "Gl_Position".to_string(),
+                reference: "Gl_Pos123".to_string(),
+                native_type: NativeType::Vec3,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "Out_Pos".to_string(),
+                reference: "Out_Pos456".to_string(),
+                native_type: NativeType::Vec3,
+                connection: None,
+            })
+            .unwrap();
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::InputProperty {
@@ -231,30 +250,36 @@ mod tests {
     fn init_simple_shader() -> Shader {
         let mut shader = Shader::new("Simple Shader".to_string());
 
-        shader.add_input_property(InputProperty {
-            name: "Gl_Position".to_string(),
-            reference: "Gl_Pos123".to_string(),
-            glsl_type: NativeType::Vec3,
-            uniform: false,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "Out_Pos".to_string(),
-            reference: "Out_Pos456".to_string(),
-            glsl_type: NativeType::Vec2,
-            connection: None,
-        });
+        shader
+            .add_input_property(InputProperty {
+                name: "Gl_Position".to_string(),
+                reference: "Gl_Pos123".to_string(),
+                native_type: NativeType::Vec3,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "Out_Pos".to_string(),
+                reference: "Out_Pos456".to_string(),
+                native_type: NativeType::Vec2,
+                connection: None,
+            })
+            .unwrap();
         let operation_template = NodeOperation::CustomOperation {
             function_name: "test_func".to_string(),
             input: Input {
                 fields: vec![("pos".to_string(), InputField::new(NativeType::Vec3))],
             },
-            output: Output::GlslType(NativeType::Vec2),
+            output: Output::NativeType(NativeType::Vec2),
         };
-        shader.create_node(Node::new_with_custom_id(
-            "MyNode",
-            "node_azerty",
-            operation_template,
-        ));
+        shader
+            .create_node(Node::new_with_custom_id(
+                "MyNode",
+                "node_azerty",
+                operation_template,
+            ))
+            .unwrap();
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::InputProperty {
@@ -283,34 +308,50 @@ mod tests {
     fn init_example_shader_1() -> Shader {
         let mut shader = Shader::new("Shader Example 1".to_string());
 
-        shader.add_input_property(InputProperty {
-            name: "I".to_string(),
-            reference: "i".to_string(),
-            glsl_type: NativeType::Float,
-            uniform: false,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_1".to_string(),
-            reference: "o_1".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_2".to_string(),
-            reference: "o_2".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_3".to_string(),
-            reference: "o_3".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("D", "d", init_base_operation()));
+        shader
+            .add_input_property(InputProperty {
+                name: "I".to_string(),
+                reference: "i".to_string(),
+                native_type: NativeType::Float,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_1".to_string(),
+                reference: "o_1".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_2".to_string(),
+                reference: "o_2".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_3".to_string(),
+                reference: "o_3".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("A", "a", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("B", "b", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("C", "c", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("D", "d", init_base_operation()))
+            .unwrap();
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::InputProperty {
@@ -425,43 +466,67 @@ mod tests {
     fn init_example_shader_2() -> Shader {
         let mut shader = Shader::new("Shader Example 2".to_string());
 
-        shader.add_input_property(InputProperty {
-            name: "I_1".to_string(),
-            reference: "i1".to_string(),
-            glsl_type: NativeType::Float,
-            uniform: false,
-        });
-        shader.add_input_property(InputProperty {
-            name: "I_2".to_string(),
-            reference: "i2".to_string(),
-            glsl_type: NativeType::Float,
-            uniform: false,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_1".to_string(),
-            reference: "o_1".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_2".to_string(),
-            reference: "o_2".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_3".to_string(),
-            reference: "o_3".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("D", "d", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("E", "e", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("F", "f", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("G", "g", init_base_operation()));
+        shader
+            .add_input_property(InputProperty {
+                name: "I_1".to_string(),
+                reference: "i1".to_string(),
+                native_type: NativeType::Float,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_input_property(InputProperty {
+                name: "I_2".to_string(),
+                reference: "i2".to_string(),
+                native_type: NativeType::Float,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_1".to_string(),
+                reference: "o_1".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_2".to_string(),
+                reference: "o_2".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_3".to_string(),
+                reference: "o_3".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("A", "a", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("B", "b", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("C", "c", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("D", "d", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("E", "e", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("F", "f", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("G", "g", init_base_operation()))
+            .unwrap();
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::InputProperty {
@@ -620,35 +685,53 @@ mod tests {
     fn init_looping_shader_1() -> Shader {
         let mut shader = Shader::new("Looping Shader 1".to_string());
 
-        shader.add_input_property(InputProperty {
-            name: "I".to_string(),
-            reference: "i".to_string(),
-            glsl_type: NativeType::Float,
-            uniform: false,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_1".to_string(),
-            reference: "o_1".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_2".to_string(),
-            reference: "o_2".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O_3".to_string(),
-            reference: "o_3".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("D", "d", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("E", "e", init_base_operation()));
+        shader
+            .add_input_property(InputProperty {
+                name: "I".to_string(),
+                reference: "i".to_string(),
+                native_type: NativeType::Float,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_1".to_string(),
+                reference: "o_1".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_2".to_string(),
+                reference: "o_2".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O_3".to_string(),
+                reference: "o_3".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("A", "a", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("B", "b", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("C", "c", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("D", "d", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("E", "e", init_base_operation()))
+            .unwrap();
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::InputProperty {
@@ -774,21 +857,31 @@ mod tests {
     fn init_looping_shader_2() -> Shader {
         let mut shader = Shader::new("Looping Shader 2".to_string());
 
-        shader.add_input_property(InputProperty {
-            name: "I".to_string(),
-            reference: "i".to_string(),
-            glsl_type: NativeType::Float,
-            uniform: false,
-        });
-        shader.add_output_property(OutputProperty {
-            name: "O".to_string(),
-            reference: "o".to_string(),
-            glsl_type: NativeType::Float,
-            connection: None,
-        });
-        shader.create_node(Node::new_with_custom_id("A", "a", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("B", "b", init_base_operation()));
-        shader.create_node(Node::new_with_custom_id("C", "c", init_base_operation()));
+        shader
+            .add_input_property(InputProperty {
+                name: "I".to_string(),
+                reference: "i".to_string(),
+                native_type: NativeType::Float,
+                uniform: false,
+            })
+            .unwrap();
+        shader
+            .add_output_property(OutputProperty {
+                name: "O".to_string(),
+                reference: "o".to_string(),
+                native_type: NativeType::Float,
+                connection: None,
+            })
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("A", "a", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("B", "b", init_base_operation()))
+            .unwrap();
+        shader
+            .create_node(Node::new_with_custom_id("C", "c", init_base_operation()))
+            .unwrap();
         shader
             .connect(ConnectionAttempt {
                 connection_from: Connection::InputProperty {
@@ -914,6 +1007,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
 
                 // Struct Declarations
@@ -936,6 +1031,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in vec3 Gl_Pos123; // Gl_Position
                 out vec3 Out_Pos456; // Out_Pos
@@ -961,6 +1058,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in vec3 Gl_Pos123; // Gl_Position
                 out vec2 Out_Pos456; // Out_Pos
@@ -991,6 +1090,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in float i; // I
                 out float o_1; // O_1
@@ -1028,6 +1129,8 @@ mod tests {
             assert_eq!(
                 shader.to_glsl().unwrap(),
                 formatdoc! {"
+                // Constants
+
                 // Properties
                 in float i1; // I_1
                 in float i2; // I_2

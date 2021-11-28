@@ -1,14 +1,14 @@
 use crate::error::ShadyError;
 use crate::generate_unique_id;
-use crate::node::{Connection, ConnectionMessage, ConnectionResponse};
 use crate::NativeType;
+use crate::{Connection, ConnectionMessage, ConnectionResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct InputProperty {
     pub name: String,
     pub reference: String,
-    pub glsl_type: NativeType,
+    pub native_type: NativeType,
     // TODO: handle constants
     pub uniform: bool,
 }
@@ -17,7 +17,7 @@ pub struct InputProperty {
 pub struct OutputProperty {
     pub name: String,
     pub reference: String,
-    pub glsl_type: NativeType,
+    pub native_type: NativeType,
     pub(crate) connection: Option<Connection>,
 }
 
@@ -27,7 +27,7 @@ impl InputProperty {
         Self {
             reference: format!("{}_{}", name, generate_unique_id()),
             name,
-            glsl_type,
+            native_type: glsl_type,
             uniform,
         }
     }
@@ -36,7 +36,7 @@ impl InputProperty {
         format!(
             "{} {} {}; // {}",
             if self.uniform { "uniform" } else { "in" },
-            self.glsl_type.get_glsl_type(),
+            self.native_type.get_glsl_type(),
             self.reference,
             self.name
         )
@@ -46,12 +46,12 @@ impl InputProperty {
 }
 
 impl OutputProperty {
-    pub fn new(glsl_type: NativeType) -> Self {
-        let name = glsl_type.get_glsl_type().to_string();
+    pub fn new(native_type: NativeType) -> Self {
+        let name = native_type.get_glsl_type().to_string();
         Self {
             reference: format!("{}_{}", name, generate_unique_id()),
             name,
-            glsl_type,
+            native_type,
             connection: None,
         }
     }
@@ -60,10 +60,10 @@ impl OutputProperty {
         &mut self,
         connect_message: ConnectionMessage,
     ) -> Result<ConnectionResponse, ShadyError> {
-        if connect_message.glsl_type != self.glsl_type {
+        if connect_message.native_type != self.native_type {
             return Err(ShadyError::WrongNativeType {
-                input_type: connect_message.glsl_type,
-                expected_types: vec![self.glsl_type],
+                input_type: connect_message.native_type,
+                expected_types: vec![self.native_type],
             });
         }
         Ok(self.connection.replace(connect_message.connection))
@@ -76,7 +76,7 @@ impl OutputProperty {
     pub fn glsl_declaration(&self) -> String {
         format!(
             "out {} {}; // {}",
-            self.glsl_type.get_glsl_type(),
+            self.native_type.get_glsl_type(),
             self.reference,
             self.name
         )
@@ -93,7 +93,7 @@ impl OutputProperty {
                         self.name,
                         self.reference
                     );
-                    self.glsl_type.default_glsl_value().to_string()
+                    self.native_type.default_glsl_value().to_string()
                 }
                 Some(connection) => connection.glsl_call(),
             },
@@ -120,7 +120,7 @@ mod tests {
             let property = InputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: NativeType::Bool,
+                native_type: NativeType::Bool,
                 uniform: false,
             };
             let res = property.glsl_declaration();
@@ -132,7 +132,7 @@ mod tests {
             let property = InputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: NativeType::Bool,
+                native_type: NativeType::Bool,
                 uniform: true,
             };
             let res = property.glsl_declaration();
@@ -148,7 +148,7 @@ mod tests {
             let property = OutputProperty {
                 name: "Property".to_string(),
                 reference: "ref".to_string(),
-                glsl_type: NativeType::Bool,
+                native_type: NativeType::Bool,
                 connection: None,
             };
             let res = property.glsl_declaration();

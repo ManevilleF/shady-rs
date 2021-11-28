@@ -15,20 +15,30 @@ pub enum ShadyError {
     /// Wrong Node field
     #[error("Could not find a field with key `{0}`")]
     WrongFieldKey(String),
-
     #[error("Node {0} doesn't have complex output fields")]
     SingleOutput(String),
     #[error("Node {0} has complex output fields")]
     ComplexOutput(String),
     /// Missing Node
-    #[error("Could not find node with uuid `{0}`")]
+    #[error("Could not find node with id `{0}`")]
     MissingNode(String),
+    #[error("Could not create node with duplicate id `{0}`")]
+    DuplicateNode(String),
+    /// Missing constant
+    #[error("Could not find constant with id `{0}`")]
+    MissingConstant(String),
+    #[error("Could not create constant with duplicate id `{0}`")]
+    DuplicateConstant(String),
     /// Missing input Property
-    #[error("Could not find input property with uuid `{0}`")]
+    #[error("Could not find input property with id `{0}`")]
     MissingInputProperty(String),
+    #[error("Could not create input property with duplicate id `{0}`")]
+    DuplicateInputProperty(String),
     /// Missing output Property
-    #[error("Could not find output property with uuid `{0}`")]
+    #[error("Could not find output property with id `{0}`")]
     MissingOutputProperty(String),
+    #[error("Could not create output property with duplicate id `{0}`")]
+    DuplicateOutputProperty(String),
     /// Node generation processing reached its max depth
     #[error("Node processing reached depth {0}, check your nodes for potential loops")]
     MaxDepthReached(usize),
