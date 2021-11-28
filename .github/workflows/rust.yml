@@ -17,7 +17,7 @@ jobs:
       - name: build lib
         run: cargo build --verbose -p shady_generator
       - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev pkg-config
       - name: build bin
         run: cargo build --verbose -p shady-rs
       - name: build bin with all features
@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libxcb-shape0-dev libxcb-xfixes0-dev pkg-config
       - name: test
         run: cargo test --all
 
@@ -45,6 +45,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Cargo clippy installation
         run: rustup component add clippy
+      - name: Install dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends  pkg-config
       - name: Cargo clippy check
         run: cargo clippy --all-features --all --tests -- -D warnings
 
