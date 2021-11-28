@@ -3,7 +3,7 @@ use crate::components::{LogElement, LogLevel};
 use crate::resources::{CameraTranslation, IOState, ShadyAssets};
 use crate::{CurrentShader, IOEvent, UiState};
 use bevy::prelude::*;
-use bevy::tasks::{AsyncComputeTaskPool, Task};
+use bevy::tasks::{ComputeTaskPool, Task};
 use futures_lite::future;
 use rfd::{AsyncFileDialog, FileHandle};
 use shady_generator::Shader;
@@ -59,7 +59,7 @@ pub fn handle_io_events(
 pub fn handle_io_state(
     mut commands: Commands,
     mut ui_state: ResMut<UiState>,
-    task_pool: Res<AsyncComputeTaskPool>,
+    task_pool: Res<ComputeTaskPool>,
     shader: Res<CurrentShader>,
 ) {
     if let Some(state) = ui_state.io_state.take() {
