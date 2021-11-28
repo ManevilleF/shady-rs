@@ -1,8 +1,10 @@
 pub mod creation_menu;
+mod live_edit;
 
 use crate::common::get_current_dir;
 use crate::components::{LogElement, LogLevel};
 use crate::resources::{Candidate, IOState, OperationSelection, TypeSelection};
+use crate::systems::ui::live_edit::constant_value_selection;
 use crate::{CurrentShader, IOEvent, UiState, VERSION};
 use bevy::prelude::*;
 use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba, Widget};
@@ -56,52 +58,69 @@ pub fn menu(
                 });
 
             ui.separator();
-            ui.label("Create Property:");
-            if ui.button("Input Property").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::InputProperty(
-                    NativeType::default(),
-                )));
-            }
-            if ui.button("Output Property").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::OutputProperty(
-                    NativeType::default(),
-                )));
-            }
+            ui.label("Properties");
+            ui.vertical_centered_justified(|ui| {
+                if ui.button("Create Input Property").clicked() {
+                    ui_state.candidate = Some(Candidate::TypeSelection(
+                        TypeSelection::InputProperty(NativeType::default()),
+                    ));
+                }
+                if ui.button("Create Output Property").clicked() {
+                    ui_state.candidate = Some(Candidate::TypeSelection(
+                        TypeSelection::OutputProperty(NativeType::default()),
+                    ));
+                }
+            });
             ui.separator();
-            if ui.button("Create Constant").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::Constant(
-                    ConstantValue::default(),
-                )))
-            }
+            ui.label("Constants");
+            ui.vertical_centered_justified(|ui| {
+                if ui.button("Create Constant").clicked() {
+                    ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::Constant(
+                        ConstantValue::default(),
+                    )))
+                }
+                ui.collapsing("Constants", |ui| {
+                    for (key, constant) in shader.constants_mut() {
+                        ui.collapsing(key, |ui| {
+                            constant_value_selection(ui, &mut constant.value);
+                        });
+                    }
+                });
+            });
+
             ui.separator();
-            ui.label("Create Node:");
-            if ui.button("Type Construction").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(
-                    TypeSelection::TypeConstruction(NonScalarNativeType::Vec2),
-                ));
-            }
-            if ui.button("Type Split").clicked() {
-                ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::TypeSplit(
-                    NonScalarNativeType::Vec2,
-                )));
-            }
-            if ui.button("Type Swizzle").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::TypeSwizzle(NonScalarSwizzle::default()),
-                ));
-            }
-            if ui.button("Native Operation").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::NativeOperation(NativeOperation::Inc(NativeType::Float)),
-                ));
-            }
-            if ui.button("Native function").clicked() {
-                ui_state.candidate = Some(Candidate::OperationSelection(
-                    OperationSelection::NativeFunction(NativeFunction::Absolute(
-                        FloatingNativeType::Float,
-                    )),
-                ));
-            }
+            ui.label("Node Operations");
+            ui.vertical_centered_justified(|ui| {
+                if ui.button("Type Construction").clicked() {
+                    ui_state.candidate = Some(Candidate::TypeSelection(
+                        TypeSelection::TypeConstruction(NonScalarNativeType::Vec2),
+                    ));
+                }
+                if ui.button("Type Split").clicked() {
+                    ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::TypeSplit(
+                        NonScalarNativeType::Vec2,
+                    )));
+                }
+                if ui.button("Type Swizzle").clicked() {
+                    ui_state.candidate = Some(Candidate::OperationSelection(
+                        OperationSelection::TypeSwizzle(NonScalarSwizzle::default()),
+                    ));
+                }
+                if ui.button("Native Operation").clicked() {
+                    ui_state.candidate = Some(Candidate::OperationSelection(
+                        OperationSelection::NativeOperation(NativeOperation::Inc(
+                            NativeType::Float,
+                        )),
+                    ));
+                }
+                if ui.button("Native function").clicked() {
+                    ui_state.candidate = Some(Candidate::OperationSelection(
+                        OperationSelection::NativeFunction(NativeFunction::Absolute(
+                            FloatingNativeType::Float,
+                        )),
+                    ));
+                }
+            });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 ui.add(

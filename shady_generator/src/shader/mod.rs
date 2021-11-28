@@ -83,6 +83,10 @@ impl Shader {
         &self.constants
     }
 
+    pub fn constants_mut(&mut self) -> &mut HashMap<String, Constant> {
+        &mut self.constants
+    }
+
     fn get_input_property(&self, id: &str) -> Result<&InputProperty, ShadyError> {
         self.input_properties
             .get(id)

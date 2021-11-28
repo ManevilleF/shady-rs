@@ -1,7 +1,7 @@
 use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
 use crate::UiState;
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, Rgba, Slider, Ui, Widget};
+use bevy_egui::egui::{Button, Response, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::node_operation::*;
 use shady_generator::{
@@ -9,82 +9,11 @@ use shady_generator::{
 };
 use std::fmt::Display;
 
-fn int_range(ui: &mut Ui, v: &mut i32, name: &str) {
-    ui.horizontal(|ui| {
-        ui.label(name);
-        ui.add(Slider::new(v, i32::MIN..=i32::MAX));
-    });
-}
-
-fn uint_range(ui: &mut Ui, v: &mut u32, name: &str) {
-    ui.horizontal(|ui| {
-        ui.label(name);
-        ui.add(Slider::new(v, u32::MIN..=u32::MAX));
-    });
-}
-
-fn f32_range(ui: &mut Ui, v: &mut f32, name: &str) {
-    ui.horizontal(|ui| {
-        ui.label(name);
-        ui.add(Slider::new(v, f32::MIN..=f32::MAX));
-    });
-}
-
-fn f64_range(ui: &mut Ui, v: &mut f64, name: &str) {
-    ui.horizontal(|ui| {
-        ui.label(name);
-        ui.add(Slider::new(v, f64::MIN..=f64::MAX));
-    });
-}
-
-fn constant_value_selection(ui: &mut Ui, constant: &mut ConstantValue) {
-    match constant {
-        ConstantValue::Bool(v) => {
-            ui.checkbox(v, "Value");
-        }
-        ConstantValue::Int(v) => {
-            int_range(ui, v, "Value");
-        }
-        ConstantValue::UInt(v) => {
-            uint_range(ui, v, "Value");
-        }
-        ConstantValue::Float(v) => {
-            f32_range(ui, v, "Value");
-        }
-        ConstantValue::Double(v) => {
-            f64_range(ui, v, "Value");
-        }
-        ConstantValue::Vec2(v) => {
-            for (i, value) in v.iter_mut().enumerate() {
-                f32_range(ui, value, i.to_string().as_str());
-            }
-        }
-        ConstantValue::IVec2(v) => {
-            for (i, value) in v.iter_mut().enumerate() {
-                int_range(ui, value, i.to_string().as_str());
-            }
-        }
-        ConstantValue::Vec3(v) => {
-            for (i, value) in v.iter_mut().enumerate() {
-                f32_range(ui, value, i.to_string().as_str());
-            }
-        }
-        ConstantValue::IVec3(v) => {
-            for (i, value) in v.iter_mut().enumerate() {
-                int_range(ui, value, i.to_string().as_str());
-            }
-        }
-        ConstantValue::Vec4(v) => {
-            for (i, value) in v.iter_mut().enumerate() {
-                f32_range(ui, value, i.to_string().as_str());
-            }
-        }
-        ConstantValue::IVec4(v) => {
-            for (i, value) in v.iter_mut().enumerate() {
-                int_range(ui, value, i.to_string().as_str());
-            }
-        }
-    }
+fn create_button(ui: &mut Ui) -> Response {
+    Button::new("Create")
+        .fill(Rgba::from_rgb(0.2, 0.6, 0.2))
+        .text_color(Rgba::from_rgb(1., 1., 1.).into())
+        .ui(ui)
 }
 
 fn type_selection<T: Copy + Display + PartialEq>(
@@ -93,9 +22,9 @@ fn type_selection<T: Copy + Display + PartialEq>(
     value: &mut T,
     picked: &mut bool,
 ) {
-    for native_type in variants {
+    for variant in variants {
         if ui
-            .selectable_value(value, *native_type, native_type.to_string())
+            .selectable_value(value, *variant, variant.to_string())
             .clicked()
         {
             *picked = true;
@@ -105,26 +34,20 @@ fn type_selection<T: Copy + Display + PartialEq>(
 
 fn swizzle_selection<T: FieldToGlsl, const SIZE: usize>(
     ui: &mut Ui,
-    variants: &[[T; SIZE]],
     value: &mut [T; SIZE],
     picked: &mut bool,
 ) {
-    ui.horizontal_wrapped(|ui| {
-        for native_type in variants {
-            if ui
-                .selectable_value(
-                    value,
-                    *native_type,
-                    native_type
-                        .iter()
-                        .map(FieldToGlsl::to_glsl)
-                        .collect::<Vec<&str>>()
-                        .join(""),
-                )
-                .clicked()
-            {
-                *picked = true;
-            }
+    ui.vertical_centered_justified(|ui| {
+        for (i, v) in value.iter_mut().enumerate() {
+            ui.horizontal(|ui| {
+                ui.label(i.to_string());
+                for variant in T::all_variants() {
+                    ui.selectable_value(v, variant, variant.to_glsl());
+                }
+            });
+        }
+        if create_button(ui).clicked() {
+            *picked = true;
         }
     });
 }
@@ -273,76 +196,31 @@ pub fn creation_menu(
                             TypeSelection::TypeSwizzle(swizzle) => {
                                 match swizzle {
                                     NonScalarSwizzle::Vec2ToVec2(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec2Field::every_vec2_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec2ToVec3(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec2Field::every_vec3_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec2ToVec4(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec2Field::every_vec4_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec3ToVec2(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec3Field::every_vec2_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec3ToVec3(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec3Field::every_vec3_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec3ToVec4(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec3Field::every_vec4_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec4ToVec2(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec4Field::every_vec2_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec4ToVec3(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec4Field::every_vec3_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                     NonScalarSwizzle::Vec4ToVec4(v) => {
-                                        swizzle_selection(
-                                            ui,
-                                            &Vec4Field::every_vec4_possibility(),
-                                            v,
-                                            &mut picked,
-                                        );
+                                        swizzle_selection(ui, v, &mut picked);
                                     }
                                 };
                             }
@@ -367,7 +245,6 @@ pub fn creation_menu(
                                     ui.label("Name");
                                     ui.text_edit_singleline(&mut c.name);
                                 });
-                                constant_value_selection(ui, &mut c.value);
                             }
                             CreationCandidate::InputProperty(p) => {
                                 ui.horizontal(|ui| {
@@ -392,12 +269,7 @@ pub fn creation_menu(
                             }
                         }
                         ui.separator();
-                        if Button::new("Create")
-                            .fill(Rgba::from_rgb(0.2, 0.6, 0.2))
-                            .text_color(Rgba::from_rgb(1., 1., 1.).into())
-                            .ui(ui)
-                            .clicked()
-                        {
+                        if create_button(ui).clicked() {
                             commands.insert_resource(creation_candidate.clone());
                             close = true;
                         }

@@ -1,6 +1,7 @@
 use crate::NativeType;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use std::ops::Deref;
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ConstantValue {
@@ -43,43 +44,6 @@ impl Constant {
             .to_string()
     }
 
-    pub fn native_type(&self) -> NativeType {
-        match self.value {
-            ConstantValue::Bool(_) => NativeType::Bool,
-            ConstantValue::Int(_) => NativeType::Int,
-            ConstantValue::UInt(_) => NativeType::UInt,
-            ConstantValue::Float(_) => NativeType::Float,
-            ConstantValue::Double(_) => NativeType::Double,
-            ConstantValue::Vec2(_) => NativeType::Vec2,
-            ConstantValue::IVec2(_) => NativeType::IVec2,
-            ConstantValue::Vec3(_) => NativeType::Vec3,
-            ConstantValue::IVec3(_) => NativeType::IVec3,
-            ConstantValue::Vec4(_) => NativeType::Vec4,
-            ConstantValue::IVec4(_) => NativeType::IVec4,
-        }
-    }
-
-    fn complex_declaration<T: Display, const SIZE: usize>(v: [T; SIZE], t: NativeType) -> String {
-        let vec: Vec<String> = v.iter().map(ToString::to_string).collect();
-        format!("{}({})", t, vec.join(", "))
-    }
-
-    pub fn str_value(&self) -> String {
-        match self.value {
-            ConstantValue::Bool(v) => v.to_string(),
-            ConstantValue::Int(v) => v.to_string(),
-            ConstantValue::UInt(v) => v.to_string(),
-            ConstantValue::Float(v) => v.to_string(),
-            ConstantValue::Double(v) => v.to_string(),
-            ConstantValue::Vec2(v) => Self::complex_declaration(v, self.native_type()),
-            ConstantValue::IVec2(v) => Self::complex_declaration(v, self.native_type()),
-            ConstantValue::Vec3(v) => Self::complex_declaration(v, self.native_type()),
-            ConstantValue::IVec3(v) => Self::complex_declaration(v, self.native_type()),
-            ConstantValue::Vec4(v) => Self::complex_declaration(v, self.native_type()),
-            ConstantValue::IVec4(v) => Self::complex_declaration(v, self.native_type()),
-        }
-    }
-
     pub fn glsl_declaration(&self) -> String {
         format!(
             "const {} {} = {};",
@@ -104,6 +68,43 @@ impl ConstantValue {
         Self::Vec4([1.0, 1.0, 1.0, 1.0]),
         Self::IVec4([1, 1, 1, 1]),
     ];
+
+    pub fn native_type(&self) -> NativeType {
+        match self {
+            ConstantValue::Bool(_) => NativeType::Bool,
+            ConstantValue::Int(_) => NativeType::Int,
+            ConstantValue::UInt(_) => NativeType::UInt,
+            ConstantValue::Float(_) => NativeType::Float,
+            ConstantValue::Double(_) => NativeType::Double,
+            ConstantValue::Vec2(_) => NativeType::Vec2,
+            ConstantValue::IVec2(_) => NativeType::IVec2,
+            ConstantValue::Vec3(_) => NativeType::Vec3,
+            ConstantValue::IVec3(_) => NativeType::IVec3,
+            ConstantValue::Vec4(_) => NativeType::Vec4,
+            ConstantValue::IVec4(_) => NativeType::IVec4,
+        }
+    }
+
+    fn complex_declaration<T: Display, const SIZE: usize>(v: &[T; SIZE], t: NativeType) -> String {
+        let vec: Vec<String> = v.iter().map(ToString::to_string).collect();
+        format!("{}({})", t, vec.join(", "))
+    }
+
+    pub fn str_value(&self) -> String {
+        match self {
+            ConstantValue::Bool(v) => v.to_string(),
+            ConstantValue::Int(v) => v.to_string(),
+            ConstantValue::UInt(v) => v.to_string(),
+            ConstantValue::Float(v) => v.to_string(),
+            ConstantValue::Double(v) => v.to_string(),
+            ConstantValue::Vec2(v) => Self::complex_declaration(v, self.native_type()),
+            ConstantValue::IVec2(v) => Self::complex_declaration(v, self.native_type()),
+            ConstantValue::Vec3(v) => Self::complex_declaration(v, self.native_type()),
+            ConstantValue::IVec3(v) => Self::complex_declaration(v, self.native_type()),
+            ConstantValue::Vec4(v) => Self::complex_declaration(v, self.native_type()),
+            ConstantValue::IVec4(v) => Self::complex_declaration(v, self.native_type()),
+        }
+    }
 }
 
 impl Default for ConstantValue {
@@ -131,5 +132,13 @@ impl Display for ConstantValue {
                 ConstantValue::IVec4(_) => "IVec4",
             }
         )
+    }
+}
+
+impl Deref for Constant {
+    type Target = ConstantValue;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
     }
 }
