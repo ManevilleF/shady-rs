@@ -1,10 +1,10 @@
+mod constants;
 pub mod creation_menu;
-mod live_edit;
 
 use crate::common::get_current_dir;
 use crate::components::{LogElement, LogLevel};
 use crate::resources::{Candidate, IOState, OperationSelection, TypeSelection};
-use crate::systems::ui::live_edit::constant_value_selection;
+use crate::systems::ui::constants::constant_value_selection;
 use crate::{CurrentShader, IOEvent, UiState, VERSION};
 use bevy::prelude::*;
 use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba, Widget};
@@ -175,8 +175,9 @@ pub fn handle_log_elements(
                     let mut label = Label::new(&log.message).small();
                     match log.log_level {
                         LogLevel::Info => label = label.text_color(Color32::GREEN),
-                        LogLevel::Warn => label = label.strong().text_color(Color32::RED),
-                        LogLevel::Error => label = label.strong().text_color(Color32::RED),
+                        LogLevel::Warn | LogLevel::Error => {
+                            label = label.strong().text_color(Color32::RED)
+                        }
                     };
                     ui.label(label);
                     log.alive_time -= delta_time;

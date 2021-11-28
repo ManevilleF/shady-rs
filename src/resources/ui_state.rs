@@ -71,9 +71,7 @@ impl IOState {
     }
     pub fn path_mut(&mut self) -> &mut String {
         match self {
-            IOState::Saving(p) => p,
-            IOState::Loading(p) => p,
-            IOState::Exporting(p) => p,
+            IOState::Saving(p) | IOState::Loading(p) | IOState::Exporting(p) => p,
         }
     }
 

@@ -11,7 +11,7 @@ macro_rules! get_entity_or_continue {
         match $res {
             Ok(e) => e,
             Err(e) => {
-                LogElement::new(LogLevel::Error, e.to_string()).spawn($cmd);
+                LogElement::new(LogLevel::Error, e).spawn($cmd);
                 continue;
             }
         }
@@ -97,7 +97,7 @@ impl ShaderLoader {
     pub fn load(&mut self, commands: &mut Commands, assets: &ShadyAssets, pos: Vec2) {
         let mut pos = pos;
         let delta = 200.;
-        for (key, property) in self.shader.input_properties().clone().into_iter() {
+        for (key, property) in self.shader.input_properties().clone() {
             let response = spawn_element(
                 commands,
                 assets,
@@ -114,7 +114,7 @@ impl ShaderLoader {
         }
         pos.x += delta;
         pos.y = 0.;
-        for (key, constant) in self.shader.constants().clone().into_iter() {
+        for (key, constant) in self.shader.constants().clone() {
             let response = spawn_element(
                 commands,
                 assets,
@@ -130,7 +130,7 @@ impl ShaderLoader {
         }
         pos.x += delta;
         pos.y = 0.;
-        for (key, node) in self.shader.nodes().clone().into_iter() {
+        for (key, node) in self.shader.nodes().clone() {
             let response = spawn_element(
                 commands,
                 assets,
@@ -181,7 +181,7 @@ impl ShaderLoader {
         }
         pos.x += delta;
         pos.y = 0.;
-        for (key, property) in self.shader.output_properties().clone().into_iter() {
+        for (key, property) in self.shader.output_properties().clone() {
             let response = spawn_element(
                 commands,
                 assets,
