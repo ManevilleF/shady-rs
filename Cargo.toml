@@ -18,6 +18,8 @@ debug = ["bevy-inspector-egui"]
 # TODO: Use better lines (bezier lines)
 bevy_prototype_debug_lines = "0.3"
 env_logger = "0.9"
+rfd = "0.6"
+futures-lite = "1.12"
 
 [dependencies.bevy-inspector-egui]
 version = "0.6"

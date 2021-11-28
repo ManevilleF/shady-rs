@@ -4,12 +4,13 @@ use shady_generator::node_operation::*;
 use shady_generator::{
     Constant, ConstantValue, InputProperty, NativeType, NonScalarNativeType, OutputProperty,
 };
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub enum IOState {
-    Saving(String),
-    Loading(String),
-    Exporting(String),
+    Saving,
+    Loading,
+    Exporting,
 }
 
 #[derive(Debug, Clone)]
@@ -54,32 +55,11 @@ impl Default for UiState {
 }
 
 impl IOState {
-    pub fn event(&self) -> IOEvent {
+    pub fn event(&self, path: PathBuf) -> IOEvent {
         match self {
-            IOState::Saving(path) => IOEvent::Save(path.clone()),
-            IOState::Loading(path) => IOEvent::Load(path.clone()),
-            IOState::Exporting(path) => IOEvent::Export(path.clone()),
-        }
-    }
-
-    pub fn title(&self) -> &'static str {
-        match self {
-            IOState::Saving(_) => "Save",
-            IOState::Loading(_) => "Load",
-            IOState::Exporting(_) => "Export",
-        }
-    }
-    pub fn path_mut(&mut self) -> &mut String {
-        match self {
-            IOState::Saving(p) | IOState::Loading(p) | IOState::Exporting(p) => p,
-        }
-    }
-
-    pub fn message(&self) -> &'static str {
-        match self {
-            IOState::Saving(_) => "Save the current shader graph in a custom directory",
-            IOState::Loading(_) => "Loads a shader graph from a save located in a custom directory",
-            IOState::Exporting(_) => "Exports the shader as GLSL code in a custom directory",
+            IOState::Saving => IOEvent::Save(path),
+            IOState::Loading => IOEvent::Load(path),
+            IOState::Exporting => IOEvent::Export(path),
         }
     }
 }

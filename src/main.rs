@@ -134,11 +134,15 @@ fn main() {
                         .after("ui_setup")
                         .label("ui_menu"),
                 )
-                .with_system(systems::ui::io.system().after("ui_menu").label("ui_io"))
-                .with_system(systems::ui::handle_log_elements.system().after("ui_io")),
+                .with_system(systems::ui::handle_log_elements.system().after("ui_menu")),
         )
         .add_system(systems::preview::handle_shader_event.system())
-        .add_system(systems::io::handle_io_events.system())
+        .add_system_set(
+            SystemSet::new()
+                .with_system(systems::io::handle_io_events.system())
+                .with_system(systems::io::handle_io_state.system())
+                .with_system(systems::io::handle_io_task.system()),
+        )
         .add_system(systems::camera::handle_camera_movement.system())
         .add_event::<ShaderEvent>()
         .add_event::<IOEvent>()
