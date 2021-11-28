@@ -67,7 +67,7 @@ mod resources;
 mod systems;
 
 use crate::events::*;
-use crate::resources::{CurrentShader, SelectedEntities, UiState};
+use crate::resources::{CurrentShader, PreviewMaterial, SelectedEntities, UiState};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 #[cfg(feature = "debug")]
@@ -137,12 +137,14 @@ fn main() {
                 .with_system(systems::ui::io.system().after("ui_menu").label("ui_io"))
                 .with_system(systems::ui::handle_log_elements.system().after("ui_io")),
         )
+        .add_system(systems::preview::handle_shader_event.system())
         .add_system(systems::io::handle_io_events.system())
         .add_system(systems::camera::handle_camera_movement.system())
         .add_event::<ShaderEvent>()
         .add_event::<IOEvent>()
         .insert_resource(CurrentShader::default())
-        .insert_resource(UiState::default());
+        .insert_resource(UiState::default())
+        .insert_resource(PreviewMaterial::default());
     // Debug hierarchy inspector
     #[cfg(feature = "debug")]
     app.add_plugin(WorldInspectorPlugin::new());

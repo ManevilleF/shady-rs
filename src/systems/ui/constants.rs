@@ -1,5 +1,6 @@
 use bevy_egui::egui::{emath, DragValue, Ui};
-use shady_generator::ConstantValue;
+use shady_generator::{Constant, ConstantValue};
+use std::collections::HashMap;
 
 const ITER_VALUE_NAMES: [&str; 4] = ["x", "y", "z", "w"];
 
@@ -17,6 +18,14 @@ fn show_iter_range<T: emath::Numeric>(ui: &mut Ui, values: &mut [T]) {
             value,
             ITER_VALUE_NAMES.get(i).unwrap_or(&i.to_string().as_str()),
         );
+    }
+}
+
+pub fn handle_constants(ui: &mut Ui, constants: &mut HashMap<String, Constant>) {
+    for (key, constant) in constants {
+        ui.collapsing(key, |ui| {
+            constant_value_selection(ui, &mut constant.value);
+        });
     }
 }
 

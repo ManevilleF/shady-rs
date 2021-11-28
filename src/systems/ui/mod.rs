@@ -1,11 +1,13 @@
 mod constants;
 pub mod creation_menu;
+mod preview_material;
 
 use crate::common::get_current_dir;
 use crate::components::{LogElement, LogLevel};
 use crate::resources::{Candidate, IOState, OperationSelection, TypeSelection};
-use crate::systems::ui::constants::constant_value_selection;
-use crate::{CurrentShader, IOEvent, UiState, VERSION};
+use crate::systems::ui::constants::handle_constants;
+use crate::systems::ui::preview_material::handle_preview;
+use crate::{CurrentShader, IOEvent, PreviewMaterial, UiState, VERSION};
 use bevy::prelude::*;
 use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba, Widget};
 use bevy_egui::{egui, EguiContext};
@@ -25,6 +27,7 @@ pub fn menu(
     egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
     mut shader: ResMut<CurrentShader>,
+    mut preview_material: ResMut<PreviewMaterial>,
 ) {
     egui::SidePanel::left("Menu")
         .default_width(200.)
@@ -80,11 +83,7 @@ pub fn menu(
                     )))
                 }
                 ui.collapsing("Constants", |ui| {
-                    for (key, constant) in shader.constants_mut() {
-                        ui.collapsing(key, |ui| {
-                            constant_value_selection(ui, &mut constant.value);
-                        });
-                    }
+                    handle_constants(ui, shader.constants_mut());
                 });
             });
 
@@ -120,6 +119,14 @@ pub fn menu(
                         )),
                     ));
                 }
+            });
+
+            ui.separator();
+            ui.label("Preview");
+            ui.collapsing("Input properties", |ui| {
+                ui.vertical_centered_justified(|ui| {
+                    handle_preview(ui, &mut preview_material);
+                });
             });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
