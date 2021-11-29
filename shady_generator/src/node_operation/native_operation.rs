@@ -106,7 +106,7 @@ impl NativeOperation {
     }
 
     /// Outputs the operation as GLSL code
-    pub fn glsl_operation(&self, field_values: Vec<String>) -> String {
+    pub fn glsl_operation(&self, field_values: &[String]) -> String {
         match self {
             NativeOperation::Inc(_) => format!("{}++", field_values.first().unwrap()),
             NativeOperation::Dec(_) => format!("{}--", field_values.first().unwrap()),

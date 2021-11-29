@@ -3,6 +3,7 @@ pub mod camera;
 pub mod input;
 pub mod io;
 pub mod lines;
+pub mod preview;
 pub mod shader;
 pub mod spawner;
 pub mod ui;

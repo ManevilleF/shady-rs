@@ -1,13 +1,14 @@
+mod constants;
 pub mod creation_menu;
-mod live_edit;
+mod preview_material;
 
-use crate::common::get_current_dir;
 use crate::components::{LogElement, LogLevel};
-use crate::resources::{Candidate, IOState, OperationSelection, TypeSelection};
-use crate::systems::ui::live_edit::constant_value_selection;
-use crate::{CurrentShader, IOEvent, UiState, VERSION};
+use crate::resources::{Candidate, IOState, OperationSelection, RenderPhase, TypeSelection};
+use crate::systems::ui::constants::handle_constants;
+use crate::systems::ui::preview_material::handle_preview;
+use crate::{CurrentShader, PreviewMaterial, UiState, VERSION};
 use bevy::prelude::*;
-use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba, Widget};
+use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::node_operation::*;
 use shady_generator::{
@@ -25,6 +26,7 @@ pub fn menu(
     egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
     mut shader: ResMut<CurrentShader>,
+    mut preview_material: ResMut<PreviewMaterial>,
 ) {
     egui::SidePanel::left("Menu")
         .default_width(200.)
@@ -80,11 +82,7 @@ pub fn menu(
                     )))
                 }
                 ui.collapsing("Constants", |ui| {
-                    for (key, constant) in shader.constants_mut() {
-                        ui.collapsing(key, |ui| {
-                            constant_value_selection(ui, &mut constant.value);
-                        });
-                    }
+                    handle_constants(ui, shader.constants_mut());
                 });
             });
 
@@ -122,6 +120,28 @@ pub fn menu(
                 }
             });
 
+            ui.separator();
+            ui.label("Preview");
+            ui.collapsing("Input properties", |ui| {
+                ui.vertical_centered_justified(|ui| {
+                    handle_preview(ui, &mut preview_material);
+                });
+            });
+            ComboBox::from_label("Render Phase")
+                .selected_text(preview_material.render_phase.to_string())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(
+                        &mut preview_material.render_phase,
+                        RenderPhase::Opaque,
+                        RenderPhase::Opaque.to_string(),
+                    );
+                    ui.selectable_value(
+                        &mut preview_material.render_phase,
+                        RenderPhase::Transparent,
+                        RenderPhase::Transparent.to_string(),
+                    );
+                });
+
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 ui.add(
                     egui::Hyperlink::new("https://github.com/ManevilleF/shady-rs")
@@ -130,13 +150,13 @@ pub fn menu(
                 ui.separator();
                 ui.horizontal(|ui| {
                     if ui.button("Save").clicked() {
-                        ui_state.io_state = Some(IOState::Saving(get_current_dir()))
+                        ui_state.io_state = Some(IOState::Saving)
                     }
                     if ui.button("Load").clicked() {
-                        ui_state.io_state = Some(IOState::Loading(get_current_dir()))
+                        ui_state.io_state = Some(IOState::Loading)
                     }
                     if ui.button("Export").clicked() {
-                        ui_state.io_state = Some(IOState::Exporting(get_current_dir()))
+                        ui_state.io_state = Some(IOState::Exporting)
                     }
                 });
                 ui.label("I/O");
@@ -175,8 +195,9 @@ pub fn handle_log_elements(
                     let mut label = Label::new(&log.message).small();
                     match log.log_level {
                         LogLevel::Info => label = label.text_color(Color32::GREEN),
-                        LogLevel::Warn => label = label.strong().text_color(Color32::RED),
-                        LogLevel::Error => label = label.strong().text_color(Color32::RED),
+                        LogLevel::Warn | LogLevel::Error => {
+                            label = label.strong().text_color(Color32::RED)
+                        }
                     };
                     ui.label(label);
                     log.alive_time -= delta_time;
@@ -186,35 +207,4 @@ pub fn handle_log_elements(
                 }
             });
         });
-}
-
-pub fn io(
-    egui_ctx: ResMut<EguiContext>,
-    mut ui_state: ResMut<UiState>,
-    mut io_ewr: EventWriter<IOEvent>,
-) {
-    let mut open = true;
-    let mut done = false;
-    if let Some(state) = &mut ui_state.io_state {
-        egui::Window::new(state.title())
-            .default_size((500., 200.))
-            .open(&mut open)
-            .show(egui_ctx.ctx(), |ui| {
-                ui.label(state.message());
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.label("Directory");
-                    egui::TextEdit::singleline(state.path_mut())
-                        .desired_width(500.)
-                        .ui(ui)
-                });
-                if ui.button(state.title()).clicked() {
-                    io_ewr.send(state.event());
-                    done = true;
-                }
-            });
-    }
-    if !open || done {
-        ui_state.io_state = None;
-    }
 }

@@ -79,15 +79,12 @@ impl NodeOperation {
 }
 
 impl InternalNodeOperation {
-    pub fn to_glsl(&self, input_fields: Vec<String>) -> String {
+    pub fn to_glsl(&self, input_fields: &[String]) -> String {
         match self {
             Self::CustomOperation(function_name) => {
                 format!("{}({})", function_name, input_fields.join(", "))
             }
-            Self::TypeConstruction(t) => {
-                format!("{}({})", t, input_fields.join(", "))
-            }
-            Self::TypeSplit(t) => {
+            Self::TypeConstruction(t) | Self::TypeSplit(t) => {
                 format!("{}({})", t, input_fields.join(", "))
             }
             Self::NativeOperation(o) => o.glsl_operation(input_fields),

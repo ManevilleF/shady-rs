@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{read_to_string, OpenOptions};
 use std::io::Write;
+use std::path::Path;
 
 const DEFAULT_MAX_DEPTH: usize = 256;
 const EXPORT_HEADER: &str =
@@ -260,7 +261,7 @@ impl Shader {
         }
     }
 
-    pub fn save_to(&self, file_path: &str) -> Result<(), ShadyError> {
+    pub fn save_to<P: AsRef<Path>>(&self, file_path: P) -> Result<(), ShadyError> {
         let mut file = OpenOptions::new()
             .create(true)
             .truncate(true)
@@ -292,10 +293,10 @@ impl Shader {
     }
 
     pub fn save(&self) -> Result<(), ShadyError> {
-        self.save_to(self.save_file_name().as_str())
+        self.save_to(self.save_file_name())
     }
 
-    pub fn export_glsl_to(&self, file_path: &str) -> Result<(), ShadyError> {
+    pub fn export_glsl_to<P: AsRef<Path>>(&self, file_path: P) -> Result<(), ShadyError> {
         let mut file = OpenOptions::new()
             .create(true)
             .write(true)
@@ -307,7 +308,7 @@ impl Shader {
         Ok(())
     }
 
-    pub fn load(file_path: &str) -> Result<Self, ShadyError> {
+    pub fn load<P: AsRef<Path>>(file_path: P) -> Result<Self, ShadyError> {
         let val = read_to_string(file_path)?;
         let res = serde_yaml::from_str(&val)?;
         Ok(res)

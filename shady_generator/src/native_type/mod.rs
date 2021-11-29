@@ -102,10 +102,8 @@ impl NativeType {
     pub fn default_glsl_value(&self) -> &'static str {
         match self {
             Self::Bool => "false",
-            Self::Int => "0",
-            Self::UInt => "0",
-            Self::Float => "0.0",
-            Self::Double => "0.0",
+            Self::Int | Self::UInt => "0",
+            Self::Float | Self::Double => "0.0",
             Self::Vec2 => "vec2(0.0, 0.0)",
             Self::IVec2 => "ivec2(0, 0)",
             Self::Vec3 => "vec3(0.0, 0.0, 0.0)",

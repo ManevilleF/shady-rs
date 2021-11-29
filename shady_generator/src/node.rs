@@ -207,7 +207,7 @@ impl Node {
             "{} {} = {}; // {} Node",
             self.output.glsl_type(),
             self.id,
-            self.operation.to_glsl(self.input_field_glsl_values()),
+            self.operation.to_glsl(&self.input_field_glsl_values()),
             self.name
         )
     }
