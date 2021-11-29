@@ -1,5 +1,12 @@
 use bevy::utils::HashMap;
 use shady_generator::{ConstantValue, InputProperty, NativeType};
+use std::fmt::{Display, Formatter};
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum RenderPhase {
+    Transparent,
+    Opaque,
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BuiltinValue {
@@ -24,6 +31,7 @@ pub struct InputPreview {
 #[derive(Debug, Clone)]
 pub struct PreviewMaterial {
     pub input_values: HashMap<String, InputPreview>,
+    pub render_phase: RenderPhase,
 }
 
 impl PreviewMaterial {
@@ -61,8 +69,8 @@ impl PreviewValue {
                 Self::BuiltinValue(BuiltinValue::Color([1., 1., 1., 1.])),
             ],
             NativeType::IVec4 => vec![Self::ConstantValue(ConstantValue::IVec4([1, 1, 1, 1]))],
-            NativeType::Sampler2d => vec![],
-            NativeType::SamplerCube => vec![],
+            // TODO: Add handle for textures
+            NativeType::Sampler2d | NativeType::SamplerCube => vec![],
         }
     }
 
@@ -91,10 +99,23 @@ impl PreviewValue {
     }
 }
 
+impl Display for RenderPhase {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                RenderPhase::Transparent => "Transparent",
+                RenderPhase::Opaque => "Opaque",
+            }
+        )
+    }
+}
 impl Default for PreviewMaterial {
     fn default() -> Self {
         Self {
             input_values: Default::default(),
+            render_phase: RenderPhase::Opaque,
         }
     }
 }

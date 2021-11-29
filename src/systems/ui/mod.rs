@@ -3,7 +3,7 @@ pub mod creation_menu;
 mod preview_material;
 
 use crate::components::{LogElement, LogLevel};
-use crate::resources::{Candidate, IOState, OperationSelection, TypeSelection};
+use crate::resources::{Candidate, IOState, OperationSelection, RenderPhase, TypeSelection};
 use crate::systems::ui::constants::handle_constants;
 use crate::systems::ui::preview_material::handle_preview;
 use crate::{CurrentShader, PreviewMaterial, UiState, VERSION};
@@ -127,6 +127,20 @@ pub fn menu(
                     handle_preview(ui, &mut preview_material);
                 });
             });
+            ComboBox::from_label("Render Phase")
+                .selected_text(preview_material.render_phase.to_string())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(
+                        &mut preview_material.render_phase,
+                        RenderPhase::Opaque,
+                        RenderPhase::Opaque.to_string(),
+                    );
+                    ui.selectable_value(
+                        &mut preview_material.render_phase,
+                        RenderPhase::Transparent,
+                        RenderPhase::Transparent.to_string(),
+                    );
+                });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 ui.add(

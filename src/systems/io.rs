@@ -94,9 +94,11 @@ pub fn handle_io_state(
     }
 }
 
+type IOTask = Task<Option<(FileHandle, IOState)>>;
+
 pub fn handle_io_task(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Task<Option<(FileHandle, IOState)>>)>,
+    mut query: Query<(Entity, &mut IOTask)>,
     mut io_evw: EventWriter<IOEvent>,
 ) {
     for (entity, mut task) in query.iter_mut() {
