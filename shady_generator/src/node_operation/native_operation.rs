@@ -37,7 +37,7 @@ pub enum NativeOperation {
 
 impl NativeOperation {
     /// Retrieves the output data for the operation
-    pub fn output(&self) -> Output {
+    pub const fn output(&self) -> Output {
         match self {
             NativeOperation::Inc(t)
             | NativeOperation::Dec(t)
@@ -150,7 +150,7 @@ impl NativeOperation {
     }
 
     /// Retrieves a generic descriptive name for the operation
-    pub fn descriptive_name(&self) -> &'static str {
+    pub const fn descriptive_name(&self) -> &'static str {
         match self {
             NativeOperation::Inc(_) => "a++",
             NativeOperation::Dec(_) => "a--",

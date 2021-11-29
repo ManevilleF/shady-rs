@@ -24,11 +24,11 @@ impl Deref for Input {
 }
 
 impl InputField {
-    pub fn glsl_type(&self) -> NativeType {
+    pub const fn glsl_type(&self) -> NativeType {
         self.glsl_type
     }
 
-    pub fn new(glsl_type: NativeType) -> Self {
+    pub const fn new(glsl_type: NativeType) -> Self {
         Self {
             glsl_type,
             tolerant: false,
@@ -36,7 +36,7 @@ impl InputField {
         }
     }
 
-    pub fn new_tolerant(glsl_type: NativeType) -> Self {
+    pub const fn new_tolerant(glsl_type: NativeType) -> Self {
         Self {
             glsl_type,
             tolerant: true,
@@ -46,7 +46,7 @@ impl InputField {
 }
 
 impl Input {
-    pub fn none() -> Self {
+    pub const fn none() -> Self {
         Self { fields: vec![] }
     }
 }

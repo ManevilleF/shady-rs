@@ -42,12 +42,12 @@ impl Node {
     }
 
     /// Retrieves the node name
-    pub fn name(&self) -> &String {
+    pub const fn name(&self) -> &String {
         &self.name
     }
 
     /// Retrieves the node unique id
-    pub fn unique_id(&self) -> &String {
+    pub const fn unique_id(&self) -> &String {
         &self.id
     }
 

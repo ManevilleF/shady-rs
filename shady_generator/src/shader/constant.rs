@@ -69,7 +69,7 @@ impl ConstantValue {
         Self::IVec4([1, 1, 1, 1]),
     ];
 
-    pub fn native_type(&self) -> NativeType {
+    pub const fn native_type(&self) -> NativeType {
         match self {
             ConstantValue::Bool(_) => NativeType::Bool,
             ConstantValue::Int(_) => NativeType::Int,

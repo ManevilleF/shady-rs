@@ -55,7 +55,7 @@ impl Default for UiState {
 }
 
 impl IOState {
-    pub fn event(&self, path: PathBuf) -> IOEvent {
+    pub const fn event(&self, path: PathBuf) -> IOEvent {
         match self {
             IOState::Saving => IOEvent::Save(path),
             IOState::Loading => IOEvent::Load(path),

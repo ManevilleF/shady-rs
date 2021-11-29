@@ -141,7 +141,7 @@ pub enum NativeFunction {
 
 impl NativeFunction {
     /// Retrieves the name of the native function
-    pub fn function_name(&self) -> &'static str {
+    pub const fn function_name(&self) -> &'static str {
         match self {
             NativeFunction::Radians(_) => "radians",
             NativeFunction::Degrees(_) => "degrees",
@@ -184,7 +184,7 @@ impl NativeFunction {
     }
 
     /// Retrieves a unique descriptive name for the native function
-    pub fn descriptive_name(&self) -> &'static str {
+    pub const fn descriptive_name(&self) -> &'static str {
         match self {
             NativeFunction::Radians(_) => "radians",
             NativeFunction::Degrees(_) => "degrees",

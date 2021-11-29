@@ -17,7 +17,7 @@ impl Default for ShadyOutputSlot {
 }
 
 impl ShadyOutputSlot {
-    pub fn new(color: Color) -> Self {
+    pub const fn new(color: Color) -> Self {
         Self { color }
     }
 }

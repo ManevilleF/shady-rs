@@ -20,7 +20,7 @@ impl Default for ShadyInputSlot {
 }
 
 impl ShadyInputSlot {
-    pub fn new(color: Color) -> Self {
+    pub const fn new(color: Color) -> Self {
         Self {
             connected_to: None,
             color,

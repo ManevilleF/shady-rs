@@ -21,7 +21,7 @@ pub struct InteractionBox {
 }
 
 impl InteractionBox {
-    pub fn new(size: Vec2, interaction: BoxInteraction) -> Self {
+    pub const fn new(size: Vec2, interaction: BoxInteraction) -> Self {
         Self { size, interaction }
     }
 

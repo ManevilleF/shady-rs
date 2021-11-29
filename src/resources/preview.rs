@@ -74,7 +74,7 @@ impl PreviewValue {
         }
     }
 
-    pub fn selection_name(&self) -> &'static str {
+    pub const fn selection_name(&self) -> &'static str {
         match self {
             PreviewValue::Unset => "Unset",
             PreviewValue::ConstantValue(c) => match c {
