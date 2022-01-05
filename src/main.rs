@@ -37,7 +37,6 @@ use bevy_prototype_debug_lines::DebugLinesPlugin;
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
-    env_logger::init();
     let mut app = App::new();
     app.insert_resource(ClearColor(Color::DARK_GRAY))
         .insert_resource(Msaa { samples: 4 })

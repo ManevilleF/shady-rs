@@ -17,7 +17,6 @@ debug = ["bevy-inspector-egui"]
 [dependencies]
 # TODO: Use better lines (bezier lines)
 bevy_prototype_debug_lines = "0.5"
-env_logger = "0.9"
 rfd = "0.6"
 futures-lite = "1.12"
 

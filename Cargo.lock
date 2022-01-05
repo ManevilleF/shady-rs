@@ -2320,7 +2320,6 @@ dependencies = [
  "bevy-inspector-egui",
  "bevy_egui",
  "bevy_prototype_debug_lines",
- "env_logger 0.9.0",
  "futures-lite",
  "rfd",
  "shady_generator",
