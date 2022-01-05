@@ -124,7 +124,7 @@ mod tests {
                 uniform: false,
             };
             let res = property.glsl_declaration();
-            assert_eq!(&res, "in bool ref; // Property")
+            assert_eq!(&res, "in bool ref; // Property");
         }
 
         #[test]
@@ -136,7 +136,7 @@ mod tests {
                 uniform: true,
             };
             let res = property.glsl_declaration();
-            assert_eq!(&res, "uniform bool ref; // Property")
+            assert_eq!(&res, "uniform bool ref; // Property");
         }
     }
 
@@ -152,7 +152,7 @@ mod tests {
                 connection: None,
             };
             let res = property.glsl_declaration();
-            assert_eq!(&res, "out bool ref; // Property")
+            assert_eq!(&res, "out bool ref; // Property");
         }
     }
 }

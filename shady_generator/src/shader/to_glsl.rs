@@ -192,6 +192,8 @@ impl Shader {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::too_many_lines)]
+
     use super::*;
     use crate::node_operation::NodeOperation;
     use crate::shader::{InputProperty, OutputProperty};
@@ -1018,7 +1020,7 @@ mod tests {
                     
                 }}
                 "}
-            )
+            );
         }
 
         #[test]
@@ -1045,7 +1047,7 @@ mod tests {
                     
                 }}
                 "}
-            )
+            );
         }
 
         #[test]
@@ -1077,7 +1079,7 @@ mod tests {
                     
                 }}
                 "}
-            )
+            );
         }
 
         #[test]
@@ -1116,7 +1118,7 @@ mod tests {
                     
                 }}
                "}
-            )
+            );
         }
 
         #[test]
@@ -1157,7 +1159,7 @@ mod tests {
                     
                 }}
             "};
-            assert_eq!(shader.to_glsl().unwrap(), expected)
+            assert_eq!(shader.to_glsl().unwrap(), expected);
         }
 
         #[should_panic = "NodeLoopDetected"]

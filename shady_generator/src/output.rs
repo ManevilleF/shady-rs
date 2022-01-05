@@ -118,6 +118,6 @@ mod tests {
                   uint count;
                 }};
             "}
-        )
+        );
     }
 }
