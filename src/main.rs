@@ -38,7 +38,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
     env_logger::init();
-    let mut app = App::build();
+    let mut app = App::new();
     app.insert_resource(ClearColor(Color::DARK_GRAY))
         .insert_resource(Msaa { samples: 4 })
         .insert_resource(WindowDescriptor {
@@ -47,63 +47,46 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
-        .add_plugin(DebugLinesPlugin)
+        .add_plugin(DebugLinesPlugin::default())
         .insert_resource(SelectedEntities::default())
-        .add_startup_system(systems::camera::setup_camera.system())
-        .add_startup_system(systems::assets::setup_assets.system())
+        .add_startup_system(systems::camera::setup_camera)
+        .add_startup_system(systems::assets::setup_assets)
         // Mouse
         .add_system_set(
             SystemSet::new()
-                .with_system(
-                    systems::input::handle_mouse_position
-                        .system()
-                        .label("cursor"),
-                )
-                .with_system(
-                    systems::input::handle_mouse_interaction
-                        .system()
-                        .after("cursor"),
-                )
-                .with_system(
-                    systems::input::handle_element_dragging
-                        .system()
-                        .after("cursor"),
-                )
-                .with_system(systems::input::handle_camera_dragging.system()),
+                .with_system(systems::input::handle_mouse_position.label("cursor"))
+                .with_system(systems::input::handle_mouse_interaction.after("cursor"))
+                .with_system(systems::input::handle_element_dragging.after("cursor"))
+                .with_system(systems::input::handle_camera_dragging),
         )
         // Nodes
-        .add_system(systems::shader::handle_shader_event.system())
+        .add_system(systems::shader::handle_shader_event)
         // Lines
         .add_system_set(
             SystemSet::new()
-                .with_system(systems::lines::handle_connector_lines.system())
-                .with_system(
-                    systems::lines::handle_candidate_line
-                        .system()
-                        .after("cursor"),
-                ),
+                .with_system(systems::lines::handle_connector_lines)
+                .with_system(systems::lines::handle_candidate_line.after("cursor")),
         )
         // UI
-        .add_startup_system(systems::ui::setup.system())
+        .add_startup_system(systems::ui::setup)
         .add_system_set(
             SystemSet::new()
-                .with_system(systems::ui::menu.system().label("ui_setup"))
+                .with_system(systems::ui::menu.label("ui_setup"))
                 .with_system(
                     systems::ui::creation_menu::creation_menu
-                        .system()
                         .after("ui_setup")
                         .label("ui_menu"),
                 )
-                .with_system(systems::ui::handle_log_elements.system().after("ui_menu")),
+                .with_system(systems::ui::handle_log_elements.after("ui_menu")),
         )
-        .add_system(systems::preview::handle_shader_event.system())
+        .add_system(systems::preview::handle_shader_event)
         .add_system_set(
             SystemSet::new()
-                .with_system(systems::io::handle_io_events.system())
-                .with_system(systems::io::handle_io_state.system())
-                .with_system(systems::io::handle_io_task.system()),
+                .with_system(systems::io::handle_io_events)
+                .with_system(systems::io::handle_io_state)
+                .with_system(systems::io::handle_io_task),
         )
-        .add_system(systems::camera::handle_camera_movement.system())
+        .add_system(systems::camera::handle_camera_movement)
         .add_event::<ShaderEvent>()
         .add_event::<IOEvent>()
         .insert_resource(CurrentShader::default())

@@ -34,7 +34,7 @@ pub fn handle_candidate_line(
     assets: Res<ShadyAssets>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
     connector_query: Query<&GlobalTransform, With<ShadyOutputSlot>>,
-    mut lines: ResMut<DebugLines>,
+    mut lines: DebugLines,
 ) {
     let candidate = match connector_candidate {
         None => return,
@@ -83,7 +83,7 @@ pub fn handle_connector_lines(
     connector_query: Query<(Entity, &NodeConnector)>,
     input_slot_query: Query<(&GlobalTransform, &ShadyInputSlot)>,
     output_slot_query: Query<(&GlobalTransform, &ShadyOutputSlot)>,
-    mut lines: ResMut<DebugLines>,
+    mut lines: DebugLines,
 ) {
     for (entity, node_connector) in connector_query.iter() {
         let (from, from_color) = get_vec2_color!(
