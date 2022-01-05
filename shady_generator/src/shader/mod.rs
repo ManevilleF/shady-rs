@@ -70,7 +70,7 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingNode(id.to_string()))
     }
 
-    pub fn nodes(&self) -> &HashMap<String, Node> {
+    pub const fn nodes(&self) -> &HashMap<String, Node> {
         &self.nodes
     }
 
@@ -80,7 +80,7 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingConstant(id.to_string()))
     }
 
-    pub fn constants(&self) -> &HashMap<String, Constant> {
+    pub const fn constants(&self) -> &HashMap<String, Constant> {
         &self.constants
     }
 
@@ -94,7 +94,7 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingInputProperty(id.to_string()))
     }
 
-    pub fn input_properties(&self) -> &HashMap<String, InputProperty> {
+    pub const fn input_properties(&self) -> &HashMap<String, InputProperty> {
         &self.input_properties
     }
 
@@ -104,7 +104,7 @@ impl Shader {
             .ok_or_else(|| ShadyError::MissingOutputProperty(id.to_string()))
     }
 
-    pub fn output_properties(&self) -> &HashMap<String, OutputProperty> {
+    pub const fn output_properties(&self) -> &HashMap<String, OutputProperty> {
         &self.output_properties
     }
 

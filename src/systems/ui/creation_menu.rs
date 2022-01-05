@@ -3,7 +3,9 @@ use crate::UiState;
 use bevy::prelude::*;
 use bevy_egui::egui::{Button, Response, Rgba, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
-use shady_generator::node_operation::*;
+use shady_generator::node_operation::{
+    FieldToGlsl, NativeFunction, NativeOperation, NonScalarSwizzle,
+};
 use shady_generator::{
     ConstantValue, FloatingNativeType, NativeType, NonScalarNativeType, NumericScalarNativeType,
 };
@@ -52,6 +54,7 @@ fn swizzle_selection<T: FieldToGlsl, const SIZE: usize>(
     });
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn creation_menu(
     mut commands: Commands,
     egui_ctx: ResMut<EguiContext>,

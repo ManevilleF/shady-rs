@@ -10,7 +10,7 @@ use crate::{CurrentShader, PreviewMaterial, UiState, VERSION};
 use bevy::prelude::*;
 use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba};
 use bevy_egui::{egui, EguiContext};
-use shady_generator::node_operation::*;
+use shady_generator::node_operation::{NativeFunction, NativeOperation, NonScalarSwizzle};
 use shady_generator::{
     ConstantValue, FloatingNativeType, GraphicLibrary, NativeType, NonScalarNativeType, ShaderType,
 };
@@ -22,6 +22,7 @@ pub fn setup(egui_ctx: ResMut<EguiContext>) {
     });
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn menu(
     egui_ctx: ResMut<EguiContext>,
     mut ui_state: ResMut<UiState>,
@@ -79,7 +80,7 @@ pub fn menu(
                 if ui.button("Create Constant").clicked() {
                     ui_state.candidate = Some(Candidate::TypeSelection(TypeSelection::Constant(
                         ConstantValue::default(),
-                    )))
+                    )));
                 }
                 ui.collapsing("Constants", |ui| {
                     handle_constants(ui, shader.constants_mut());
@@ -150,13 +151,13 @@ pub fn menu(
                 ui.separator();
                 ui.horizontal(|ui| {
                     if ui.button("Save").clicked() {
-                        ui_state.io_state = Some(IOState::Saving)
+                        ui_state.io_state = Some(IOState::Saving);
                     }
                     if ui.button("Load").clicked() {
-                        ui_state.io_state = Some(IOState::Loading)
+                        ui_state.io_state = Some(IOState::Loading);
                     }
                     if ui.button("Export").clicked() {
-                        ui_state.io_state = Some(IOState::Exporting)
+                        ui_state.io_state = Some(IOState::Exporting);
                     }
                 });
                 ui.label("I/O");
@@ -196,7 +197,7 @@ pub fn handle_log_elements(
                     match log.log_level {
                         LogLevel::Info => label = label.text_color(Color32::GREEN),
                         LogLevel::Warn | LogLevel::Error => {
-                            label = label.strong().text_color(Color32::RED)
+                            label = label.strong().text_color(Color32::RED);
                         }
                     };
                     ui.label(label);

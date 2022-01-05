@@ -75,7 +75,7 @@ impl OutputFields {
 impl CustomOutput {
     pub fn glsl_struct_declaration(&self) -> String {
         let mut buff = format!("struct {} {{\n", self.struct_name);
-        for (field_name, glsl_type) in self.fields.iter() {
+        for (field_name, glsl_type) in &self.fields {
             buff = format!("{}  {} {};\n", buff, glsl_type.get_glsl_type(), field_name);
         }
         format!("{}}};\n", buff)

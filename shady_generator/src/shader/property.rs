@@ -101,7 +101,7 @@ impl OutputProperty {
         )
     }
 
-    pub fn connection(&self) -> Option<&Connection> {
+    pub const fn connection(&self) -> Option<&Connection> {
         self.connection.as_ref()
     }
 

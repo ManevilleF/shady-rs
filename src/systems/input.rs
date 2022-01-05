@@ -28,14 +28,9 @@ fn get_interaction(
     let mut interactions: Vec<(Entity, BoxInteraction)> = box_query
         .iter()
         .filter_map(|(entity, transform, interaction_box)| {
-            if let Some(interaction) =
-                interaction_box.get_interaction(transform.translation.xy(), position)
-            {
-                log::info!("Found interaction: {:?}", interaction);
-                Some((entity, interaction))
-            } else {
-                None
-            }
+            interaction_box
+                .get_interaction(transform.translation.xy(), position)
+                .map(|interaction| (entity, interaction))
         })
         .collect();
     interactions.sort_by_key(|(_e, b)| b.clone());
@@ -149,13 +144,13 @@ pub fn handle_mouse_interaction(
                 }
                 BoxInteraction::DeleteNode(id) => node_evw.send(ShaderEvent::DeleteNode { id }),
                 BoxInteraction::DeleteOutput(id) => {
-                    node_evw.send(ShaderEvent::DeleteOutputProperty { id })
+                    node_evw.send(ShaderEvent::DeleteOutputProperty { id });
                 }
                 BoxInteraction::DeleteInput(id) => {
-                    node_evw.send(ShaderEvent::DeleteInputProperty { id })
+                    node_evw.send(ShaderEvent::DeleteInputProperty { id });
                 }
                 BoxInteraction::DeleteConstant(id) => {
-                    node_evw.send(ShaderEvent::DeleteConstant { id })
+                    node_evw.send(ShaderEvent::DeleteConstant { id });
                 }
             },
         }

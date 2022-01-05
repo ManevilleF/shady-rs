@@ -2,26 +2,20 @@ use crate::error::ShadyError;
 use crate::{Connection, Shader};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
-struct NodeData {
-    glsl_code: String,
-    required_nodes: Vec<String>,
-}
-
 #[derive(Debug, Clone, Default)]
 struct NodeGeneration {
-    pub node_data: HashMap<String, NodeData>,
+    pub node_data: HashMap<String, String>,
     pub ordered_nodes: Vec<String>,
 }
 
 impl NodeGeneration {
     fn to_glsl(&self) -> String {
         let mut buffer = String::new();
-        for id in self.ordered_nodes.iter() {
+        for id in &self.ordered_nodes {
             buffer = format!(
                 "{}{}\n    ",
                 buffer,
-                self.node_data.get(id).unwrap().glsl_code.clone()
+                self.node_data.get(id).unwrap().clone()
             );
         }
         buffer
@@ -80,9 +74,11 @@ impl Shader {
         res
     }
 
-    fn nodes_generation(&self, node_ids: Vec<String>) -> Result<NodeGeneration, ShadyError> {
+    fn nodes_generation(
+        &self,
+        mut nodes_to_handle: Vec<String>,
+    ) -> Result<NodeGeneration, ShadyError> {
         let mut res = NodeGeneration::default();
-        let mut nodes_to_handle = node_ids;
         let mut required_nodes = Vec::new();
 
         for depth in 0..=self.max_processing_depth {
@@ -93,22 +89,18 @@ impl Shader {
             );
             nodes_to_handle.sort_unstable();
             nodes_to_handle.dedup();
-            let mut tmp_nodes = Vec::new();
-            for node_id in nodes_to_handle.iter() {
-                log::trace!("Processing node {}", node_id);
-                let node = self.get_node(node_id)?;
-                let mut connections = node.node_connections();
-                if !res.node_data.contains_key(node_id) {
-                    res.node_data.insert(
-                        node_id.clone(),
-                        NodeData {
-                            glsl_code: node.to_glsl(),
-                            required_nodes: connections.clone(),
-                        },
-                    );
-                }
-                tmp_nodes.append(&mut connections);
-            }
+            let tmp_nodes = nodes_to_handle
+                .iter()
+                .try_fold(Vec::new(), |mut acc, node_id| {
+                    log::trace!("Processing node {}", node_id);
+                    let node = self.get_node(node_id)?;
+                    let connections = node.node_connections();
+                    if !res.node_data.contains_key(node_id) {
+                        res.node_data.insert(node_id.clone(), node.to_glsl());
+                    }
+                    acc.extend(connections);
+                    Result::<_, ShadyError>::Ok(acc)
+                })?;
             // TODO: Check if this is enough to detect loops
             if required_nodes.contains(&nodes_to_handle) {
                 return Err(ShadyError::NodeLoopDetected(nodes_to_handle));
@@ -123,11 +115,9 @@ impl Shader {
             nodes_to_handle = tmp_nodes;
         }
         required_nodes.reverse();
-        for required_node in required_nodes {
-            for node_id in required_node {
-                if !res.ordered_nodes.contains(&node_id) {
-                    res.ordered_nodes.push(node_id);
-                }
+        for node_id in required_nodes.into_iter().flatten() {
+            if !res.ordered_nodes.contains(&node_id) {
+                res.ordered_nodes.push(node_id);
             }
         }
         log::trace!("Node Generation: {:#?}", res);
@@ -138,16 +128,22 @@ impl Shader {
         let constants_declarations = self.get_constants_declarations();
         let property_declarations = self.get_property_declarations();
 
-        let mut nodes_to_handle = Vec::new();
+        let nodes_to_handle = self
+            .output_properties
+            .values()
+            .filter_map(|p| {
+                if let Some(
+                    Connection::ComplexOutputNode { id, .. } | Connection::SingleOutputNode { id },
+                ) = &p.connection
+                {
+                    Some(id.clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         // Output properties code
-        for property in self.output_properties.values() {
-            if let Some(
-                Connection::ComplexOutputNode { id, .. } | Connection::SingleOutputNode { id },
-            ) = &property.connection
-            {
-                nodes_to_handle.push(id.clone());
-            }
-        }
         let output_properties = self.output_property_generation();
         let main_content = self.nodes_generation(nodes_to_handle)?;
 
@@ -159,7 +155,7 @@ impl Shader {
                 function_declarations.push(declaration);
             }
             if let Some(declaration) = node.struct_declaration() {
-                struct_declarations.push(declaration)
+                struct_declarations.push(declaration);
             }
         }
 
@@ -1126,9 +1122,7 @@ mod tests {
         #[test]
         fn works_with_example_shader_2() {
             let shader = init_example_shader_2();
-            assert_eq!(
-                shader.to_glsl().unwrap(),
-                formatdoc! {"
+            let expected = formatdoc! {"
                 // Constants
 
                 // Properties
@@ -1162,8 +1156,8 @@ mod tests {
                     o_3 = c; // O_3
                     
                 }}
-                "}
-            )
+            "};
+            assert_eq!(shader.to_glsl().unwrap(), expected)
         }
 
         #[should_panic = "NodeLoopDetected"]

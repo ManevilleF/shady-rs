@@ -1,7 +1,7 @@
 use bevy::prelude::Entity;
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct SelectedEntities(pub Vec<Entity>);
 
 impl Deref for SelectedEntities {
@@ -15,11 +15,5 @@ impl Deref for SelectedEntities {
 impl DerefMut for SelectedEntities {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
-    }
-}
-
-impl Default for SelectedEntities {
-    fn default() -> Self {
-        Self(Vec::new())
     }
 }

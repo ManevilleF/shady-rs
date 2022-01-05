@@ -1,5 +1,5 @@
 use crate::error::ShadyError;
-use crate::node_operation::*;
+use crate::node_operation::{InternalNodeOperation, NodeOperation};
 use crate::{
     generate_unique_id, Connection, ConnectionMessage, ConnectionResponse, Input, InputField,
     NativeType, Output, OutputFields,
@@ -42,12 +42,12 @@ impl Node {
     }
 
     /// Retrieves the node name
-    pub fn name(&self) -> &String {
+    pub const fn name(&self) -> &String {
         &self.name
     }
 
     /// Retrieves the node unique id
-    pub fn unique_id(&self) -> &String {
+    pub const fn unique_id(&self) -> &String {
         &self.id
     }
 
@@ -79,7 +79,7 @@ impl Node {
 
     fn input_field_glsl_values(&self) -> Vec<String> {
         let mut fields = Vec::new();
-        for (key, field) in self.input_fields().iter() {
+        for (key, field) in self.input_fields() {
             let val = match &field.connection {
                 Some(connection) => connection.glsl_call(),
                 None => {

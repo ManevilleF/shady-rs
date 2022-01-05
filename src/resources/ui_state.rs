@@ -1,6 +1,8 @@
 use crate::resources::CreationCandidate;
 use crate::IOEvent;
-use shady_generator::node_operation::*;
+use shady_generator::node_operation::{
+    NativeFunction, NativeOperation, NodeOperation, NonScalarSwizzle,
+};
 use shady_generator::{
     Constant, ConstantValue, InputProperty, NativeType, NonScalarNativeType, OutputProperty,
 };
@@ -39,23 +41,14 @@ pub enum Candidate {
     Creation(CreationCandidate),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct UiState {
     pub candidate: Option<Candidate>,
     pub io_state: Option<IOState>,
 }
 
-impl Default for UiState {
-    fn default() -> Self {
-        Self {
-            candidate: None,
-            io_state: None,
-        }
-    }
-}
-
 impl IOState {
-    pub fn event(&self, path: PathBuf) -> IOEvent {
+    pub const fn event(&self, path: PathBuf) -> IOEvent {
         match self {
             IOState::Saving => IOEvent::Save(path),
             IOState::Loading => IOEvent::Load(path),

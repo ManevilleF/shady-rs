@@ -124,7 +124,7 @@ impl FieldToGlsl for Vec2Field {
 }
 
 fn field_to_glsl<F: FieldToGlsl>(arr: &[F]) -> String {
-    let vec: Vec<&str> = arr.iter().map(|f| f.to_glsl()).collect();
+    let vec: Vec<&str> = arr.iter().map(F::to_glsl).collect();
     vec.join("")
 }
 
@@ -155,7 +155,7 @@ impl NonScalarSwizzle {
         }
     }
 
-    pub fn output(&self) -> Output {
+    pub const fn output(&self) -> Output {
         match self {
             NonScalarSwizzle::Vec2ToVec2(_)
             | NonScalarSwizzle::Vec3ToVec2(_)
@@ -189,7 +189,7 @@ impl NonScalarSwizzle {
         }
     }
 
-    pub fn descriptive_name(&self) -> &'static str {
+    pub const fn descriptive_name(&self) -> &'static str {
         match self {
             NonScalarSwizzle::Vec2ToVec2(_) => "Vec2 To Vec2",
             NonScalarSwizzle::Vec2ToVec3(_) => "Vec2 To Vec3",

@@ -7,7 +7,7 @@ use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, Shader};
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct CurrentShader {
     pub shader: Shader,
     pub node_entities: HashMap<String, Entity>,
@@ -144,19 +144,6 @@ impl CurrentShader {
             format!("Successfully loaded shader {}", self.name),
         )
         .spawn(commands);
-    }
-}
-
-impl Default for CurrentShader {
-    fn default() -> Self {
-        Self {
-            shader: Default::default(),
-            node_entities: Default::default(),
-            constants_entities: Default::default(),
-            input_property_entities: Default::default(),
-            output_property_entities: Default::default(),
-            connection_entities: Default::default(),
-        }
     }
 }
 

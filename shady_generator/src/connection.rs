@@ -30,7 +30,7 @@ pub enum Connection {
 }
 
 impl ConnectionMessage {
-    pub fn new(connection: Connection, native_type: NativeType) -> Self {
+    pub const fn new(connection: Connection, native_type: NativeType) -> Self {
         Self {
             connection,
             native_type,

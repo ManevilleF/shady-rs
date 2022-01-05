@@ -10,7 +10,7 @@ make_native_type_enum!(NonScalarNativeType {
 });
 
 impl NonScalarNativeType {
-    pub(crate) fn type_construction_fields(&self) -> Vec<(String, NativeType)> {
+    pub(crate) fn type_construction_fields(self) -> Vec<(String, NativeType)> {
         match self {
             Self::Vec2 => vec![
                 ("x".to_string(), ScalarNativeType::Float.into()),
@@ -45,7 +45,7 @@ impl NonScalarNativeType {
         }
     }
 
-    pub(crate) fn type_construction_input(&self) -> Input {
+    pub(crate) fn type_construction_input(self) -> Input {
         Input {
             fields: self
                 .type_construction_fields()

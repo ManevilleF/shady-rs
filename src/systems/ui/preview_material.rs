@@ -4,7 +4,7 @@ use crate::PreviewMaterial;
 use bevy_egui::egui::{CollapsingHeader, ComboBox, Ui};
 
 pub fn handle_preview(ui: &mut Ui, preview_material: &mut PreviewMaterial) {
-    for (key, input_value) in preview_material.input_values.iter_mut() {
+    for (key, input_value) in &mut preview_material.input_values {
         ui.horizontal(|ui| {
             ComboBox::from_label(key)
                 .selected_text(input_value.preview_value.selection_name())

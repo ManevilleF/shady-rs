@@ -80,7 +80,7 @@ impl Display for NativeType {
 
 impl NativeType {
     /// Returns the GLSL type declaration
-    pub fn get_glsl_type(&self) -> &'static str {
+    pub const fn get_glsl_type(&self) -> &'static str {
         match self {
             Self::Bool => "bool",
             Self::Int => "int",
@@ -117,7 +117,7 @@ impl NativeType {
         }
     }
 
-    pub fn tolerated_input_types(&self) -> &'static [Self] {
+    pub const fn tolerated_input_types(&self) -> &'static [Self] {
         match self {
             Self::Bool => &[Self::Bool],
             Self::Int => &[Self::Int],

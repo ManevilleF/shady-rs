@@ -94,6 +94,7 @@ impl ShaderLoader {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     pub fn load(&mut self, commands: &mut Commands, assets: &ShadyAssets, pos: Vec2) {
         let mut pos = pos;
         let delta = 200.;

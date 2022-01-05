@@ -7,6 +7,7 @@ use bevy::log;
 use bevy::prelude::*;
 use shady_generator::{Connection, ConnectionTo, Node};
 
+#[allow(clippy::too_many_lines)]
 pub fn handle_shader_event(
     mut commands: Commands,
     mut spawn_evr: EventReader<ShaderEvent>,

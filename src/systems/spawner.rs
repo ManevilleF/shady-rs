@@ -205,6 +205,7 @@ where
     res
 }
 
+#[allow(clippy::too_many_lines)]
 pub fn spawn_element(
     commands: &mut Commands,
     assets: &ShadyAssets,
@@ -234,7 +235,7 @@ pub fn spawn_element(
         })
         .insert(Name::new(format!("{} node: {}", name, id)))
         .insert(InteractionBox::new(header_size, BoxInteraction::Drag))
-        .with_children(|mut builder| {
+        .with_children(|builder| {
             builder
                 .spawn_bundle(title_text_bundle(name, assets))
                 .insert(Name::new(format!("{} title", name)));
@@ -273,7 +274,7 @@ pub fn spawn_element(
                         BoxInteraction::DeleteNode(id.to_string()),
                     ));
                     input_field_entities = spawn_slots(
-                        &mut builder,
+                        builder,
                         input_fields,
                         (slot_size, -slot_x_pos),
                         assets,
@@ -287,7 +288,7 @@ pub fn spawn_element(
                         true,
                     );
                     output_field_entities = spawn_slots(
-                        &mut builder,
+                        builder,
                         output_fields
                             .field_names()
                             .into_iter()
@@ -316,7 +317,7 @@ pub fn spawn_element(
                         BoxInteraction::DeleteConstant(id.to_string()),
                     ));
                     output_field_entities = spawn_slots(
-                        &mut builder,
+                        builder,
                         output_fields.into_iter().map(Into::into).collect(),
                         (slot_size, slot_x_pos),
                         assets,
@@ -335,7 +336,7 @@ pub fn spawn_element(
                         BoxInteraction::DeleteInput(id.to_string()),
                     ));
                     output_field_entities = spawn_slots(
-                        &mut builder,
+                        builder,
                         output_fields.into_iter().map(Into::into).collect(),
                         (slot_size, slot_x_pos),
                         assets,
@@ -354,7 +355,7 @@ pub fn spawn_element(
                         BoxInteraction::DeleteOutput(id.to_string()),
                     ));
                     input_field_entities = spawn_slots(
-                        &mut builder,
+                        builder,
                         input_fields,
                         (slot_size, -slot_x_pos),
                         assets,

@@ -135,7 +135,7 @@ impl ShadyAssets {
 }
 
 impl GlslTypeMaterials {
-    pub fn glsl_type_color(glsl_type: NativeType) -> Color {
+    pub const fn glsl_type_color(glsl_type: NativeType) -> Color {
         match glsl_type {
             NativeType::Bool => Color::CYAN,
             NativeType::Int => Color::DARK_GREEN,
@@ -153,7 +153,7 @@ impl GlslTypeMaterials {
         }
     }
 
-    fn glsl_type_material(
+    const fn glsl_type_material(
         glsl_type: NativeType,
         texture: Option<Handle<Texture>>,
     ) -> ColorMaterial {

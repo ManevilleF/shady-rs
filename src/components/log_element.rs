@@ -20,7 +20,7 @@ pub struct LogElement {
 }
 
 impl LogElement {
-    pub fn new(log_level: LogLevel, message: String) -> Self {
+    pub const fn new(log_level: LogLevel, message: String) -> Self {
         Self {
             log_level,
             message,
