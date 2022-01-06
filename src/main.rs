@@ -32,7 +32,7 @@ use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::WorldInspectorPlugin;
-use bevy_prototype_debug_lines::DebugLinesPlugin;
+use bevy_prototype_lyon::prelude::ShapePlugin;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -46,7 +46,7 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
-        .add_plugin(DebugLinesPlugin::default())
+        .add_plugin(ShapePlugin)
         .insert_resource(SelectedEntities::default())
         .add_startup_system(systems::camera::setup_camera)
         .add_startup_system(systems::assets::setup_assets)
