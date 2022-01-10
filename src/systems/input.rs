@@ -1,4 +1,3 @@
-use crate::common::shape_bundle;
 use crate::components::{BoxInteraction, InteractionBox};
 use crate::events::ShaderEvent;
 use crate::resources::{
@@ -118,11 +117,8 @@ pub fn handle_mouse_interaction(
             }
             Some((entity, interaction)) => match interaction {
                 BoxInteraction::ConnectionStart(connection) => {
-                    let candidate = NodeConnectorCandidate {
-                        line_entity: commands.spawn_bundle(shape_bundle()).id(),
-                        output_from: entity,
-                        connection,
-                    };
+                    let candidate =
+                        NodeConnectorCandidate::spawn(&mut commands, entity, connection);
                     commands.insert_resource(candidate);
                 }
                 BoxInteraction::ConnectionEnd(connection_to) => {

@@ -169,14 +169,7 @@ impl ShaderLoader {
                 let to_id = Self::unique_slot_id(key, field, SlotType::Node);
                 let from = get_entity_or_continue!(self.get_field_id(&from_id, false), commands);
                 let to = get_entity_or_continue!(self.get_field_id(&to_id, true), commands);
-                let entity = commands
-                    .spawn()
-                    .insert(NodeConnector {
-                        output_from: from,
-                        input_to: to,
-                    })
-                    .insert(Name::new(format!("{} connector", connector_id)))
-                    .id();
+                let entity = NodeConnector::spawn(commands, from, to, &connector_id);
                 self.connection_entities.insert(connector_id, entity);
             }
         }
@@ -216,14 +209,7 @@ impl ShaderLoader {
                 let to_id = Self::unique_slot_id(&key, &key, SlotType::Property);
                 let from = get_entity_or_continue!(self.get_field_id(&from_id, false), commands);
                 let to = get_entity_or_continue!(self.get_field_id(&to_id, true), commands);
-                let entity = commands
-                    .spawn()
-                    .insert(NodeConnector {
-                        output_from: from,
-                        input_to: to,
-                    })
-                    .insert(Name::new(format!("{} connector", connector_id)))
-                    .id();
+                let entity = NodeConnector::spawn(commands, from, to, &connector_id);
                 self.connection_entities.insert(connector_id, entity);
             }
             pos.y -= delta;
