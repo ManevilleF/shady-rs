@@ -5,24 +5,18 @@ use crate::systems::spawner::SLOT_STEP;
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::Path as LinePath;
-use bevy_prototype_lyon::prelude::{DrawMode, FillMode};
-use lyon_path::Path;
+use bevy_prototype_lyon::prelude::*;
 
-fn draw_line(
-    path: &mut LinePath,
-    draw_mode: &mut DrawMode,
-    (start, end): (Vec2, Vec2),
-    color: Color,
-) {
-    let mut builder = Path::builder();
-    builder.begin([start.x, start.y].into());
+const STROKE: f32 = 3.0;
+
+fn draw_line(path: &mut Path, draw_mode: &mut DrawMode, (start, end): (Vec2, Vec2), color: Color) {
+    let mut builder = PathBuilder::new();
+    builder.move_to([start.x, start.y].into());
     builder.line_to([start.x + SLOT_STEP, start.y].into());
+    builder.line_to([end.x - SLOT_STEP, end.y].into());
     builder.line_to([end.x, end.y].into());
-    builder.line_to([end.x, -SLOT_STEP, end.y].into());
-    builder.end(false);
-    *path = LinePath(builder.build());
-    *draw_mode = DrawMode::Fill(FillMode::color(color));
+    *path = builder.build();
+    *draw_mode = DrawMode::Stroke(StrokeMode::new(color, STROKE));
 }
 
 pub fn handle_candidate_line(
@@ -31,7 +25,7 @@ pub fn handle_candidate_line(
     assets: Res<ShadyAssets>,
     connector_candidate: Option<Res<NodeConnectorCandidate>>,
     connector_query: Query<&GlobalTransform, With<ShadyOutputSlot>>,
-    mut line_query: Query<(&mut LinePath, &mut DrawMode)>,
+    mut line_query: Query<(&mut Path, &mut DrawMode)>,
 ) {
     let candidate = match connector_candidate {
         None => return,
@@ -51,7 +45,17 @@ pub fn handle_candidate_line(
             return;
         }
     };
-    let (mut path, mut mode) = line_query.get(candidate.line_entity);
+    let (mut path, mut mode) = match line_query.get_mut(candidate.line_entity) {
+        Ok(v) => v,
+        Err(e) => {
+            log::error!(
+                "Failed to retrieve line entity {:?}: {}",
+                candidate.line_entity,
+                e
+            );
+            return;
+        }
+    };
     draw_line(
         &mut path,
         &mut mode,
@@ -80,7 +84,7 @@ macro_rules! get_vec2_color {
 #[allow(clippy::type_complexity)]
 pub fn handle_connector_lines(
     mut commands: Commands,
-    mut connector_query: Query<(Entity, &NodeConnector, &mut LinePath, &mut DrawMode)>,
+    mut connector_query: Query<(Entity, &NodeConnector, &mut Path, &mut DrawMode)>,
     input_slot_query: Query<(&GlobalTransform, &ShadyInputSlot)>,
     output_slot_query: Query<(&GlobalTransform, &ShadyOutputSlot)>,
 ) {

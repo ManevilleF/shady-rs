@@ -15,31 +15,24 @@ default = []
 debug = ["bevy-inspector-egui"]
 
 [dependencies]
-lyon_path = "0.17"
-bevy_prototype_lyon = "0.3"
+bevy_prototype_lyon = "0.4"
 rfd = "0.6"
 futures-lite = "1.12"
 
 [dependencies.bevy-inspector-egui]
-version = "0.6"
+version = "0.7"
 optional = true
 
 [dependencies.shady_generator]
 path = "shady_generator"
 
 [dependencies.bevy_egui]
-version = "0.9"
+version = "0.10"
 
 [dependencies.bevy]
-version = "0.5"
+version = "0.6"
 default-features = false
 features = ["render", "bevy_winit", "png", "x11"]
-
-[patch.crates-io]
-bevy = { git = "https://github.com/bevyengine/bevy" }
-bevy_prototype_lyon = { git = "https://github.com/Nilirad/bevy_prototype_lyon" }
-bevy_egui = { git = "https://github.com/jakobhellermann/bevy_egui", branch = "bevy-main" }
-bevy-inspector-egui = { git = "https://github.com/jakobhellermann/bevy-inspector-egui/", branch = "bevy-main" }
 
 # Enable optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]

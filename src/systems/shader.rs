@@ -195,10 +195,10 @@ pub fn handle_shader_event(
                             .insert(Name::new(format!("{} connector", id)))
                             .id();
                         current_shader.connection_entities.insert(id, connector_id);
-                        if let Some(candidate) = &connector_canditate {
-                            commands.entity(candidate.line_entity).despawn_recursive();
-                            commands.remove_resource::<NodeConnectorCandidate>();
-                        }
+                        NodeConnectorCandidate::remove_candidate(
+                            &mut commands,
+                            connector_canditate.as_deref(),
+                        );
                     }
                     Err(e) => {
                         LogElement::new(

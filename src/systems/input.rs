@@ -111,7 +111,10 @@ pub fn handle_mouse_interaction(
                     log::debug!("Creating {:?}", *candidate);
                     commands.remove_resource::<CreationCandidate>();
                 }
-                commands.remove_resource::<NodeConnectorCandidate>();
+                NodeConnectorCandidate::remove_candidate(
+                    &mut commands,
+                    connector_candidate.as_deref(),
+                );
             }
             Some((entity, interaction)) => match interaction {
                 BoxInteraction::ConnectionStart(connection) => {
@@ -142,7 +145,10 @@ pub fn handle_mouse_interaction(
                     previous_cursor_position: position.0,
                 }),
                 BoxInteraction::Ignore => {
-                    commands.remove_resource::<NodeConnectorCandidate>();
+                    NodeConnectorCandidate::remove_candidate(
+                        &mut commands,
+                        connector_candidate.as_deref(),
+                    );
                 }
                 BoxInteraction::DeleteNode(id) => node_evw.send(ShaderEvent::DeleteNode { id }),
                 BoxInteraction::DeleteOutput(id) => {
