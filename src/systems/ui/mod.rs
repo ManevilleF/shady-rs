@@ -8,7 +8,7 @@ use crate::systems::ui::constants::handle_constants;
 use crate::systems::ui::preview_material::handle_preview;
 use crate::{CurrentShader, PreviewMaterial, UiState, VERSION};
 use bevy::prelude::*;
-use bevy_egui::egui::{Color32, ComboBox, Frame, Label, Rgba};
+use bevy_egui::egui::{Color32, ComboBox, Frame, RichText};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::node_operation::{NativeFunction, NativeOperation, NonScalarSwizzle};
 use shady_generator::{
@@ -35,8 +35,8 @@ pub fn menu(
         .max_width(300.)
         .show(egui_ctx.ctx(), |ui| {
             ui.label(
-                Label::new("Shady-rs")
-                    .text_color(Rgba::from_rgb(1., 1., 1.))
+                RichText::new("Shady-rs")
+                    .color(Color32::WHITE)
                     .strong()
                     .heading(),
             );
@@ -144,10 +144,10 @@ pub fn menu(
                 });
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
-                ui.add(
-                    egui::Hyperlink::new("https://github.com/ManevilleF/shady-rs")
-                        .text("Shady-rs by ManevilleF"),
-                );
+                ui.add(egui::Hyperlink::from_label_and_url(
+                    "Shady-rs by ManevilleF",
+                    "https://github.com/ManevilleF/shady-rs",
+                ));
                 ui.separator();
                 ui.horizontal(|ui| {
                     if ui.button("Save").clicked() {
@@ -168,7 +168,7 @@ pub fn menu(
         .resizable(false)
         .show(egui_ctx.ctx(), |ui| {
             ui.vertical_centered(|ui| {
-                let label = Label::new(format!(
+                let label = RichText::new(format!(
                     "App version {} - Lib version {}",
                     VERSION,
                     shady_generator::VERSION
@@ -193,14 +193,14 @@ pub fn handle_log_elements(
         .show(egui_ctx.ctx(), |ui| {
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
                 for (entity, mut log) in query.iter_mut() {
-                    let mut label = Label::new(&log.message).small();
+                    let mut text = RichText::new(&log.message);
                     match log.log_level {
-                        LogLevel::Info => label = label.text_color(Color32::GREEN),
+                        LogLevel::Info => text = text.small().color(Color32::GREEN),
                         LogLevel::Warn | LogLevel::Error => {
-                            label = label.strong().text_color(Color32::RED);
+                            text = text.strong().color(Color32::RED);
                         }
                     };
-                    ui.label(label);
+                    ui.label(text);
                     log.alive_time -= delta_time;
                     if log.alive_time <= 0.0 {
                         commands.entity(entity).despawn();

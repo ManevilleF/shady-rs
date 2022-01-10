@@ -8,6 +8,7 @@ use crate::{get_cursor_position, get_or_continue};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
+use bevy_prototype_lyon::entity::ShapeBundle;
 use shady_generator::ConnectionAttempt;
 
 pub fn handle_mouse_position(
@@ -110,11 +111,15 @@ pub fn handle_mouse_interaction(
                     log::debug!("Creating {:?}", *candidate);
                     commands.remove_resource::<CreationCandidate>();
                 }
-                commands.remove_resource::<NodeConnectorCandidate>();
+                NodeConnectorCandidate::remove_candidate(
+                    &mut commands,
+                    connector_candidate.as_deref(),
+                );
             }
             Some((entity, interaction)) => match interaction {
                 BoxInteraction::ConnectionStart(connection) => {
                     let candidate = NodeConnectorCandidate {
+                        line_entity: commands.spawn_bundle(ShapeBundle::default()).id(),
                         output_from: entity,
                         connection,
                     };
@@ -140,7 +145,10 @@ pub fn handle_mouse_interaction(
                     previous_cursor_position: position.0,
                 }),
                 BoxInteraction::Ignore => {
-                    commands.remove_resource::<NodeConnectorCandidate>();
+                    NodeConnectorCandidate::remove_candidate(
+                        &mut commands,
+                        connector_candidate.as_deref(),
+                    );
                 }
                 BoxInteraction::DeleteNode(id) => node_evw.send(ShaderEvent::DeleteNode { id }),
                 BoxInteraction::DeleteOutput(id) => {

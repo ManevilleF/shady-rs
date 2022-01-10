@@ -15,26 +15,24 @@ default = []
 debug = ["bevy-inspector-egui"]
 
 [dependencies]
-# TODO: Use better lines (bezier lines)
-bevy_prototype_debug_lines = "0.3"
-env_logger = "0.9"
+bevy_prototype_lyon = "0.4"
 rfd = "0.6"
 futures-lite = "1.12"
 
 [dependencies.bevy-inspector-egui]
-version = "0.6"
+version = "0.7"
 optional = true
 
 [dependencies.shady_generator]
 path = "shady_generator"
 
 [dependencies.bevy_egui]
-version = "0.7"
+version = "0.10"
 
 [dependencies.bevy]
-version = "0.5"
+version = "0.6"
 default-features = false
-features = ["render", "bevy_winit", "png", "x11", "bevy_wgpu"]
+features = ["render", "bevy_winit", "png", "x11"]
 
 # Enable optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]

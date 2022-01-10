@@ -1,7 +1,7 @@
 use crate::resources::{Candidate, CreationCandidate, OperationSelection, TypeSelection};
 use crate::UiState;
 use bevy::prelude::*;
-use bevy_egui::egui::{Button, Response, Rgba, Ui, Widget};
+use bevy_egui::egui::{Button, Color32, Response, Rgba, RichText, Ui, Widget};
 use bevy_egui::{egui, EguiContext};
 use shady_generator::node_operation::{
     FieldToGlsl, NativeFunction, NativeOperation, NonScalarSwizzle,
@@ -12,9 +12,8 @@ use shady_generator::{
 use std::fmt::Display;
 
 fn create_button(ui: &mut Ui) -> Response {
-    Button::new("Create")
+    Button::new(RichText::new("Create").color(Color32::WHITE))
         .fill(Rgba::from_rgb(0.2, 0.6, 0.2))
-        .text_color(Rgba::from_rgb(1., 1., 1.).into())
         .ui(ui)
 }
 

@@ -1,5 +1,5 @@
 use crate::components::{BoxInteraction, InteractionBox, ShadyInputSlot, ShadyOutputSlot};
-use crate::resources::{GlslTypeMaterials, ShadyAssets};
+use crate::resources::ShadyAssets;
 use bevy::ecs::component::Component;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -166,14 +166,19 @@ where
 {
     let mut res = HashMap::default();
     for (i, info) in fields.into_iter().enumerate() {
+        let color = if info.tolerant {
+            assets.tolerant_slot_color
+        } else {
+            ShadyAssets::glsl_type_color(info.native_type)
+        };
         let entity = cmd
             .spawn_bundle(SpriteBundle {
-                sprite: Sprite::new(size),
-                material: if info.tolerant {
-                    assets.tolerant_slot_material.clone()
-                } else {
-                    assets.glsl_type_material(info.native_type)
+                sprite: Sprite {
+                    color,
+                    custom_size: Some(size),
+                    ..Default::default()
                 },
+                texture: assets.connector_image.clone(),
                 transform: Transform::from_xyz(
                     pos_x,
                     -NODE_HEADER_SIZE_Y - (SLOT_STEP * i as f32),
@@ -183,9 +188,7 @@ where
             })
             .insert(Name::new(format!("{} input", info.field)))
             .insert(InteractionBox::new(size, box_interaction(&info.field)))
-            .insert(component(GlslTypeMaterials::glsl_type_color(
-                info.native_type,
-            )))
+            .insert(component(color))
             .with_children(|builder| {
                 builder.spawn_bundle(Text2dBundle {
                     transform: Transform::from_xyz(-pos_x.signum() * SLOT_SIZE * 2., 0., 1.),
@@ -223,12 +226,15 @@ pub fn spawn_element(
     let mut output_field_entities = HashMap::default();
     let entity = commands
         .spawn_bundle(SpriteBundle {
-            sprite: Sprite::new(header_size),
-            material: match spawn_type {
-                SpawnType::Node { .. } => assets.node_title_material.clone(),
-                SpawnType::InputProperty { .. } => assets.input_property_title_material.clone(),
-                SpawnType::OutputProperty { .. } => assets.output_property_title_material.clone(),
-                SpawnType::Constant { .. } => assets.constant_title_material.clone(),
+            sprite: Sprite {
+                color: match spawn_type {
+                    SpawnType::Node { .. } => assets.node_title_color,
+                    SpawnType::InputProperty { .. } => assets.input_property_title_color,
+                    SpawnType::OutputProperty { .. } => assets.output_property_title_color,
+                    SpawnType::Constant { .. } => assets.constant_title_color,
+                },
+                custom_size: Some(header_size),
+                ..Default::default()
             },
             transform: Transform::from_xyz(pos.x, pos.y, 0.),
             ..Default::default()
@@ -244,8 +250,12 @@ pub fn spawn_element(
                 .insert(Name::new(format!("{} ref", id)));
             builder
                 .spawn_bundle(SpriteBundle {
-                    sprite: Sprite::new(body_size),
-                    material: assets.node_body_material.clone(),
+                    sprite: Sprite {
+                        color: assets.node_body_color,
+                        custom_size: Some(body_size),
+                        ..Default::default()
+                    },
+
                     transform: Transform::from_xyz(0., -header_size.y / 2. - body_size.y / 2., 0.),
                     ..Default::default()
                 })
@@ -254,8 +264,12 @@ pub fn spawn_element(
             let mut close_button = builder.spawn();
             close_button
                 .insert_bundle(SpriteBundle {
-                    sprite: Sprite::new(close_button_size),
-                    material: assets.delete_icon_material.clone(),
+                    sprite: Sprite {
+                        color: assets.delete_icon_material.color,
+                        custom_size: Some(close_button_size),
+                        ..Default::default()
+                    },
+                    texture: assets.delete_icon_material.texture.clone(),
                     transform: Transform::from_xyz(
                         NODE_SIZE_X / 2. + close_button_size.x / 2.,
                         close_button_size.y / 2.,
