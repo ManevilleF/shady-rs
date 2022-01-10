@@ -76,7 +76,7 @@ fn main() {
                         .after("ui_setup")
                         .label("ui_menu"),
                 )
-                .with_system(systems::ui::handle_log_elements.after("ui_menu")),
+                .with_system(systems::ui::log::handle_log_elements.after("ui_menu")),
         )
         .add_system(systems::preview::handle_shader_event)
         .add_system_set(

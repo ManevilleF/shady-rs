@@ -1,4 +1,3 @@
-use crate::common::shape_bundle;
 use crate::components::{LogElement, LogLevel, NodeConnector};
 use crate::events::ShaderEvent;
 use crate::resources::{CreationCandidate, NodeConnectorCandidate, ShadyAssets};
@@ -186,14 +185,7 @@ pub fn handle_shader_event(
                             &attempt.connection_to,
                             &attempt.connection_from,
                         );
-                        let connector_id = commands
-                            .spawn_bundle(shape_bundle())
-                            .insert(NodeConnector {
-                                output_from: *from,
-                                input_to: *to,
-                            })
-                            .insert(Name::new(format!("{} connector", id)))
-                            .id();
+                        let connector_id = NodeConnector::spawn(&mut commands, *from, *to, &id);
                         current_shader.connection_entities.insert(id, connector_id);
                         NodeConnectorCandidate::remove_candidate(
                             &mut commands,
