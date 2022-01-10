@@ -1,3 +1,4 @@
+use crate::common::shape_bundle;
 use crate::components::{LogElement, LogLevel, NodeConnector};
 use crate::events::ShaderEvent;
 use crate::resources::{CreationCandidate, NodeConnectorCandidate, ShadyAssets};
@@ -5,7 +6,6 @@ use crate::systems::spawner::{spawn_element, SpawnType};
 use crate::CurrentShader;
 use bevy::log;
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
 use shady_generator::{Connection, ConnectionTo, Node};
 
 #[allow(clippy::too_many_lines)]
@@ -187,7 +187,7 @@ pub fn handle_shader_event(
                             &attempt.connection_from,
                         );
                         let connector_id = commands
-                            .spawn_bundle(ShapeBundle::default())
+                            .spawn_bundle(shape_bundle())
                             .insert(NodeConnector {
                                 output_from: *from,
                                 input_to: *to,

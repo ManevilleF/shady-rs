@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
-use bevy::prelude::Vec2;
+use bevy::prelude::{Transform, Vec2};
+use bevy_prototype_lyon::entity::ShapeBundle;
 use std::env::current_dir;
 
 #[derive(Debug, Clone)]
@@ -33,6 +34,13 @@ pub fn get_current_dir() -> String {
         .to_str()
         .unwrap()
         .to_string()
+}
+
+pub fn shape_bundle() -> ShapeBundle {
+    ShapeBundle {
+        transform: Transform::from_xyz(0., 0., 1.),
+        ..Default::default()
+    }
 }
 
 #[cfg(test)]

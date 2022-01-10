@@ -7,14 +7,32 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_prototype_lyon::prelude::*;
 
-const STROKE: f32 = 3.0;
+const STROKE: f32 = 1.0;
 
-fn draw_line(path: &mut Path, draw_mode: &mut DrawMode, (start, end): (Vec2, Vec2), color: Color) {
+fn draw_pretty_line(
+    path: &mut Path,
+    draw_mode: &mut DrawMode,
+    (start, end): (Vec2, Vec2),
+    color: Color,
+) {
     let mut builder = PathBuilder::new();
-    builder.move_to([start.x, start.y].into());
+    builder.move_to(start);
     builder.line_to([start.x + SLOT_STEP, start.y].into());
     builder.line_to([end.x - SLOT_STEP, end.y].into());
-    builder.line_to([end.x, end.y].into());
+    builder.line_to(end);
+    *path = builder.build();
+    *draw_mode = DrawMode::Stroke(StrokeMode::new(color, STROKE));
+}
+
+fn draw_straight_line(
+    path: &mut Path,
+    draw_mode: &mut DrawMode,
+    (start, end): (Vec2, Vec2),
+    color: Color,
+) {
+    let mut builder = PathBuilder::new();
+    builder.move_to(start);
+    builder.line_to(end);
     *path = builder.build();
     *draw_mode = DrawMode::Stroke(StrokeMode::new(color, STROKE));
 }
@@ -56,7 +74,7 @@ pub fn handle_candidate_line(
             return;
         }
     };
-    draw_line(
+    draw_straight_line(
         &mut path,
         &mut mode,
         (start_pos, position.0),
@@ -99,6 +117,6 @@ pub fn handle_connector_lines(
             entity,
             commands
         );
-        draw_line(&mut path, &mut mode, (from, to), to_color);
+        draw_pretty_line(&mut path, &mut mode, (from, to), to_color);
     }
 }

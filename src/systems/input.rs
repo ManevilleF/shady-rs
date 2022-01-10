@@ -1,3 +1,4 @@
+use crate::common::shape_bundle;
 use crate::components::{BoxInteraction, InteractionBox};
 use crate::events::ShaderEvent;
 use crate::resources::{
@@ -8,7 +9,6 @@ use crate::{get_cursor_position, get_or_continue};
 use bevy::log;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
-use bevy_prototype_lyon::entity::ShapeBundle;
 use shady_generator::ConnectionAttempt;
 
 pub fn handle_mouse_position(
@@ -119,7 +119,7 @@ pub fn handle_mouse_interaction(
             Some((entity, interaction)) => match interaction {
                 BoxInteraction::ConnectionStart(connection) => {
                     let candidate = NodeConnectorCandidate {
-                        line_entity: commands.spawn_bundle(ShapeBundle::default()).id(),
+                        line_entity: commands.spawn_bundle(shape_bundle()).id(),
                         output_from: entity,
                         connection,
                     };

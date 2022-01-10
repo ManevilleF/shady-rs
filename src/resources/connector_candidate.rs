@@ -13,7 +13,7 @@ impl NodeConnectorCandidate {
     pub fn remove_candidate(commands: &mut Commands, res: Option<&Self>) {
         if let Some(c) = res {
             commands.entity(c.line_entity).despawn();
+            commands.remove_resource::<Self>();
         }
-        commands.remove_resource::<Self>();
     }
 }
