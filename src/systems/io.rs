@@ -1,7 +1,7 @@
 use crate::common::get_current_dir;
 use crate::components::{LogElement, LogLevel};
 use crate::resources::{CameraTranslation, IOState, ShadyAssets};
-use crate::{CurrentShader, IOEvent, UiState};
+use crate::{CurrentShader, IOEvent, PreviewMaterial, UiState};
 use bevy::prelude::*;
 use bevy::tasks::{ComputeTaskPool, Task};
 use futures_lite::future;
@@ -12,6 +12,7 @@ pub fn handle_io_events(
     mut commands: Commands,
     mut shader: ResMut<CurrentShader>,
     mut io_evr: EventReader<IOEvent>,
+    mut preview: ResMut<PreviewMaterial>,
     camera_translation: Res<CameraTranslation>,
     assets: Res<ShadyAssets>,
 ) {
@@ -38,7 +39,13 @@ pub fn handle_io_events(
                         continue;
                     }
                 };
-                shader.load(new_shader, &mut commands, &assets, camera_translation.0);
+                shader.load(
+                    new_shader,
+                    &mut commands,
+                    &assets,
+                    &mut preview,
+                    camera_translation.0,
+                );
             }
             IOEvent::Export(path) => {
                 match shader.export_glsl_to(&path) {

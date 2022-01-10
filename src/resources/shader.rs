@@ -1,6 +1,7 @@
 use crate::components::{LogElement, LogLevel};
 use crate::resources::shader_loader::ShaderLoader;
 use crate::resources::ShadyAssets;
+use crate::PreviewMaterial;
 use bevy::log;
 use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Vec2};
 use bevy::utils::HashMap;
@@ -133,10 +134,11 @@ impl CurrentShader {
         shader: Shader,
         commands: &mut Commands,
         assets: &ShadyAssets,
+        preview: &mut PreviewMaterial,
         pos: Vec2,
     ) {
         let mut loader = ShaderLoader::new(shader);
-        loader.load(commands, assets, pos);
+        loader.load(commands, assets, pos, preview);
         self.clear(commands);
         *self = loader.into();
         LogElement::new(

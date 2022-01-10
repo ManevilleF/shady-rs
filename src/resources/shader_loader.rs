@@ -1,7 +1,7 @@
 use crate::components::{LogElement, LogLevel, NodeConnector};
 use crate::resources::ShadyAssets;
 use crate::systems::spawner::{spawn_element, SpawnResponse, SpawnType};
-use crate::CurrentShader;
+use crate::{CurrentShader, PreviewMaterial};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use shady_generator::{Connection, ConnectionTo, OutputFields, Shader};
@@ -95,7 +95,13 @@ impl ShaderLoader {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn load(&mut self, commands: &mut Commands, assets: &ShadyAssets, pos: Vec2) {
+    pub fn load(
+        &mut self,
+        commands: &mut Commands,
+        assets: &ShadyAssets,
+        pos: Vec2,
+        preview: &mut PreviewMaterial,
+    ) {
         let mut pos = pos;
         let delta = 200.;
         for (key, property) in self.shader.input_properties().clone() {
@@ -111,6 +117,7 @@ impl ShaderLoader {
             pos.y -= delta;
             self.input_property_entities
                 .insert(key.clone(), response.entity);
+            preview.insert_input(&property);
             self.handle_spawn_response_fields(response, &key, SlotType::Property);
         }
         pos.x += delta;
