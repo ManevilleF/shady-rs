@@ -1,12 +1,10 @@
 pub use {
-    assets::*, camera_dragging::*, camera_translation::*, connector_candidate::*,
-    creation_candidate::*, cursor_position::*, dragged_entities::*, preview::*,
-    selected_entities::*, shader::*, ui_state::*,
+    assets::*, camera::*, connector_candidate::*, creation_candidate::*, cursor_position::*,
+    dragged_entities::*, preview::*, selected_entities::*, shader::*, ui_state::*,
 };
 
 mod assets;
-mod camera_dragging;
-mod camera_translation;
+mod camera;
 mod connector_candidate;
 mod creation_candidate;
 mod cursor_position;

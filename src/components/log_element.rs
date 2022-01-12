@@ -28,6 +28,7 @@ impl LogElement {
         }
     }
 
+    // TODO: create a macro
     pub fn spawn(self, commands: &mut Commands) -> Entity {
         match &self.log_level {
             LogLevel::Info => log::info!("{}", self.message),

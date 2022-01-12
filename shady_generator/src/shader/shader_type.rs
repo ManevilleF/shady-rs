@@ -8,7 +8,7 @@ pub enum ShaderType {
     Vertex,
     /// Fragment shader
     Fragment,
-    // TODO: Geometry
+    // TODO: Geometry (compute)
 }
 
 impl Default for ShaderType {
